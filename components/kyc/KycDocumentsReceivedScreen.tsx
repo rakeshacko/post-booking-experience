@@ -50,7 +50,7 @@ export function KycDocumentsReceivedScreen({
           <h1 className="mt-4 max-w-[320px] text-[24px] font-semibold leading-8 tracking-[-0.1px] text-[#121212]">
             Documents received
           </h1>
-          <p className="mt-2 max-w-[320px] text-sm font-normal leading-5 text-[#4b4b4b]">
+          <p className="mt-4 max-w-[320px] text-sm font-normal leading-5 text-[#4b4b4b]">
             Your documents are being verified by the bank
           </p>
         </div>

@@ -1,19 +1,17 @@
----
-name: colors-semantic
-description: Semantic color tokens — role-based aliases that components reference. Never use primitives directly.
-globs: "**/*.css"
----
+# Semantic Tokens
 
-# Semantic Color Tokens
-
-Components reference ONLY these tokens. Never use primitives (`--purple-600`, `--grey-200`) in component CSS.
+**Layer 2** of the 3-layer token architecture. Role-based aliases that components reference. Never use primitives (`--purple-600`, `--grey-200`) in component CSS.
 
 ```
-primitives → semantics → component CSS
+primitives.md → semantics.md (this file) → components
 --purple-600 → --color-primary → .acko-btn-primary { background-color: var(--color-primary) }
 ```
 
-## Brand / Primary
+---
+
+## Color Tokens
+
+### Brand / Primary
 
 | Token | Role | Light | Dark |
 |-------|------|-------|------|
@@ -25,7 +23,7 @@ primitives → semantics → component CSS
 | `--color-primary-ring` | Focus ring | `purple-200` | `purple-800` |
 | `--color-on-primary` | Text on primary bg | `#FFFFFF` | `grey-white` |
 
-## Surfaces
+### Surfaces
 
 | Token | Role | Light | Dark |
 |-------|------|-------|------|
@@ -36,22 +34,22 @@ primitives → semantics → component CSS
 | `--color-surface-overlay` | Backdrop | `rgba(10,10,10,0.5)` | `rgba(0,0,0,0.7)` |
 | `--color-surface-ghost-hover` | Ghost interaction bg | `rgba(0,0,0,0.04)` | `rgba(255,255,255,0.05)` |
 
-## Text
+### Text
 
 | Token | Typography prop | Light | Dark | Role |
 |-------|----------------|-------|------|------|
 | `--color-text-primary` | `primary` (default) | `grey-800` | `grey-50` | Headings, values, main content |
 | `--color-text-default` | — | `grey-700` | `grey-100` | Labels, body text |
-| `--color-text-supporting` | — | `grey-550` | `grey-200` | Supporting text (readonly, chevrons) |
+| `--color-text-supporting` | — | `grey-550` | `grey-200` | Supporting text |
 | `--color-text-secondary` | `secondary` | `grey-450` | `grey-350` | Subtext, placeholders, helpers |
 | `--color-text-disabled` | — | `grey-300` | `grey-450` | Disabled text |
-| `--color-text-invert` | `invert` | `#FFFFFF` | `grey-white` | Text on dark/filled surfaces regardless of theme |
+| `--color-text-invert` | `invert` | `#FFFFFF` | `grey-white` | Text on dark/filled surfaces |
 | `--color-text-brand` | `brand` | `purple-600` | `purple-500` | Brand-colored text — links, emphasis |
 | `--color-text-error` | `error` | `red-700` | `red-400` | Error messages |
 | `--color-text-success` | `success` | `green-700` | `green-400` | Success messages |
-| `--color-text-static` | `static` | `grey-white` | `grey-white` | Fixed color across themes — does not change |
+| `--color-text-static` | `static` | `grey-white` | `grey-white` | Fixed color across themes |
 
-## Borders
+### Borders
 
 | Token | Role | Light | Dark |
 |-------|------|-------|------|
@@ -59,7 +57,7 @@ primitives → semantics → component CSS
 | `--color-border-strong` | Hover/filled | `grey-450` | `grey-550` |
 | `--color-border-subtle` | Faint dividers | `grey-200` | `grey-650` |
 
-## Disabled
+### Disabled
 
 | Token | Light | Dark |
 |-------|-------|------|
@@ -67,9 +65,9 @@ primitives → semantics → component CSS
 | `--color-disabled-text` | `grey-350` | `grey-450` |
 | `--color-disabled-border` | `grey-200` | `grey-600` |
 
-## Feedback States
+### Feedback States
 
-### Error
+#### Error
 | Token | Light | Dark |
 |-------|-------|------|
 | `--color-error` | `red-600` | `red-600` |
@@ -77,10 +75,10 @@ primitives → semantics → component CSS
 | `--color-error-subtle` | `red-100` | `red-950` |
 | `--color-error-border` | `red-200` | `red-800` |
 | `--color-error-badge-bg` | `red-100` | `red-900` |
-| `--color-error-gradient-from` | `red-200` | `red-800` | Input error border gradient start |
-| `--color-error-gradient-to` | `grey-150` | `grey-600` | Input error border gradient end |
+| `--color-error-gradient-from` | `red-200` | `red-800` |
+| `--color-error-gradient-to` | `grey-150` | `grey-600` |
 
-### Success
+#### Success
 | Token | Light | Dark |
 |-------|-------|------|
 | `--color-success` | `green-600` | `green-500` |
@@ -89,7 +87,7 @@ primitives → semantics → component CSS
 | `--color-success-border` | `green-200` | `green-800` |
 | `--color-success-badge-bg` | `green-200` | `green-900` |
 
-### Warning
+#### Warning
 | Token | Light | Dark |
 |-------|-------|------|
 | `--color-warning` | `orange-600` | `orange-500` |
@@ -98,7 +96,7 @@ primitives → semantics → component CSS
 | `--color-warning-border` | `orange-100` | `orange-800` |
 | `--color-warning-badge-bg` | `orange-200` | `orange-900` |
 
-### Info (uses brand purple — NOT blue)
+#### Info (uses brand purple — NOT blue)
 | Token | Light | Dark |
 |-------|-------|------|
 | `--color-info` | `purple-600` | `purple-500` |
@@ -107,7 +105,7 @@ primitives → semantics → component CSS
 | `--color-info-border` | `purple-200` | `purple-800` |
 | `--color-info-badge-bg` | `purple-200` | `purple-900` |
 
-## Cards
+### Cards
 
 | Token | Light | Dark |
 |-------|-------|------|
@@ -118,21 +116,47 @@ primitives → semantics → component CSS
 | `--color-card-demoted-border` | `grey-200` | `grey-600` |
 | `--color-card-outline-border` | `grey-200` | `grey-600` |
 
-## Component-Specific Tokens
+### Component-Specific Tokens
 
-### Tooltip
+#### Tooltip
 | Token | Light | Dark |
 |-------|-------|------|
 | `--color-tooltip-bg` | `grey-700` | `grey-200` |
 | `--color-tooltip-text` | `grey-white` | `grey-750` |
 
-### Tabs Pill
+#### Button
+| Token | Light | Dark |
+|-------|-------|------|
+| `--color-btn-secondary-bg` | `purple-50` | `grey-650` |
+| `--color-btn-secondary-border` | `purple-300` | `purple-600` |
+| `--color-btn-secondary-text` | `purple-700` | `grey-50` |
+| `--color-btn-ghost-color` | `purple-600` | `purple-500` |
+| `--color-btn-ghost-hover-bg` | `purple-50` | `grey-600` |
+| `--color-btn-link-color` | `blue-600` | `blue-500` |
+| `--color-btn-danger-bg` | `red-100` | `red-900` |
+| `--color-btn-danger-text` | `red-500` | `red-200` |
+| `--color-btn-disabled-bg` | `grey-100` | `grey-600` |
+| `--color-btn-disabled-text` | `grey-350` | `grey-450` |
+
+#### Input (shared by TextInput, Dropdown, Textarea, InputGroup, OtpInput)
+| Token | Light | Dark | Role |
+|-------|-------|------|------|
+| `--color-input-bg` | `grey-white` | `grey-750` | Default fill |
+| `--color-input-border` | `grey-150` | `grey-600` | Default border |
+| `--color-input-hover-border` | `grey-300` | `grey-550` | Hover border |
+| `--color-input-filled-border` | `grey-200` | `grey-550` | Filled border |
+| `--color-input-focus-border` | `grey-200` | `grey-550` | Focus border |
+| `--color-input-option-hover` | `purple-50` | `grey-650` | Dropdown option hover |
+| `--color-input-option-selected-bg` | `purple-100` | `purple-900` | Selected option bg |
+| `--color-input-option-selected-text` | `purple-700` | `purple-300` | Selected option text |
+
+#### Tabs Pill
 | Token | Light | Dark |
 |-------|-------|------|
 | `--color-tab-pill-bg` | `grey-150` | `grey-650` |
 | `--color-tab-pill-active-bg` | `grey-white` | `grey-550` |
 
-### Toggle
+#### Toggle
 | Token | Light | Dark |
 |-------|-------|------|
 | `--color-toggle-bg` | `grey-150` | `grey-650` |
@@ -141,14 +165,14 @@ primitives → semantics → component CSS
 | `--color-toggle-active-text` | `purple-700` | `purple-300` |
 | `--color-toggle-text` | `grey-450` | `grey-350` |
 
-### Accordion
+#### Accordion
 | Token | Light | Dark |
 |-------|-------|------|
 | `--color-accordion-border` | `grey-200` | `grey-600` |
 | `--color-accordion-header-hover` | `grey-50` | `grey-650` |
 | `--color-accordion-icon` | `grey-400` | `grey-400` |
 
-### Breadcrumb
+#### Breadcrumb
 | Token | Light | Dark |
 |-------|-------|------|
 | `--color-breadcrumb-text` | `grey-400` | `grey-400` |
@@ -157,7 +181,7 @@ primitives → semantics → component CSS
 | `--color-breadcrumb-current` | `grey-700` | `grey-100` |
 | `--color-breadcrumb-separator` | `grey-300` | `grey-550` |
 
-### Table
+#### Table
 | Token | Light | Dark |
 |-------|-------|------|
 | `--color-table-header-bg` | `grey-100` | `grey-700` |
@@ -166,53 +190,7 @@ primitives → semantics → component CSS
 | `--color-table-row-hover` | `grey-50` | `grey-650` |
 | `--color-table-stripe` | `grey-50` | `rgba(255,255,255,0.02)` |
 
-### Button
-| Token | Light | Dark |
-|-------|-------|------|
-| `--color-btn-secondary-bg` | `purple-50` | `grey-650` |
-| `--color-btn-secondary-border` | `purple-300` | `purple-600` |
-| `--color-btn-secondary-text` | `purple-700` | `grey-50` |
-| `--color-btn-inverted-bg` | `grey-100` | `grey-100` |
-| `--color-btn-inverted-text` | `purple-700` | `purple-700` |
-| `--color-btn-ghost-color` | `purple-600` | `purple-500` |
-| `--color-btn-ghost-hover-bg` | `purple-50` | `grey-600` |
-| `--color-btn-link-color` | `blue-600` | `blue-500` |
-| `--color-btn-danger-bg` | `red-100` | `red-900` |
-| `--color-btn-danger-text` | `red-500` | `red-200` |
-| `--color-btn-disabled-bg` | `grey-100` | `grey-600` |
-| `--color-btn-disabled-text` | `grey-350` | `grey-450` |
-| `--color-btn-primary-hover-bg` | — | `purple-600` |
-
-### Input (shared by TextInput, Dropdown, Textarea, InputGroup, OtpInput)
-| Token | Light | Dark | Role |
-|-------|-------|------|------|
-| `--color-input-bg` | `grey-white` | `grey-750` | Default fill |
-| `--color-input-border` | `grey-150` | `grey-600` | Default border |
-| `--color-input-hover-border` | `grey-300` | `grey-550` | Hover border |
-| `--color-input-filled-border` | `grey-200` | `grey-550` | Filled (has value) border |
-| `--color-input-focus-border` | `grey-200` | `grey-550` | Focus/selected border (error excluded) |
-| `--color-input-disabled-bg` | — | `grey-650` | Disabled fill (dark only) |
-| `--color-input-disabled-border` | — | `grey-600` | Disabled border (dark only) |
-| `--color-input-option-hover` | `purple-50` | `grey-650` | Dropdown option hover |
-| `--color-input-option-selected-bg` | `purple-100` | `purple-900` | Selected option bg |
-| `--color-input-option-selected-text` | `purple-700` | `purple-300` | Selected option text |
-
-### Slider / Progress
-| Token | Light | Dark |
-|-------|-------|------|
-| `--color-track-inactive` | `grey-200` | `grey-600` | Unfinished track area |
-
-### Switch
-| Token | Light | Dark |
-|-------|-------|------|
-| `--color-switch-thumb` | `grey-white` | `grey-white` |
-
-### Form Controls
-| Token | Light | Dark |
-|-------|-------|------|
-| `--color-control-border-selector` | `grey-200` | `grey-500` |
-
-### Radio Card
+#### Radio Card
 | Token | Light | Dark |
 |-------|-------|------|
 | `--color-radio-card-hover-border` | `purple-200` | `purple-700` |
@@ -220,7 +198,7 @@ primitives → semantics → component CSS
 | `--color-radio-card-active-border` | `purple-300` | `purple-600` |
 | `--color-radio-card-active-bg` | `purple-100` | `purple-900` |
 
-### Calendar
+#### Calendar
 | Token | Light | Dark |
 |-------|-------|------|
 | `--color-cal-selected-bg` | `purple-600` | `purple-500` |
@@ -229,7 +207,18 @@ primitives → semantics → component CSS
 | `--color-cal-range-text` | `purple-700` | `purple-300` |
 | `--color-cal-hover-bg` | `purple-50` | `purple-950` |
 | `--color-cal-today-text` | `purple-600` | `purple-400` |
-| `--color-cal-cell-hover-bg` | `grey-100` | `grey-650` |
+
+#### Wizard
+| Token | Light | Dark |
+|-------|-------|------|
+| `--color-wizard-active-bg` | `purple-500` | `purple-600` |
+| `--color-wizard-active-text` | `grey-50` | `grey-white` |
+| `--color-wizard-done-bg` | `purple-200` | `purple-700` |
+| `--color-wizard-done-text` | `purple-600` | `purple-300` |
+| `--color-wizard-upcoming-border` | `grey-250` | `grey-500` |
+| `--color-wizard-upcoming-text` | `grey-350` | `grey-450` |
+| `--color-wizard-connector-done` | `purple-200` | `purple-700` |
+| `--color-wizard-connector-upcoming` | `grey-250` | `grey-500` |
 
 ### Badge — Solid (gradient fill + border)
 
@@ -262,110 +251,114 @@ Pattern: `--color-badge-{color}-outline-color`
 | Color | Light | Dark |
 |-------|-------|------|
 | purple | `purple-600` | `purple-400` |
-| green (lime) | `lime-600` | `lime-600` |
+| green | `lime-600` | `lime-600` |
 | blue | `blue-600` | `blue-600` |
 | orange | `orange-600` | `orange-600` |
 | pink | `red-600` | `red-600` |
 | gray | `grey-600` | `grey-500` |
 
-### Counter Badge (gradient fill + border)
+---
 
-Pattern: `--color-counter-{color}-{gradient-from|gradient-to|border}`
+## Shadow Semantic Aliases
 
-Background is `linear-gradient(0deg, gradient-from, gradient-to)` with a `1px solid border`. Text is always `--color-on-primary` (white).
+| Token | Maps to | Use Case |
+|-------|---------|----------|
+| `--shadow-card` | `--shadow-lg` | Elevated cards |
+| `--shadow-dropdown` | `--shadow-lg` | Dropdown menus, popovers |
+| `--shadow-modal` | `--shadow-xl` | Modals, dialogs |
+| `--shadow-subtle` | `--shadow-xs` | Small element depth |
 
-| Color | `gradient-from` Light | `gradient-to` Light | `border` Light |
-|-------|----------------------|--------------------|---------------|
-| pink | `red-500` | `red-400` | `red-500` |
-| purple | `purple-500` | `purple-400` | `purple-500` |
-| blue | `blue-500` | `blue-400` | `blue-500` |
+### Component Shadows
 
-| Color | `gradient-from` Dark | `gradient-to` Dark | `border` Dark |
-|-------|---------------------|-------------------|--------------|
-| pink | `red-600` | `red-700` | `red-600` |
-| purple | `purple-600` | `purple-700` | `purple-600` |
-| blue | `blue-600` | `blue-700` | `blue-600` |
+| Token | Light | Dark | Used by |
+|-------|-------|------|---------|
+| `--shadow-btn-inner` | `inset 0 1px 2px rgba(255,255,255,0.28)` | `inset 0 1px 2px rgba(255,255,255,0.15)` | Primary, secondary buttons |
+| `--shadow-btn-hover` | `0 4px 8px rgba(0,0,0,0.08)` | `0 4px 8px rgba(0,0,0,0.3)` | Button hover |
+| `--shadow-btn-secondary-hover` | `inset 0 2px 4px rgba(255,255,255,0.48)` | `inset 0 2px 4px rgba(0,0,0,0.2)` | Secondary hover |
+| `--shadow-focus-ring` | `0 0 0 3px var(--color-primary-ring)` | same | All focusable elements |
 
-### Wizard
+Shadow rules:
+- Shadows are heavier in dark mode to remain visible on dark surfaces
+- Prefer `box-shadow` over `border` for hairline edges
+- Never use harsh drop shadows — keep them diffused
 
-| Token | Light | Dark |
-|-------|-------|------|
-| `--color-wizard-active-bg` | `purple-500` | `purple-600` |
-| `--color-wizard-active-text` | `grey-50` | `grey-white` |
-| `--color-wizard-active-shadow-top` | `purple-400` | `purple-500` |
-| `--color-wizard-active-shadow-bottom` | `purple-700` | `purple-800` |
-| `--color-wizard-done-bg` | `purple-200` | `purple-700` |
-| `--color-wizard-done-text` | `purple-600` | `purple-300` |
-| `--color-wizard-upcoming-border` | `grey-250` | `grey-500` |
-| `--color-wizard-upcoming-text` | `grey-350` | `grey-450` |
-| `--color-wizard-connector-done` | `purple-200` | `purple-700` |
-| `--color-wizard-connector-upcoming` | `grey-250` | `grey-500` |
+---
 
-## Shadows (Semantic)
+## Themes
 
-| Token | Light | Dark |
-|-------|-------|------|
-| `--shadow-card` | `var(--shadow-md)` | `var(--shadow-md)` |
-| `--shadow-dropdown` | `var(--shadow-lg)` | `var(--shadow-lg)` |
-| `--shadow-modal` | `var(--shadow-xl)` | `var(--shadow-xl)` |
-| `--shadow-subtle` | `var(--shadow-sm)` | `var(--shadow-sm)` |
-| `--shadow-btn-inner` | `inset 0 1px 2px rgba(255,255,255,0.28)` | `inset 0 1px 2px rgba(255,255,255,0.15)` |
-| `--shadow-btn-hover` | `0 4px 8px rgba(0,0,0,0.08)` | `0 4px 8px rgba(0,0,0,0.3)` |
-| `--shadow-focus-ring` | `0 0 0 3px var(--color-primary-ring)` | same |
-| `--shadow-btn-secondary-hover` | `inset 0 2px 4px rgba(255,255,255,0.48)` | `inset 0 2px 4px rgba(0,0,0,0.2)` |
+### ACKO Light (Default)
 
-## Usage Examples
+Applied via `:root` or `[data-theme="light"]`.
 
-### ✅ Correct (Semantic Tokens)
-```tsx
-// Use semantic tokens in component CSS
-<button style={{ 
-  background: 'var(--color-primary)', 
-  color: 'var(--color-on-primary)' 
-}}>
-  Primary Button
-</button>
+**Visual Personality:** Clean, trustworthy, approachable. Button press: `scale(0.97)` on `:active`. Card borders: highlight edge (white border on grey-50 fill). Shadows: light and diffused — never harsh. Gradients: avoid in UI — solid colors only.
 
-<div style={{ 
-  color: 'var(--color-text-error)',
-  background: 'var(--color-error-subtle)' 
-}}>
-  Error message
-</div>
+**Activation:**
+```html
+<html data-theme="light">
+```
+Or via system preference:
+```js
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
 ```
 
-### ❌ Incorrect (Primitive Tokens)
-```tsx
-// Never use primitives directly
-<button style={{ 
-  background: 'var(--purple-600)', 
-  color: 'var(--grey-white)' 
-}}>
-  Button
-</button>
+**Key Light Mappings:**
 
-// Never use hardcoded Tailwind classes
-<button className="bg-purple-600 text-white">
-  Button
-</button>
-```
+| Semantic Token | Primitive | Hex |
+|---------------|-----------|-----|
+| `--color-primary` | `purple-600` | `#6841E6` |
+| `--color-on-primary` | — | `#FFFFFF` |
+| `--color-surface` | `grey-100` | `#F5F5F5` |
+| `--color-surface-raised` | `grey-100` | `#F5F5F5` |
+| `--color-text-primary` | `grey-800` | `#0A0A0A` |
+| `--color-text-default` | `grey-700` | `#141414` |
+| `--color-text-secondary` | `grey-450` | `#605F63` |
+| `--color-border` | `grey-300` | `#B7B7B8` |
+| `--color-card-bg` | `grey-50` | `#FBFBFB` |
+| `--color-error` | `red-600` | `#DC2626` |
+| `--color-success` | `green-600` | `#16A34A` |
 
-## Implementation in `globals.css`
+Logo: Use **Primary Light BG** or **Horizontal Light BG** variants.
 
-All semantic tokens are implemented in `/app/globals.css` under theme-specific CSS classes:
+---
 
-```css
-.app-light {
-  --color-primary: var(--purple-600);
-  --color-text-primary: var(--grey-800);
-  /* ... all light theme mappings */
-}
+### ACKO Dark
 
-.app-dark {
-  --color-primary: var(--purple-500);
-  --color-text-primary: var(--grey-50);
-  /* ... all dark theme mappings */
-}
-```
+Activated via `[data-theme="dark"]` on `<html>`.
 
-This system ensures consistent theming across all components while maintaining the flexibility to adjust colors globally from a single source.
+**Dark Mode Principles:**
+1. Surfaces get **darker** as they go "back" — opposite of light
+2. Text uses lighter values but NOT pure `#FFFFFF` — too harsh
+3. Primary purple shifts **lighter** to maintain contrast
+4. Reduce shadow intensity — use surface color elevation instead
+5. Feedback colors shift to 400–500 range for contrast on dark
+
+**Key Dark Mappings:**
+
+| Semantic Token | Primitive | Notes |
+|---------------|-----------|-------|
+| `--color-primary` | `purple-500` | Lighter for contrast |
+| `--color-primary-hover` | `purple-400` | Hover goes lighter (not darker) |
+| `--color-on-primary` | `grey-white` | Text on primary bg |
+| `--color-surface` | `grey-750` | Deepest background |
+| `--color-surface-raised` | `grey-700` | Cards, inputs |
+| `--color-text-primary` | `grey-50` | Headings |
+| `--color-text-default` | `grey-100` | Body text |
+| `--color-text-secondary` | `grey-350` | Helpers, placeholders |
+| `--color-border` | `grey-600` | Default borders |
+| `--color-card-bg` | `grey-700` | Card fill |
+| `--color-error` | `red-600` | Error borders |
+| `--color-error-text` | `red-400` | Error messages (lighter) |
+| `--color-success` | `green-500` | Success indicators (lighter) |
+
+**Visual Adjustments vs Light:**
+
+| Property | Light | Dark |
+|----------|-------|------|
+| Card borders | White highlight edge | `grey-650` — subtler stroke |
+| Input fill | `grey-white` | `grey-750` — deeper than surface |
+| Input border (default) | `grey-150` | `grey-600` |
+| Dropdown menu | White + shadow | Raised surface + visible border |
+| Shadows | Standard | Heavier rgba values for visibility |
+
+Logo: Use **Primary Dark BG** or **Horizontal Dark BG** variants.

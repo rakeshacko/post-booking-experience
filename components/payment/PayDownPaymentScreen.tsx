@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { KycBookingProcessingScreen } from "@/components/kyc/KycBookingProcessingScreen";
+import { KYC_ASSETS } from "@/components/kyc/kyc-assets";
 import { DownPaymentSummaryCard } from "@/components/payment/DownPaymentSummaryCard";
 import { LoanProcessingWhatsNext } from "@/components/payment/LoanProcessingWhatsNext";
 
@@ -132,6 +133,7 @@ export function PayDownPaymentScreen() {
     <KycBookingProcessingScreen
       headline={headline}
       subline={subline}
+      heroIllustrationSrc={KYC_ASSETS.paymentHero}
       nextHref={nextHref}
       prefetchHref={prefetchHref}
       nextCtaLabel={nextCtaLabel}

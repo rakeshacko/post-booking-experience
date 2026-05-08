@@ -4,9 +4,10 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useState, type ReactNode } from "react";
 
-import { KYC_ASSETS } from "@/components/kyc/kyc-assets";
+import { GetHelpPillButton } from "@/components/kyc/GetHelpPillButton";
 import { KycTopNavHeader } from "@/components/kyc/KycTopNavHeader";
 import { BankSelectionBottomSheet } from "@/components/payment/BankSelectionBottomSheet";
+import { SelfFinanceConfirmBottomSheet } from "@/components/payment/SelfFinanceConfirmBottomSheet";
 import {
   PARTNER_BANK_LOGOS,
   PAYMENT_CHOOSE_ASSETS,
@@ -16,27 +17,6 @@ import {
 const STAGGER_TITLE_MS = 90;
 const STAGGER_FIRST_OPTION_MS = 280;
 const STAGGER_OPTION_STEP_MS = 115;
-
-function GetHelpButton() {
-  return (
-    <button
-      type="button"
-      className="flex h-[28px] shrink-0 items-center gap-1 rounded-lg border border-[#121212] bg-white px-3 text-xs font-medium leading-[18px] text-[#121212] transition-colors hover:bg-[#f5f5f5] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#121212]/20 focus-visible:ring-offset-2"
-    >
-      <span className="relative h-5 w-5 shrink-0" aria-hidden>
-        <Image
-          src={KYC_ASSETS.getHelp}
-          alt=""
-          fill
-          className="object-contain"
-          unoptimized
-          sizes="20px"
-        />
-      </span>
-      Ask Shivi
-    </button>
-  );
-}
 
 type PaymentOptionId = "acko_drive" | "self_finance" | "full_payment";
 
@@ -150,6 +130,7 @@ export function ChoosePaymentOptionsScreen() {
   const router = useRouter();
   const [choice, setChoice] = useState<PaymentOptionId>("acko_drive");
   const [bankSheetOpen, setBankSheetOpen] = useState(false);
+  const [selfFinanceConfirmOpen, setSelfFinanceConfirmOpen] = useState(false);
 
   const goToPayment = useCallback(() => {
     router.push("/payment");
@@ -160,8 +141,17 @@ export function ChoosePaymentOptionsScreen() {
       setBankSheetOpen(true);
       return;
     }
+    if (choice === "self_finance") {
+      setSelfFinanceConfirmOpen(true);
+      return;
+    }
     goToPayment();
   }, [choice, goToPayment]);
+
+  const onSelfFinanceConfirm = useCallback(() => {
+    setSelfFinanceConfirmOpen(false);
+    router.push("/payment/self-finance-confirmed");
+  }, [router]);
 
   const onBankSheetConfirm = useCallback((bankId: string) => {
     setBankSheetOpen(false);
@@ -177,7 +167,7 @@ export function ChoosePaymentOptionsScreen() {
 
   return (
     <div className="min-h-dvh bg-[#FFFFFF] font-sans">
-      <KycTopNavHeader transparent endSlot={<GetHelpButton />} />
+      <KycTopNavHeader transparent endSlot={<GetHelpPillButton />} />
 
       <main className="mx-auto w-full max-w-[360px] px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-[8px]">
         <h1
@@ -266,6 +256,12 @@ export function ChoosePaymentOptionsScreen() {
         open={bankSheetOpen}
         onClose={() => setBankSheetOpen(false)}
         onConfirm={onBankSheetConfirm}
+      />
+
+      <SelfFinanceConfirmBottomSheet
+        open={selfFinanceConfirmOpen}
+        onClose={() => setSelfFinanceConfirmOpen(false)}
+        onConfirm={onSelfFinanceConfirm}
       />
     </div>
   );

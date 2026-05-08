@@ -5,8 +5,8 @@
  * Provides standardized enter/exit animations for all pages
  */
 
-import { motion } from "framer-motion";
-import { type ReactNode } from "react";
+import { motion, type Transition, type Variants } from "framer-motion";
+import { type ReactNode, useSyncExternalStore } from "react";
 import {
   pageVariants,
   celebrationPageVariants,
@@ -14,6 +14,25 @@ import {
   fadeVariants,
 } from "@/lib/animations/variants";
 import { REDUCED_MOTION_CONFIG } from "@/lib/animations/config";
+
+function subscribePrefersReducedMotion(onStoreChange: () => void): () => void {
+  if (typeof window === "undefined") return () => {};
+  const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+  mq.addEventListener("change", onStoreChange);
+  return () => mq.removeEventListener("change", onStoreChange);
+}
+
+function getPrefersReducedMotionSnapshot(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function animateTransitionFromVariants(variants: Variants): Transition | undefined {
+  const animate = variants.animate;
+  if (!animate || typeof animate !== "object") return undefined;
+  const t = "transition" in animate ? animate.transition : undefined;
+  return t && typeof t === "object" ? t : undefined;
+}
 
 export type PageTransitionVariant = "default" | "celebration" | "hero" | "fade";
 
@@ -54,6 +73,13 @@ export function PageTransition({
   };
 
   const variants = getVariants();
+  const animateTransition = animateTransitionFromVariants(variants);
+
+  const prefersReducedMotion = useSyncExternalStore(
+    subscribePrefersReducedMotion,
+    getPrefersReducedMotionSnapshot,
+    () => false,
+  );
 
   // If animations are disabled, return children without motion
   if (disableAnimation) {
@@ -70,13 +96,11 @@ export function PageTransition({
       className={className}
       // Respect user's reduced motion preference
       transition={{
-        ...variants.animate?.transition,
-        duration: window?.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches
+        ...animateTransition,
+        duration: prefersReducedMotion
           ? REDUCED_MOTION_CONFIG.duration
-          : variants.animate?.transition?.duration,
-        ease: window?.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches
-          ? REDUCED_MOTION_CONFIG.ease
-          : variants.animate?.transition?.ease,
+          : animateTransition?.duration,
+        ease: prefersReducedMotion ? REDUCED_MOTION_CONFIG.ease : animateTransition?.ease,
       }}
     >
       {children}

@@ -134,7 +134,7 @@ export function BookingPaymentSuccessCelebration({ subline }: Props) {
       aria-hidden={!showHeadlineBlock ? true : undefined}
     >
       <h1 className="mt-2 text-[24px] font-semibold leading-7 tracking-tight text-[#1a1a1a]">Payment successful</h1>
-      <p className="mt-3 max-w-sm text-sm font-normal leading-5 text-[#6b7280]">{subline}</p>
+      <p className="mt-4 max-w-sm text-sm font-normal leading-5 text-[#6b7280]">{subline}</p>
     </motion.div>
   );
 

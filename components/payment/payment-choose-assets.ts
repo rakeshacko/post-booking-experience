@@ -13,6 +13,12 @@ export const PAYMENT_CHOOSE_ASSETS = {
   radioOff: asset("Radio button off.svg"),
   /** Loan summary — bank building (synced from repo `assets/bank.svg`). */
   bank: asset("bank.svg"),
+  /** Self finance action / documents received hero. */
+  documentsReceived: asset("Documents_received.svg"),
+  /** Proforma card icon. */
+  document: asset("Document.svg"),
+  /** Proforma card icon (dark stroke). */
+  documentBlack: asset("Document_black.svg"),
 } as const;
 
 /** Partner bank marks — 20×20px in UI */

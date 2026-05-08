@@ -8,8 +8,8 @@ export default function CarAllocationPendingPage() {
     <KycBookingProcessingScreen
       headline="We're allocating your car, Sharath!"
       subline="Hang tight — we're matching your selected variant and colour to available stock."
-      nextHref="/kyc/car-allocation-confirmed"
-      prefetchHref="/kyc/car-allocation-confirmed"
+      nextHref="/car-allocation/confirmed"
+      prefetchHref="/car-allocation/confirmed"
     />
   );
 }

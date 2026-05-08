@@ -23,7 +23,7 @@ export function AuroraLightLayer({ className, showRadialGradient = true }: Auror
           `
             aurora-light-layer-motion
             isolate
-            absolute max-sm:inset-0 sm:-inset-[10px]
+            absolute max-sm:bottom-0 max-sm:left-[-40px] max-sm:right-0 max-sm:top-0 sm:bottom-[-10px] sm:left-[-50px] sm:right-[-10px] sm:top-[-10px]
             [--white-gradient:repeating-linear-gradient(100deg,var(--white)_0%,var(--white)_5%,var(--transparent)_8%,var(--transparent)_10%,var(--white)_14%)]
             [--aurora:repeating-linear-gradient(100deg,var(--blue-500)_10%,var(--indigo-300)_15%,var(--blue-300)_20%,var(--violet-200)_25%,var(--blue-400)_30%)]
             [background-image:var(--white-gradient),var(--aurora)]

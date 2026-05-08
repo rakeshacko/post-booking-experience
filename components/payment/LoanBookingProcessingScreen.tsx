@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 
 import { KycBookingProcessingScreen } from "@/components/kyc/KycBookingProcessingScreen";
+import { KYC_ASSETS } from "@/components/kyc/kyc-assets";
 import { LoanProcessingWhatsNext } from "@/components/payment/LoanProcessingWhatsNext";
 
 const LOAN_PROCESSING_HEADLINE = "We're processing your loan application, Sharath!";
@@ -29,6 +30,7 @@ export function LoanBookingProcessingScreen() {
     <KycBookingProcessingScreen
       headline={LOAN_PROCESSING_HEADLINE}
       subline={LOAN_PROCESSING_SUBLINE}
+      heroIllustrationSrc={KYC_ASSETS.loanProcessingHero}
       nextHref={nextHref}
       prefetchHref={nextHref}
       whatsNextCard={<LoanProcessingWhatsNext />}

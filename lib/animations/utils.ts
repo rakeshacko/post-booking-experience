@@ -4,16 +4,20 @@
  */
 
 import { useAnimation, useInView } from "framer-motion";
+import type { Transition } from "framer-motion";
 import { useEffect, useRef } from "react";
 import { STAGGER_DELAYS, REDUCED_MOTION_CONFIG } from "./config";
+
+function readPrefersReducedMotion(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
 
 /**
  * Hook to check if user prefers reduced motion
  */
 export function useReducedMotion(): boolean {
-  if (typeof window === "undefined") return false;
-  
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  return readPrefersReducedMotion();
 }
 
 /**
@@ -56,11 +60,11 @@ export function createStaggeredDelays(
  */
 export function getAnimationConfig(
   duration: number,
-  ease: any,
-  prefersReducedMotion?: boolean
+  ease: NonNullable<Transition["ease"]>,
+  prefersReducedMotion?: boolean,
 ) {
-  const shouldReduce = prefersReducedMotion ?? useReducedMotion();
-  
+  const shouldReduce = prefersReducedMotion ?? readPrefersReducedMotion();
+
   return {
     duration: shouldReduce ? REDUCED_MOTION_CONFIG.duration : duration,
     ease: shouldReduce ? REDUCED_MOTION_CONFIG.ease : ease,

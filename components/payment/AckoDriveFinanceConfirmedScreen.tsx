@@ -73,7 +73,7 @@ export function AckoDriveFinanceConfirmedScreen() {
             </div>
 
             {showHeader && (
-              <div className="payment-success-stagger mt-5 flex w-full max-w-[320px] flex-col items-center gap-3">
+              <div className="payment-success-stagger mt-5 flex w-full max-w-[320px] flex-col items-center gap-4">
                 <h1 className="text-center text-2xl font-semibold leading-8 tracking-[-0.1px] text-[#121212]">
                   <span className="block">You&apos;re financing with</span>
                   <span className="block">ACKO Drive</span>

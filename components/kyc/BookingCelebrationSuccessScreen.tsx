@@ -128,14 +128,14 @@ export function BookingCelebrationSuccessScreen({
 
             {showHeader && (
               <PaymentSuccessStagger 
-                className="mt-[24px] flex w-full max-w-[320px] flex-col items-center"
+                className="mt-[8px] flex w-full max-w-[320px] flex-col items-center"
                 delay={0.2}
               >
                 <h1 className="text-center text-[24px] font-semibold leading-8 tracking-[-0.1px] text-[#121212]">
                   {headline}
                 </h1>
                 {belowHeadline != null && (
-                  <PaymentSuccessStagger className="mt-3 w-full text-center" delay={0.4}>
+                  <PaymentSuccessStagger className="mt-4 w-full text-center" delay={0.4}>
                     {belowHeadline}
                   </PaymentSuccessStagger>
                 )}
@@ -166,7 +166,7 @@ export function BookingCelebrationSuccessScreen({
                       className="absolute inset-0"
                       style={{
                         backgroundImage:
-                          "linear-gradient(180deg, rgba(255,255,255,0) 65%, rgba(255,255,255,0.7) 100%), linear-gradient(180deg, rgb(255,255,255) 10%, rgba(255,255,255,0) 48%)",
+                          "linear-gradient(180deg, rgba(255,255,255,0) 74%, rgba(255,255,255,0.4) 100%), linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 28%)",
                       }}
                     />
                   </div>
@@ -187,18 +187,23 @@ export function BookingCelebrationSuccessScreen({
                   <div className="absolute bottom-2 left-1/2 w-[calc(100%-16px)] max-w-[304px] -translate-x-1/2 overflow-hidden rounded-xl border border-white/60 bg-white/90 shadow-sm backdrop-blur-[12px]">
                     <div className="px-3 py-3 text-left">
                       <p className="text-base font-medium leading-6 text-[#121212]">{CAR_TITLE}</p>
-                      <div className="mt-1 flex flex-wrap items-center gap-2 text-xs leading-[18px] text-[#121212]">
-                        <span>{CAR_VARIANT}</span>
-                        <span className="relative h-1 w-1 shrink-0" aria-hidden>
+                      <div className="mt-1 flex flex-wrap items-center gap-[4px] text-xs leading-[18px] text-[#121212]">
+                        <span className="shrink-0">{CAR_VARIANT}</span>
+                        <span
+                          className="inline-flex h-[18px] w-4 shrink-0 items-center justify-center"
+                          aria-hidden
+                        >
                           <Image
                             src={BOOKING_CONFIRMED_ASSETS.dotSeparator}
                             alt=""
-                            width={4}
-                            height={4}
-                            className="h-1 w-1"
+                            width={16}
+                            height={16}
+                            className="block size-4 object-contain"
+                            unoptimized
+                            sizes="16px"
                           />
                         </span>
-                        <span>{CAR_COLOR}</span>
+                        <span className="shrink-0">{CAR_COLOR}</span>
                       </div>
                       <div className="mt-2 flex items-center gap-1.5">
                         <p className="text-xs font-normal leading-[18px] text-[#5920c5]">{DELIVERY_LINE}</p>

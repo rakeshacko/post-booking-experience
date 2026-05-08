@@ -21,13 +21,16 @@ export type LoanProcessingWhatsNextVariant =
   /** Insurance issued; RTO registration in progress (next screen after insurance prep). */
   | "delivery_rto_prep"
   /** RTO complete; user picks delivery date (next screen after RTO prep). */
-  | "delivery_schedule_prep";
+  | "delivery_schedule_prep"
+  /** Self finance — `/payment/self-finance-action` (nested payment steps match loan-processing UX). */
+  | "self_finance_action";
 
 export type LoanProcessingWhatsNextProps = {
   /**
    * `down_payment` — pay next; `down_payment_complete` — DP done, loan disbursement next;
    * `delivery_insurance_prep` — policy issuing; `delivery_rto_prep` — RTO in progress;
-   * `delivery_schedule_prep` — pick delivery slot. Payment rail is complete for all delivery_* variants.
+   * `delivery_schedule_prep` — pick delivery slot; `self_finance_action` — self-arranged bank loan
+   * checklist under Payment. Payment rail is complete for all delivery_* variants.
    */
   variant?: LoanProcessingWhatsNextVariant;
   /**
@@ -58,6 +61,41 @@ const NESTED_RAIL_LINE_BASE_CLASS =
 const NESTED_SUBSTEP_ROW_CLASS = "grid grid-cols-[24px_1fr] items-start gap-x-3";
 
 const PAYMENT_SUBTITLE = "You're financing your car through ACKO Drive.";
+
+const SELF_FINANCE_ACTION_PAYMENT_SUBTITLE =
+  "Follow these steps to arrange financing with your bank.";
+
+const SELF_FINANCE_ACTION_PAYMENT_SUBSTEPS: Substep[] = [
+  {
+    status: "in_progress",
+    title: "Download proforma invoice",
+    description: "Take this document to your bank to apply for the car loan.",
+  },
+  {
+    status: "next",
+    title: "Declare loan disbursement amount",
+    description: "Tell us how much loan your bank approved.",
+  },
+  {
+    status: "next",
+    title: "Downpayment",
+    description: "Pay your down payment through the app.",
+  },
+  {
+    status: "next",
+    title: "Download margin money slip",
+    description: "Give this slip to your bank to release funds to the dealer.",
+  },
+  {
+    status: "next",
+    title: "Confirm disbursement from bank",
+    description: "Share the payment reference number when your bank transfers the money.",
+  },
+];
+
+function paymentSectionSubtitle(variant: LoanProcessingWhatsNextVariant): string {
+  return variant === "self_finance_action" ? SELF_FINANCE_ACTION_PAYMENT_SUBTITLE : PAYMENT_SUBTITLE;
+}
 
 /** Aligns with `WhatsNextTimeline` / KYC booking — first journey step before payment (done). */
 const CAR_ALLOCATION_TITLE = "Car allocation";
@@ -293,6 +331,7 @@ function carDeliveryNestedSubsteps(
 }
 
 function substepsForVariant(variant: LoanProcessingWhatsNextVariant): Substep[] {
+  if (variant === "self_finance_action") return SELF_FINANCE_ACTION_PAYMENT_SUBSTEPS;
   if (variant === "sanctioned") return SANCTIONED_SUBSTEPS;
   if (variant === "down_payment") return DOWN_PAYMENT_SUBSTEPS;
   if (variant === "down_payment_complete") return DOWN_PAYMENT_COMPLETE_SUBSTEPS;
@@ -384,8 +423,8 @@ function computeNestedRailLines(
 }
 
 /**
- * Expandable “What’s next” for loan flows (processing, sanctioned, pay-down-payment):
- * main rail Car allocation → Payment (nested substeps) → Car delivery (optional nested substeps).
+ * Expandable “What’s next” for loan flows (processing, sanctioned, pay-down-payment, delivery prep,
+ * self finance action): main rail Car allocation → Payment (nested substeps) → Car delivery (optional nested substeps).
  */
 export function LoanProcessingWhatsNext({
   variant = "processing",
@@ -434,7 +473,8 @@ export function LoanProcessingWhatsNext({
   const deliveryNestedRef = useRef<HTMLDivElement>(null);
   const deliverySubIconRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  const [mainLine, setMainLine] = useState<LineSeg>(EMPTY_LINE);
+  const [mainRailGreen, setMainRailGreen] = useState<LineSeg>(EMPTY_LINE);
+  const [mainRailGrey, setMainRailGrey] = useState<LineSeg>(EMPTY_LINE);
   const [innerGreen, setInnerGreen] = useState<LineSeg>(EMPTY_LINE);
   const [innerGrey, setInnerGrey] = useState<LineSeg>(EMPTY_LINE);
   const [deliveryInnerGreen, setDeliveryInnerGreen] = useState<LineSeg>(EMPTY_LINE);
@@ -449,7 +489,8 @@ export function LoanProcessingWhatsNext({
     const pay = payIconRef.current;
     const car = carIconRef.current;
     if (!root || !alloc || !pay || !car) {
-      setMainLine(EMPTY_LINE);
+      setMainRailGreen(EMPTY_LINE);
+      setMainRailGrey(EMPTY_LINE);
       setInnerGreen(EMPTY_LINE);
       setInnerGrey(EMPTY_LINE);
       setDeliveryInnerGreen(EMPTY_LINE);
@@ -459,10 +500,27 @@ export function LoanProcessingWhatsNext({
 
     const rr = root.getBoundingClientRect();
     const allocR = alloc.getBoundingClientRect();
+    const payR = pay.getBoundingClientRect();
     const carR = car.getBoundingClientRect();
     const allocCy = allocR.top + allocR.height / 2 - rr.top;
+    const payCy = payR.top + payR.height / 2 - rr.top;
     const carCy = carR.top + carR.height / 2 - rr.top;
-    setMainLine({ top: allocCy, height: Math.max(0, carCy - allocCy) });
+
+    const y = [allocCy, payCy, carCy] as const;
+    const { payment: s1, carDelivery: s2 } = mainStageStatuses(variant);
+    const statuses: SubstepStatus[] = [MAIN_CAR_ALLOCATION_STATUS, s1, s2];
+
+    let splitIdx = statuses.findIndex((s) => s === "in_progress");
+    if (splitIdx < 0) {
+      if (statuses.every((s) => s === "done")) {
+        splitIdx = 2;
+      } else {
+        splitIdx = 1;
+      }
+    }
+
+    setMainRailGreen({ top: y[0], height: Math.max(0, y[splitIdx] - y[0]) });
+    setMainRailGrey({ top: y[splitIdx], height: Math.max(0, y[2] - y[splitIdx]) });
 
     if (!paymentExpanded) {
       setInnerGreen(EMPTY_LINE);
@@ -532,12 +590,22 @@ export function LoanProcessingWhatsNext({
   }, []);
 
   return (
-    <section className="rounded-2xl border border-[#e8e8e8] bg-white p-4">
-      <div ref={rootRef} className="relative">
-        {mainLine.height > 0 ? (
+    <div ref={rootRef} className="relative">
+        {mainRailGreen.height > 0 ? (
+          <div
+            className="pointer-events-none absolute left-3 z-0 w-px -translate-x-1/2"
+            style={{
+              top: mainRailGreen.top,
+              height: mainRailGreen.height,
+              backgroundColor: CONNECTOR_ACTIVE,
+            }}
+            aria-hidden
+          />
+        ) : null}
+        {mainRailGrey.height > 0 ? (
           <div
             className="pointer-events-none absolute left-3 z-0 w-px -translate-x-1/2 bg-[#e8e8e8]"
-            style={{ top: mainLine.top, height: mainLine.height }}
+            style={{ top: mainRailGrey.top, height: mainRailGrey.height }}
             aria-hidden
           />
         ) : null}
@@ -559,9 +627,14 @@ export function LoanProcessingWhatsNext({
           </div>
         </div>
 
+        <div className="relative z-[1] my-4 flex gap-3" role="presentation">
+          <div className="w-6 shrink-0" aria-hidden />
+          <div className="min-w-0 flex-1 border-t border-solid border-[#e8e8e8]" role="separator" />
+        </div>
+
         <button
           type="button"
-          className="relative z-[1] mt-4 flex w-full items-start gap-3 rounded-lg text-left outline-none focus-visible:ring-2 focus-visible:ring-[#121212]/20 focus-visible:ring-offset-2"
+          className="relative z-[1] flex w-full items-start gap-3 rounded-lg text-left outline-none focus-visible:ring-2 focus-visible:ring-[#121212]/20 focus-visible:ring-offset-2"
           onClick={togglePayment}
           aria-expanded={paymentExpanded}
           aria-controls="loan-payment-substeps"
@@ -594,7 +667,7 @@ export function LoanProcessingWhatsNext({
                 />
               </span>
             </span>
-            <p className="mt-1 text-xs leading-[18px] text-[#757575]">{PAYMENT_SUBTITLE}</p>
+            <p className="mt-1 text-xs leading-[18px] text-[#757575]">{paymentSectionSubtitle(variant)}</p>
           </span>
         </button>
 
@@ -777,7 +850,6 @@ export function LoanProcessingWhatsNext({
             </div>
           </div>
         )}
-      </div>
-    </section>
+    </div>
   );
 }

@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from "react";
 
-import { KYC_ASSETS } from "@/components/kyc/kyc-assets";
+import { GetHelpPillButton } from "@/components/kyc/GetHelpPillButton";
 import { KycTopNavHeader } from "@/components/kyc/KycTopNavHeader";
 import {
   BANK_SHEET_OPTIONS,
@@ -23,27 +23,6 @@ const DEFAULT_TENURE_MONTHS = 60;
 const STAGGER_TITLE_MS = 90;
 const STAGGER_CARD_MS = 300;
 const STAGGER_WARNING_MS = 540;
-
-function GetHelpButton() {
-  return (
-    <button
-      type="button"
-      className="flex h-[28px] shrink-0 items-center gap-1 rounded-lg border border-[#121212] bg-white px-3 text-xs font-medium leading-[18px] text-[#121212] transition-colors hover:bg-[#f5f5f5] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#121212]/20 focus-visible:ring-offset-2"
-    >
-      <span className="relative h-5 w-5 shrink-0" aria-hidden>
-        <Image
-          src={KYC_ASSETS.getHelp}
-          alt=""
-          fill
-          className="object-contain"
-          unoptimized
-          sizes="20px"
-        />
-      </span>
-      Ask Shivi
-    </button>
-  );
-}
 
 /** Matches `Warning.svg` shape; stroke #D16900 (quote timer / Figma yellow band). */
 function DownPaymentNoticeIcon({ className }: { className?: string }) {
@@ -154,7 +133,7 @@ export function ChooseLoanAmountScreen() {
 
   return (
     <div className="min-h-dvh bg-white font-sans">
-      <KycTopNavHeader transparent endSlot={<GetHelpButton />} />
+      <KycTopNavHeader transparent endSlot={<GetHelpPillButton />} />
 
       <main className="mx-auto w-full max-w-[360px] px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-[8px]">
         <h1
