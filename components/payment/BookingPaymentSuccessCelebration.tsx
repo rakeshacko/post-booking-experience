@@ -24,6 +24,7 @@ import {
   BookingSuccessCarCard,
   type PaymentSuccessCelebrationProps,
 } from "@/components/payment/booking-success-shared";
+import { SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS } from "@/components/ui/success-screen-layout";
 
 type Props = Pick<PaymentSuccessCelebrationProps, "subline">;
 
@@ -133,8 +134,14 @@ export function BookingPaymentSuccessCelebration({ subline }: Props) {
       className={`flex w-full flex-col items-center text-center ${!showHeadlineBlock ? "pointer-events-none" : ""}`}
       aria-hidden={!showHeadlineBlock ? true : undefined}
     >
-      <h1 className="mt-2 text-[24px] font-semibold leading-7 tracking-tight text-[#1a1a1a]">Payment successful</h1>
-      <p className="mt-4 max-w-sm text-sm font-normal leading-5 text-[#6b7280]">{subline}</p>
+      <div
+        className={`mt-2 flex w-full flex-col items-center ${SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS}`}
+      >
+        <h1 className="text-[24px] font-semibold leading-7 tracking-tight text-[#1a1a1a]">
+          Payment successful
+        </h1>
+        <p className="max-w-sm text-sm font-normal leading-5 text-[#6b7280]">{subline}</p>
+      </div>
     </motion.div>
   );
 

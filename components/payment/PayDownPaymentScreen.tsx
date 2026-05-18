@@ -129,6 +129,9 @@ export function PayDownPaymentScreen() {
     };
   }, [bank, loanAmount, downPayment, originalDownPaymentParam]);
 
+  const whatsNextVariant =
+    bank === "self_finance" ? "self_finance_down_payment" : "down_payment";
+
   return (
     <KycBookingProcessingScreen
       headline={headline}
@@ -140,7 +143,7 @@ export function PayDownPaymentScreen() {
       ctaWarningLine={PAY_DOWN_PAYMENT_CTA_WARNING}
       whatsNextCard={
         <LoanProcessingWhatsNext
-          variant="down_payment"
+          variant={whatsNextVariant}
           downPaymentInProgressDescription={
             downPaymentTimelineDescription ?? undefined
           }

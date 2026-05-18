@@ -3,6 +3,13 @@
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
+import {
+  BOTTOM_SHEET_BODY_BEFORE_CTA_CLASS,
+  BOTTOM_SHEET_CTA_STRIP_TOP_CLASS,
+} from "@/components/ui/bottom-sheet-layout";
+import { bottomSheetTitleWidthWithIllustration } from "@/components/ui/bottom-sheet-title-layout";
+import { BottomSheetCloseIcon } from "@/components/ui/BottomSheetCloseIcon";
+
 /** Enter/exit slide duration — keep in sync with `BankSelectionBottomSheet` */
 const SHEET_TRANSITION_MS = 280;
 
@@ -27,20 +34,6 @@ const BEFORE_YOU_CONTINUE_POINTS: readonly ReactNode[] = [
   </>,
   <>Once confirmed, the payment structure cannot be changed.</>,
 ];
-
-function CloseIcon() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="block h-6 w-6" aria-hidden>
-      <path
-        d="M18 6L6 18M6 6l12 12"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
 type LoanSubmitConfirmBottomSheetProps = {
   open: boolean;
@@ -132,10 +125,10 @@ export function LoanSubmitConfirmBottomSheet({
             className="cta-ghost absolute right-5 top-6 z-10 flex h-10 w-10 items-center justify-center rounded-lg text-[#121212] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#121212]/20 focus-visible:ring-offset-2"
             aria-label="Close"
           >
-            <CloseIcon />
+            <BottomSheetCloseIcon />
           </button>
 
-          <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-4 pt-6">
+          <div className={`min-h-0 flex-1 overflow-y-auto px-5 pt-6 ${BOTTOM_SHEET_BODY_BEFORE_CTA_CLASS}`}>
             <div className="relative h-[72px] w-[72px] shrink-0 overflow-hidden bg-white" aria-hidden>
               <Image
                 src={SHEET_ASSETS.hero}
@@ -150,7 +143,7 @@ export function LoanSubmitConfirmBottomSheet({
 
             <h2
               id="loan-before-proceed-title"
-              className="mt-4 w-full text-left text-[20px] font-semibold leading-[1.35] tracking-[-0.1px] text-[#121212]"
+              className={`mt-[24px] ${bottomSheetTitleWidthWithIllustration} text-left text-[20px] font-semibold leading-[1.35] tracking-[-0.1px] text-[#121212]`}
             >
               Things to know before you continue!
             </h2>
@@ -180,7 +173,9 @@ export function LoanSubmitConfirmBottomSheet({
             </ul>
           </div>
 
-          <div className="shrink-0 bg-white px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4">
+          <div
+            className={`shrink-0 bg-white px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] ${BOTTOM_SHEET_CTA_STRIP_TOP_CLASS}`}
+          >
             <button type="button" onClick={handleConfirm} className="primary-cta w-full">
               Agree and continue
             </button>

@@ -3,11 +3,11 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-export default function Home() {
+export default function KycCarAllocationConfirmedRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace("/quote");
+    router.replace("/car-allocation/confirmed");
   }, [router]);
 
   return null;

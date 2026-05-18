@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import Lottie from "lottie-react";
 
 import ackoDriveFinanceSuccessLottie from "@/components/kyc/lottie/acko-drive-finance-success.json";
+import { SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS } from "@/components/ui/success-screen-layout";
 
 /** After header + subtext mount, delay before showing the bottom CTA (reads as step 3). */
 const CTA_AFTER_HEADER_MS = 420;
@@ -73,7 +74,7 @@ export function SelfFinanceConfirmedScreen() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-              className="mt-5 flex w-full max-w-[320px] flex-col items-center gap-4"
+              className={`mt-5 flex w-full max-w-[320px] flex-col items-center ${SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS}`}
             >
               <h1 className="text-center text-2xl font-semibold leading-8 tracking-[-0.1px] text-[#121212]">
                 <span className="block">You&apos;re proceeding with</span>

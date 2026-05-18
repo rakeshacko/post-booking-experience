@@ -1,9 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
-import closeIcon from "@/assets/Close.svg";
+import { BottomSheetCloseIcon } from "@/components/ui/BottomSheetCloseIcon";
 
 /** Parity with `ManageBookingBottomSheet` motion. */
 const SHEET_TRANSITION_MS = 280;
@@ -102,15 +101,7 @@ export function WhatsNextTimelineBottomSheet({
             className="cta-ghost shrink-0 flex size-10 items-center justify-end rounded-lg text-[#121212] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#121212]/20 focus-visible:ring-offset-2"
             aria-label="Close"
           >
-            <Image
-              src={closeIcon}
-              alt=""
-              width={24}
-              height={24}
-              className="block shrink-0"
-              unoptimized
-              aria-hidden
-            />
+            <BottomSheetCloseIcon />
           </button>
         </header>
 

@@ -6,7 +6,8 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import Lottie from "lottie-react";
 
 import { BOOKING_CONFIRMED_ASSETS } from "@/components/kyc/kyc-booking-confirmed-assets";
-import { PaymentSuccessStagger, StaggerContainer } from "@/components/ui/stagger-container";
+import { SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS } from "@/components/ui/success-screen-layout";
+import { PaymentSuccessStagger } from "@/components/ui/stagger-container";
 
 import bookingSuccessLottie from "./lottie/booking-success.json";
 
@@ -127,15 +128,15 @@ export function BookingCelebrationSuccessScreen({
             </div>
 
             {showHeader && (
-              <PaymentSuccessStagger 
-                className="mt-[8px] flex w-full max-w-[320px] flex-col items-center"
+              <PaymentSuccessStagger
+                className={`mt-[8px] flex w-full max-w-[320px] flex-col items-center ${SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS}`}
                 delay={0.2}
               >
                 <h1 className="text-center text-[24px] font-semibold leading-8 tracking-[-0.1px] text-[#121212]">
                   {headline}
                 </h1>
                 {belowHeadline != null && (
-                  <PaymentSuccessStagger className="mt-4 w-full text-center" delay={0.4}>
+                  <PaymentSuccessStagger className="w-full text-center" delay={0.4}>
                     {belowHeadline}
                   </PaymentSuccessStagger>
                 )}

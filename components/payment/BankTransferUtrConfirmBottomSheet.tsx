@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ChangeEvent } from "react";
 
 import { PAYMENT_CHOOSE_ASSETS } from "@/components/payment/payment-choose-assets";
 import {
@@ -11,42 +11,28 @@ import {
 import { bottomSheetTitleWidthWithIllustration } from "@/components/ui/bottom-sheet-title-layout";
 import { BottomSheetCloseIcon } from "@/components/ui/BottomSheetCloseIcon";
 
-/** Enter/exit slide duration — keep in sync with `BankSelectionBottomSheet` */
 const SHEET_TRANSITION_MS = 280;
 
-const SHEET_ASSETS = {
-  bullet: "/assets/tick.svg",
-} as const;
+const MAX_UTR_LEN = 50;
 
-const BEFORE_YOU_PROCEED_POINTS: readonly ReactNode[] = [
-  <>You arrange the loan with your bank. We stay out of that conversation.</>,
-  <>We give you the documents your bank needs. You share them at the right time.</>,
-  <>
-    You pay the down payment to us. We hold it and pass it to the dealer when the time comes.
-  </>,
-  <>
-    Once your bank releases the loan, you share a confirmation with us. That&apos;s the last step before
-    your car is delivered.
-  </>,
-];
-
-type SelfFinanceConfirmBottomSheetProps = {
+type BankTransferUtrConfirmBottomSheetProps = {
   open: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  /** Called after the user confirms with a non-empty UTR (whitespace stripped from input). */
+  onConfirm: (utr: string) => void;
 };
 
 /**
- * Self finance — confirm before navigating to payment. Behaviour aligned with
- * {@link BankSelectionBottomSheet} / {@link LoanSubmitConfirmBottomSheet}.
+ * Self finance — user confirms bank transfer by entering a UTR for verification.
  */
-export function SelfFinanceConfirmBottomSheet({
+export function BankTransferUtrConfirmBottomSheet({
   open,
   onClose,
   onConfirm,
-}: SelfFinanceConfirmBottomSheetProps) {
+}: BankTransferUtrConfirmBottomSheetProps) {
   const [mounted, setMounted] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
+  const [utr, setUtr] = useState("");
   const exitTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -61,6 +47,11 @@ export function SelfFinanceConfirmBottomSheet({
       requestAnimationFrame(() => setAnimateIn(true));
     });
     return () => cancelAnimationFrame(id);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    setUtr("");
   }, [open]);
 
   useEffect(() => {
@@ -87,9 +78,17 @@ export function SelfFinanceConfirmBottomSheet({
     };
   }, [mounted]);
 
+  const onUtrChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    const next = e.target.value.replace(/\s/g, "").slice(0, MAX_UTR_LEN);
+    setUtr(next);
+  }, []);
+
   const handleConfirm = useCallback(() => {
-    onConfirm();
-  }, [onConfirm]);
+    if (utr === "") return;
+    onConfirm(utr);
+  }, [onConfirm, utr]);
+
+  const primaryDisabled = utr.length === 0;
 
   if (!mounted) return null;
 
@@ -104,13 +103,13 @@ export function SelfFinanceConfirmBottomSheet({
         aria-label="Dismiss"
       />
       <div
-        className={`absolute bottom-0 left-1/2 z-10 flex max-h-[90dvh] w-full max-w-[360px] -translate-x-1/2 flex-col overflow-hidden rounded-t-[24px] bg-white shadow-[0_-8px_24px_rgba(0,0,0,0.12)] transition-transform duration-[280ms] ease-out motion-reduce:translate-y-0 motion-reduce:transition-none ${
+        className={`absolute bottom-0 left-1/2 z-10 flex max-h-[90dvh] w-full max-w-[360px] -translate-x-1/2 flex-col overflow-y-auto rounded-t-[20px] bg-white shadow-[0_-8px_24px_rgba(0,0,0,0.12)] transition-transform duration-[280ms] ease-out motion-reduce:translate-y-0 motion-reduce:transition-none ${
           animateIn ? "translate-y-0" : "translate-y-full"
         }`}
         role="dialog"
         aria-modal="true"
-        aria-labelledby="self-finance-things-to-know-title"
-        aria-describedby="self-finance-before-proceed-list"
+        aria-labelledby="bank-transfer-confirm-title"
+        aria-describedby="bank-transfer-confirm-body"
       >
         <div className="relative flex min-h-0 flex-1 flex-col">
           <button
@@ -122,10 +121,10 @@ export function SelfFinanceConfirmBottomSheet({
             <BottomSheetCloseIcon />
           </button>
 
-          <div className={`min-h-0 flex-1 overflow-y-auto px-5 pt-6 ${BOTTOM_SHEET_BODY_BEFORE_CTA_CLASS}`}>
+          <div className={`min-h-0 flex-1 px-5 pt-6 ${BOTTOM_SHEET_BODY_BEFORE_CTA_CLASS}`}>
             <div className="relative h-[72px] w-[72px] shrink-0 overflow-hidden bg-white" aria-hidden>
               <Image
-                src={PAYMENT_CHOOSE_ASSETS.selfFinance}
+                src={PAYMENT_CHOOSE_ASSETS.loanApproved}
                 alt=""
                 width={72}
                 height={72}
@@ -134,44 +133,49 @@ export function SelfFinanceConfirmBottomSheet({
                 sizes="72px"
               />
             </div>
-
             <h2
-              id="self-finance-things-to-know-title"
-              className={`mt-[24px] ${bottomSheetTitleWidthWithIllustration} text-left text-[20px] font-semibold leading-[1.35] tracking-[-0.1px] text-[#121212]`}
+              id="bank-transfer-confirm-title"
+              className={`mt-[24px] ${bottomSheetTitleWidthWithIllustration} text-left text-[20px] font-semibold leading-[28px] tracking-[-0.12px] text-[#121212]`}
             >
-              Things to know before you continue!
+              Confirm bank transfer
             </h2>
-
-            <ul
-              id="self-finance-before-proceed-list"
-              className="mt-4 w-full list-none space-y-[12px] rounded-2xl bg-[#f5f5f5] p-4"
+            <p
+              id="bank-transfer-confirm-body"
+              className="mt-3 w-full text-left text-sm font-normal leading-[22px] text-[#4b4b4b]"
             >
-              {BEFORE_YOU_PROCEED_POINTS.map((line, index) => (
-                <li key={index} className="flex gap-2">
-                  <span className="relative mt-0.5 h-5 w-5 shrink-0" aria-hidden>
-                    <Image
-                      src={SHEET_ASSETS.bullet}
-                      alt=""
-                      width={20}
-                      height={20}
-                      className="h-5 w-5 object-contain"
-                      unoptimized
-                      sizes="20px"
-                    />
-                  </span>
-                  <p className="min-w-0 flex-1 text-left text-xs font-normal leading-[18px] text-[#121212]">
-                    {line}
-                  </p>
-                </li>
-              ))}
-            </ul>
+              Let us know once your bank has transferred the loan amount to the dealer. Adding your UTR
+              number helps us verify the transfer faster.
+            </p>
+
+            <div className="mt-6 w-full">
+              <label htmlFor="bank-transfer-utr-input" className="sr-only">
+                UTR number
+              </label>
+              <div className="flex h-12 min-h-12 w-full max-w-[320px] items-center rounded-lg border border-[#e8e8e8] bg-white px-4">
+                <input
+                  id="bank-transfer-utr-input"
+                  type="text"
+                  autoComplete="off"
+                  value={utr}
+                  onChange={onUtrChange}
+                  placeholder="Enter UTR number"
+                  maxLength={MAX_UTR_LEN}
+                  className="min-w-0 w-full border-0 bg-transparent p-0 text-[16px] font-normal leading-[22px] text-[#121212] outline-none placeholder:text-[#9e9e9e] focus:ring-0"
+                />
+              </div>
+            </div>
           </div>
 
           <div
-            className={`shrink-0 bg-white px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] ${BOTTOM_SHEET_CTA_STRIP_TOP_CLASS}`}
+            className={`shrink-0 space-y-3 bg-white px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] ${BOTTOM_SHEET_CTA_STRIP_TOP_CLASS}`}
           >
-            <button type="button" onClick={handleConfirm} className="primary-cta w-full">
-              Agree and continue
+            <button
+              type="button"
+              onClick={handleConfirm}
+              disabled={primaryDisabled}
+              className="primary-cta w-full disabled:pointer-events-none disabled:opacity-50"
+            >
+              Confirm transfer
             </button>
           </div>
         </div>

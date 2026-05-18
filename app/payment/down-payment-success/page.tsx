@@ -6,7 +6,10 @@ import { useSearchParams } from "next/navigation";
 import { DownPaymentInstalmentSuccess } from "@/components/payment/DownPaymentInstalmentSuccess";
 import { CelebrationPageTransition } from "@/components/ui/page-transition";
 
-import { buildPayDownPaymentHref } from "@/lib/paymentUrls";
+import {
+  buildMarginMoneySlipActionHref,
+  buildPayDownPaymentHref,
+} from "@/lib/paymentUrls";
 
 const INSURANCE_SETUP_PATH = "/payment/down-payment-insurance-setup";
 
@@ -46,14 +49,28 @@ function DownPaymentSuccessInner() {
       }
       return {
         subline: `We’ve received ${formatInr(paid)}.`,
-        nextHref: INSURANCE_SETUP_PATH,
+      nextHref:
+        bank === "self_finance"
+          ? buildMarginMoneySlipActionHref({
+              bank,
+              loanAmount,
+              originalDownPaymentInr: original,
+            })
+          : INSURANCE_SETUP_PATH,
       };
     }
 
     if (original != null) {
       return {
         subline: `${formatInr(original)} down payment received.`,
-        nextHref: INSURANCE_SETUP_PATH,
+        nextHref:
+          bank === "self_finance"
+            ? buildMarginMoneySlipActionHref({
+                bank,
+                loanAmount,
+                originalDownPaymentInr: original,
+              })
+            : INSURANCE_SETUP_PATH,
       };
     }
 

@@ -32,8 +32,8 @@ const CTA_TO_WARNING_DELAY_MS = 480;
 /** Hero block (header + aurora + content) fills at least 90% of the viewport; uses `dvh` for mobile browser chrome. */
 const HERO_MIN_HEIGHT = "min-h-[90dvh]";
 
-/** Vertical offset from nav bottom to KYC icon top — Figma 2179:8512 (≈96px below 56px bars). */
-const HERO_ICON_TOP_PT = "pt-[96px]";
+/** Vertical offset from nav bottom to KYC icon top — aligned with `KycBookingProcessingScreen` (`pt-[72px]`). */
+const HERO_ICON_TOP_PT = "pt-[72px]";
 
 function MenuOptionsButton({ onClick }: { onClick: () => void }) {
   return (

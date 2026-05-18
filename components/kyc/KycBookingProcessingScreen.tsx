@@ -33,8 +33,8 @@ const SUBLINE_TO_CTA_DELAY_MS = 240;
 const CTA_TO_WARNING_DELAY_MS = 480;
 
 const HERO_MIN_HEIGHT = "min-h-[90dvh]";
-/** Matches `KycPendingScreen` — vertical rhythm under the nav bar. */
-const HERO_ICON_TOP_PT = "pt-[96px]";
+/** Matches `KycPendingScreen` — vertical rhythm under the nav bar (24px tighter than legacy 96px). */
+const HERO_ICON_TOP_PT = "pt-[72px]";
 
 /** “What’s next” — car allocation step (shared with payment default timeline). */
 const WHATS_NEXT_ALLOCATION_SUBLINE =
@@ -76,6 +76,10 @@ export type KycBookingProcessingScreenProps = {
   ctaWarningLine?: string;
   /** Primary CTA label (default “Next”). */
   nextCtaLabel?: string;
+  /**
+   * When set, primary CTA invokes this instead of navigating to `nextHref` (e.g. open a confirm sheet).
+   */
+  onPrimaryCtaClick?: () => void;
   /** Optional summary card rendered inside the hero, directly below the subline. */
   heroSummaryCard?: ReactNode;
   /** Hero illustration (default: booking-processing art). */
@@ -96,6 +100,7 @@ export function KycBookingProcessingScreen({
   whatsNextCard,
   ctaWarningLine,
   nextCtaLabel = "Next",
+  onPrimaryCtaClick,
   heroSummaryCard,
   heroIllustrationSrc = KYC_ASSETS.bookingProcessingHero,
 }: KycBookingProcessingScreenProps = {}) {
@@ -264,7 +269,7 @@ export function KycBookingProcessingScreen({
                 />
               )}
               <p
-                className={`text-sm font-normal leading-[22px] text-[#4b4b4b] transition-opacity ${HERO_FADE_DURATION_CLASS} ease-out ${
+                className={`text-sm font-normal leading-[20px] text-[#4b4b4b] transition-opacity ${HERO_FADE_DURATION_CLASS} ease-out ${
                   showSubline ? "opacity-100" : "opacity-0"
                 }`}
                 aria-hidden={!showSubline}
@@ -301,7 +306,9 @@ export function KycBookingProcessingScreen({
                   ctaWarningLine ? "mt-4 " : ""
                 }${ctaRevealClass}`}
                 tabIndex={showCta ? 0 : -1}
-                onClick={() => router.push(nextHref)}
+                onClick={() =>
+                  onPrimaryCtaClick ? onPrimaryCtaClick() : router.push(nextHref)
+                }
               >
                 {nextCtaLabel}
               </button>

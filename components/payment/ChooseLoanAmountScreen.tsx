@@ -10,14 +10,13 @@ import {
   BANK_SHEET_OPTIONS,
   PAYMENT_CHOOSE_ASSETS,
 } from "@/components/payment/payment-choose-assets";
+import {
+  DEFAULT_TENURE_MONTHS,
+  MIN_DOWN_PAYMENT_INR,
+  ON_ROAD_PRICE_INR,
+  SLIDER_STEP,
+} from "@/components/payment/loan-amount-demo-constants";
 import { LoanSubmitConfirmBottomSheet } from "@/components/payment/LoanSubmitConfirmBottomSheet";
-
-/** On-road price shown in green footer (Figma 2111:7963). */
-const ON_ROAD_PRICE_INR = 13_73_780;
-/** Minimum down payment at left end of slider (Figma). */
-const MIN_DOWN_PAYMENT_INR = 100_000;
-const SLIDER_STEP = 10_000;
-const DEFAULT_TENURE_MONTHS = 60;
 
 /** Stagger: nav + CTA immediate; then title → card → warning (`payment-success-stagger` in globals). */
 const STAGGER_TITLE_MS = 90;

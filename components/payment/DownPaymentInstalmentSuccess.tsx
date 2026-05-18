@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Lottie from "lottie-react";
 
+import { SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS } from "@/components/ui/success-screen-layout";
+
 const LOTTIE_TICK_URL =
   "https://lottie.host/2487840b-b4dd-4475-a409-663cd2b9403b/C1cWv7yapl.json";
 
@@ -83,10 +85,14 @@ export function DownPaymentInstalmentSuccess({ subline, nextHref }: DownPaymentI
               </div>
             )}
           </div>
-          <h1 className="mt-2 text-[24px] font-semibold leading-7 tracking-tight text-[#1a1a1a]">
-            Payment received
-          </h1>
-          <p className="mt-4 max-w-sm text-sm font-normal leading-5 text-[#6b7280]">{subline}</p>
+          <div
+            className={`mt-2 flex w-full flex-col items-center ${SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS}`}
+          >
+            <h1 className="text-[24px] font-semibold leading-7 tracking-tight text-[#1a1a1a]">
+              Payment received
+            </h1>
+            <p className="max-w-sm text-sm font-normal leading-5 text-[#6b7280]">{subline}</p>
+          </div>
         </div>
       </div>
     </div>

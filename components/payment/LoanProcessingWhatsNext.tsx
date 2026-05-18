@@ -23,19 +23,26 @@ export type LoanProcessingWhatsNextVariant =
   /** RTO complete; user picks delivery date (next screen after RTO prep). */
   | "delivery_schedule_prep"
   /** Self finance — `/payment/self-finance-action` (nested payment steps match loan-processing UX). */
-  | "self_finance_action";
+  | "self_finance_action"
+  /** Self finance — pay down payment screen; same nested steps as `self_finance_action` with progress through DP. */
+  | "self_finance_down_payment"
+  /** Self finance — full DP received; margin money slip download step in progress. */
+  | "self_finance_margin_slip";
 
 export type LoanProcessingWhatsNextProps = {
   /**
    * `down_payment` — pay next; `down_payment_complete` — DP done, loan disbursement next;
    * `delivery_insurance_prep` — policy issuing; `delivery_rto_prep` — RTO in progress;
    * `delivery_schedule_prep` — pick delivery slot; `self_finance_action` — self-arranged bank loan
-   * checklist under Payment. Payment rail is complete for all delivery_* variants.
+   * checklist under Payment; `self_finance_down_payment` — same checklist with DP step in progress;
+   * `self_finance_margin_slip` — DP complete; margin slip step active.
+   * Payment rail is complete for all delivery_* variants.
    */
   variant?: LoanProcessingWhatsNextVariant;
   /**
-   * Replaces the in-progress “Down payment” substep description when `variant` is `down_payment`.
-   * Example: “Pay ₹3,00,000 before 31 March 2026”.
+   * Replaces the in-progress “Down payment” line when `variant` is `down_payment`, or the
+   * “Downpayment” line when `variant` is `self_finance_down_payment`.
+   * Example: “Pay ₹3,00,000 before 31 March”.
    */
   downPaymentInProgressDescription?: string;
 };
@@ -93,8 +100,74 @@ const SELF_FINANCE_ACTION_PAYMENT_SUBSTEPS: Substep[] = [
   },
 ];
 
+/** Demo dates — aligned with Car allocation / self-finance journey copy. */
+const SELF_FINANCE_PROFORMA_COMPLETED_ON = "2 Mar 2026";
+const SELF_FINANCE_DECLARE_DISBURSEMENT_COMPLETED_ON = "15 Apr 2026";
+
+const SELF_FINANCE_DOWN_PAYMENT_COMPLETED_ON = "20 Apr 2026";
+
+const SELF_FINANCE_DOWN_PAYMENT_SUBSTEPS: Substep[] = [
+  {
+    status: "done",
+    title: "Download proforma invoice",
+    description: `Completed on ${SELF_FINANCE_PROFORMA_COMPLETED_ON}.`,
+  },
+  {
+    status: "done",
+    title: "Declare loan disbursement amount",
+    description: `Completed on ${SELF_FINANCE_DECLARE_DISBURSEMENT_COMPLETED_ON}.`,
+  },
+  {
+    status: "in_progress",
+    title: "Downpayment",
+    description: "Pay your down payment through the app.",
+  },
+  {
+    status: "next",
+    title: "Download margin money slip",
+    description: "Give this slip to your bank to release funds to the dealer.",
+  },
+  {
+    status: "next",
+    title: "Confirm disbursement from bank",
+    description: "Share the payment reference number when your bank transfers the money.",
+  },
+];
+
+const SELF_FINANCE_MARGIN_SLIP_SUBSTEPS: Substep[] = [
+  {
+    status: "done",
+    title: "Download proforma invoice",
+    description: `Completed on ${SELF_FINANCE_PROFORMA_COMPLETED_ON}.`,
+  },
+  {
+    status: "done",
+    title: "Declare loan disbursement amount",
+    description: `Completed on ${SELF_FINANCE_DECLARE_DISBURSEMENT_COMPLETED_ON}.`,
+  },
+  {
+    status: "done",
+    title: "Downpayment",
+    description: `Completed on ${SELF_FINANCE_DOWN_PAYMENT_COMPLETED_ON}.`,
+  },
+  {
+    status: "in_progress",
+    title: "Download margin money slip",
+    description: "Give this slip to your bank to release funds to the dealer.",
+  },
+  {
+    status: "next",
+    title: "Confirm disbursement from bank",
+    description: "Share the payment reference number when your bank transfers the money.",
+  },
+];
+
 function paymentSectionSubtitle(variant: LoanProcessingWhatsNextVariant): string {
-  return variant === "self_finance_action" ? SELF_FINANCE_ACTION_PAYMENT_SUBTITLE : PAYMENT_SUBTITLE;
+  return variant === "self_finance_action" ||
+    variant === "self_finance_down_payment" ||
+    variant === "self_finance_margin_slip"
+    ? SELF_FINANCE_ACTION_PAYMENT_SUBTITLE
+    : PAYMENT_SUBTITLE;
 }
 
 /** Aligns with `WhatsNextTimeline` / KYC booking — first journey step before payment (done). */
@@ -331,6 +404,8 @@ function carDeliveryNestedSubsteps(
 }
 
 function substepsForVariant(variant: LoanProcessingWhatsNextVariant): Substep[] {
+  if (variant === "self_finance_margin_slip") return SELF_FINANCE_MARGIN_SLIP_SUBSTEPS;
+  if (variant === "self_finance_down_payment") return SELF_FINANCE_DOWN_PAYMENT_SUBSTEPS;
   if (variant === "self_finance_action") return SELF_FINANCE_ACTION_PAYMENT_SUBSTEPS;
   if (variant === "sanctioned") return SANCTIONED_SUBSTEPS;
   if (variant === "down_payment") return DOWN_PAYMENT_SUBSTEPS;
@@ -437,14 +512,21 @@ export function LoanProcessingWhatsNext({
 
   const substeps = useMemo(() => {
     const base = substepsForVariant(variant);
-    if (variant !== "down_payment" || !downPaymentInProgressDescription) {
-      return base;
+    if (variant === "down_payment" && downPaymentInProgressDescription) {
+      return base.map((s) =>
+        s.title === "Down payment" && s.status === "in_progress"
+          ? { ...s, description: downPaymentInProgressDescription }
+          : s,
+      );
     }
-    return base.map((s) =>
-      s.title === "Down payment" && s.status === "in_progress"
-        ? { ...s, description: downPaymentInProgressDescription }
-        : s,
-    );
+    if (variant === "self_finance_down_payment" && downPaymentInProgressDescription) {
+      return base.map((s) =>
+        s.title === "Downpayment" && s.status === "in_progress"
+          ? { ...s, description: downPaymentInProgressDescription }
+          : s,
+      );
+    }
+    return base;
   }, [variant, downPaymentInProgressDescription]);
 
   const deliveryNestedSteps = useMemo(() => carDeliveryNestedSubsteps(variant), [variant]);

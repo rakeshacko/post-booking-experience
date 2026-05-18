@@ -43,3 +43,23 @@ export function buildDownPaymentSuccessHref(params: {
   q.set("remaining", String(Math.round(params.remainingAfter)));
   return `/payment/down-payment-success?${q.toString()}`;
 }
+
+/** Self finance — after full down payment, margin money slip step (`/payment/margin-money-slip`). */
+export function buildMarginMoneySlipActionHref(params: {
+  bank: string | null;
+  loanAmount: string | null;
+  originalDownPaymentInr?: number | null;
+}): string {
+  const q = new URLSearchParams();
+  if (params.bank) q.set("bank", params.bank);
+  if (params.loanAmount) q.set("loan_amount", params.loanAmount);
+  if (
+    params.originalDownPaymentInr != null &&
+    Number.isFinite(params.originalDownPaymentInr) &&
+    params.originalDownPaymentInr > 0
+  ) {
+    q.set("original_down_payment", String(Math.round(params.originalDownPaymentInr)));
+  }
+  const qs = q.toString();
+  return qs ? `/payment/margin-money-slip?${qs}` : "/payment/margin-money-slip";
+}
