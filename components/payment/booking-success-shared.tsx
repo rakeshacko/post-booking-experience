@@ -1,10 +1,10 @@
 import Image from "next/image";
 
 import hyundaiCretaThumb from "@/assets/Hyundai Creta.png";
+import bookingSuccessTickLottie from "@/assets/booking-success-tick.json";
 
-/** Remote Lottie JSON for booking payment success tick. */
-export const BOOKING_SUCCESS_LOTTIE_TICK_URL =
-  "https://lottie.host/2487840b-b4dd-4475-a409-663cd2b9403b/C1cWv7yapl.json";
+/** Bundled Lottie for booking payment success tick (was remote `lottie.host`). */
+export const BOOKING_SUCCESS_LOTTIE_TICK_DATA = bookingSuccessTickLottie as unknown;
 
 /** Same top hero art as down payment success / booking confirmation. */
 export const BOOKING_PAYMENT_SUCCESS_HERO = "/assets/acko-drive-finance-hero-gradient.svg";
@@ -13,9 +13,6 @@ export const BOOKING_PAYMENT_SUCCESS_NEXT_PATH = "/payment/booking-success/next"
 
 /** Playback speed for the tick Lottie (under 1 = slower). */
 export const BOOKING_SUCCESS_LOTTIE_PLAYBACK_SPEED = 0.95;
-
-/** If Lottie JSON fails to load, reveal headline after static ✓ has been visible this long. */
-export const BOOKING_SUCCESS_FALLBACK_HEADLINE_REVEAL_MS = 500;
 
 /** After headline + subtext finish revealing, wait this long before showing the car card. */
 export const BOOKING_SUCCESS_REVEAL_CAR_AFTER_HEADLINE_MS = 300;

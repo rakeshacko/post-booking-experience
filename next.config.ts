@@ -10,13 +10,6 @@ const nextConfig: NextConfig = {
   // Legacy URLs are handled by app/kyc/car-allocation-* routes.
   images: {
     unoptimized: true,
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "www.figma.com",
-        pathname: "/api/mcp/**",
-      },
-    ],
   },
 };
 

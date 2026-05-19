@@ -14,7 +14,8 @@ Open [http://localhost:3000](http://localhost:3000) (redirects to `/quote`).
 ## GitHub Pages (static build)
 
 Production builds use **`output: 'export'`** and **`basePath: /post-booking-experience`**. After `npm run build`, the site is in **`out/`** (start with **`out/index.html`**). CI deploys via [`.github/workflows/deploy-github-pages.yml`](.github/workflows/deploy-github-pages.yml) on pushes to **`main`**; in **Settings → Pages**, set the source to **GitHub Actions**.  
-Live site: [https://sharath-hv.github.io/post-booking-experience/](https://sharath-hv.github.io/post-booking-experience/)
+Live site: [https://sharath-hv.github.io/post-booking-experience/](https://sharath-hv.github.io/post-booking-experience/)  
+Raster/SVG UI art lives under **`assets/`** (imported in code). **`public/.nojekyll`** is included so GitHub Pages does not strip the **`_next/`** build output.
 
 ## Typography (Euclid Circular B)
 

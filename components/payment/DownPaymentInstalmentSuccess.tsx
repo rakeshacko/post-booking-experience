@@ -1,14 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Lottie from "lottie-react";
 
+import { BOOKING_SUCCESS_LOTTIE_TICK_DATA } from "@/components/payment/booking-success-shared";
 import { SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS } from "@/components/ui/success-screen-layout";
-
-const LOTTIE_TICK_URL =
-  "https://lottie.host/2487840b-b4dd-4475-a409-663cd2b9403b/C1cWv7yapl.json";
 
 const BOOKING_PAYMENT_SUCCESS_HERO = "/assets/acko-drive-finance-hero-gradient.svg";
 
@@ -26,22 +24,6 @@ export type DownPaymentInstalmentSuccessProps = {
  */
 export function DownPaymentInstalmentSuccess({ subline, nextHref }: DownPaymentInstalmentSuccessProps) {
   const router = useRouter();
-  const [lottieData, setLottieData] = useState<unknown>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch(LOTTIE_TICK_URL)
-      .then((res) => res.json())
-      .then((data) => {
-        if (!cancelled) setLottieData(data);
-      })
-      .catch(() => {
-        if (!cancelled) setLottieData(null);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   useEffect(() => {
     const redirect = window.setTimeout(() => {
@@ -69,9 +51,9 @@ export function DownPaymentInstalmentSuccess({ subline, nextHref }: DownPaymentI
       <div className="relative z-10 flex min-h-dvh flex-col items-center justify-center px-4 pb-8 pt-8">
         <div className="-translate-y-8 flex w-full max-w-md flex-col items-center text-center">
           <div className="relative flex h-[144px] w-[144px] shrink-0 items-center justify-center">
-            {lottieData ? (
+            {BOOKING_SUCCESS_LOTTIE_TICK_DATA ? (
               <Lottie
-                animationData={lottieData}
+                animationData={BOOKING_SUCCESS_LOTTIE_TICK_DATA}
                 loop={false}
                 className="h-full w-full"
                 aria-label="Payment received animation"
