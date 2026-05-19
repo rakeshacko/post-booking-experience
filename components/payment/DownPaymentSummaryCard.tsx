@@ -1,6 +1,8 @@
 "use client";
 
 export type DownPaymentSummaryCardProps = {
+  /** When `full_payment`, row labels match the full-payment journey. */
+  variant?: "down_payment" | "full_payment";
   /** Total down payment commitment (e.g. ₹3,63,780). */
   downPaymentTotalInr: number;
   /** Already paid across instalments so far (e.g. ₹1,00,000). */
@@ -22,19 +24,26 @@ function formatInr(amount: number) {
  * Mirrors Figma node 2154:7510 — total / paid / dashed divider / remaining (emphasised).
  */
 export function DownPaymentSummaryCard({
+  variant = "down_payment",
   downPaymentTotalInr,
   amountPaidInr,
   remainingAmountInr,
 }: DownPaymentSummaryCardProps) {
+  const totalLabel =
+    variant === "full_payment" ? "Amount for your new car" : "Down payment amount";
+  const paidLabel = variant === "full_payment" ? "Paid so far" : "Amount paid";
+  const ariaLabel =
+    variant === "full_payment" ? "Full payment summary" : "Down payment summary";
+
   return (
     <section
       className="w-full rounded-xl border border-[#e8e8e8] bg-white px-3 py-3 text-left"
-      aria-label="Down payment summary"
+      aria-label={ariaLabel}
     >
       <dl className="m-0 flex flex-col gap-[12px]">
         <div className="flex items-center justify-between gap-3">
           <dt className="text-xs font-normal leading-[18px] text-[#121212]">
-            Down payment amount
+            {totalLabel}
           </dt>
           <dd className="text-xs font-medium leading-[18px] text-[#121212]">
             {formatInr(downPaymentTotalInr)}
@@ -42,7 +51,7 @@ export function DownPaymentSummaryCard({
         </div>
         <div className="flex items-center justify-between gap-3">
           <dt className="text-xs font-normal leading-[18px] text-[#121212]">
-            Amount paid
+            {paidLabel}
           </dt>
           <dd className="text-xs font-medium leading-[18px] text-[#121212]">
             {formatInr(amountPaidInr)}

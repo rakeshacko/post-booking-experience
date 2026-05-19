@@ -36,8 +36,9 @@ Living document: update this file when flows, routes, or UI behavior change.
 | `/payment/booking-success/next` | Shivi RM intro + fixed **Up next:** + **Continue** → `/kyc` |
 | `/kyc` | KYC hub / redirect |
 | `/kyc/upload` | Document upload |
-| `/kyc/processing` | Processing |
 | `/kyc/documents-received` | Documents received |
+| `/kyc/verification-in-progress` | KYC verification in progress (between documents received and processing) |
+| `/kyc/processing` | Processing |
 | `/kyc/booking-confirmed` | Booking confirmed |
 | `/car-allocation/pending` | Car allocation in progress (“matching stock”) |
 | `/car-allocation/confirmed` | Car allocated celebration; **Okay** → `/payment/default` |

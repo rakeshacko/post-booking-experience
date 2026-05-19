@@ -7,6 +7,7 @@ import { useCallback, useState, type ReactNode } from "react";
 import { GetHelpPillButton } from "@/components/kyc/GetHelpPillButton";
 import { KycTopNavHeader } from "@/components/kyc/KycTopNavHeader";
 import { BankSelectionBottomSheet } from "@/components/payment/BankSelectionBottomSheet";
+import { FullPaymentConfirmBottomSheet } from "@/components/payment/FullPaymentConfirmBottomSheet";
 import { SelfFinanceConfirmBottomSheet } from "@/components/payment/SelfFinanceConfirmBottomSheet";
 import {
   PARTNER_BANK_LOGOS,
@@ -131,10 +132,7 @@ export function ChoosePaymentOptionsScreen() {
   const [choice, setChoice] = useState<PaymentOptionId>("acko_drive");
   const [bankSheetOpen, setBankSheetOpen] = useState(false);
   const [selfFinanceConfirmOpen, setSelfFinanceConfirmOpen] = useState(false);
-
-  const goToPayment = useCallback(() => {
-    router.push("/payment");
-  }, [router]);
+  const [fullPaymentConfirmOpen, setFullPaymentConfirmOpen] = useState(false);
 
   const onContinue = useCallback(() => {
     if (choice === "acko_drive") {
@@ -145,8 +143,13 @@ export function ChoosePaymentOptionsScreen() {
       setSelfFinanceConfirmOpen(true);
       return;
     }
-    goToPayment();
-  }, [choice, goToPayment]);
+    setFullPaymentConfirmOpen(true);
+  }, [choice]);
+
+  const onFullPaymentConfirm = useCallback(() => {
+    setFullPaymentConfirmOpen(false);
+    router.push("/payment/full-payment-confirmed");
+  }, [router]);
 
   const onSelfFinanceConfirm = useCallback(() => {
     setSelfFinanceConfirmOpen(false);
@@ -262,6 +265,12 @@ export function ChoosePaymentOptionsScreen() {
         open={selfFinanceConfirmOpen}
         onClose={() => setSelfFinanceConfirmOpen(false)}
         onConfirm={onSelfFinanceConfirm}
+      />
+
+      <FullPaymentConfirmBottomSheet
+        open={fullPaymentConfirmOpen}
+        onClose={() => setFullPaymentConfirmOpen(false)}
+        onConfirm={onFullPaymentConfirm}
       />
     </div>
   );

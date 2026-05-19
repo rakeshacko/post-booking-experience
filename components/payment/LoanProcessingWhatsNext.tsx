@@ -17,6 +17,10 @@ export type LoanProcessingWhatsNextVariant =
   | "sanctioned"
   | "down_payment"
   | "down_payment_complete"
+  /** Full payment — pay-full-payment hero; car payment in progress (no loan substeps). */
+  | "full_payment"
+  /** Full payment — car payment complete; car delivery prep active (no loan substeps). */
+  | "full_payment_complete"
   | "delivery_insurance_prep"
   /** Insurance issued; RTO registration in progress (next screen after insurance prep). */
   | "delivery_rto_prep"
@@ -45,7 +49,26 @@ export type LoanProcessingWhatsNextProps = {
    * Example: “Pay ₹3,00,000 before 31 March”.
    */
   downPaymentInProgressDescription?: string;
+  /**
+   * Extra line under Payment on `full_payment` when there are no nested substeps (e.g. remaining due).
+   */
+  paymentInProgressDescription?: string;
+  /**
+   * Full-payment journey — payment step shows “paid in full” copy with no loan nested steps.
+   * Set from `?bank=full_payment` on post-payment delivery screens.
+   */
+  fullPaymentJourney?: boolean;
 };
+
+/** Loan-style nested payment rail (skipped when `fullPaymentJourney` is true). */
+function variantUsesLoanPaymentSubsteps(variant: LoanProcessingWhatsNextVariant): boolean {
+  return (
+    variant === "down_payment_complete" ||
+    variant === "delivery_insurance_prep" ||
+    variant === "delivery_rto_prep" ||
+    variant === "delivery_schedule_prep"
+  );
+}
 
 type SubstepStatus = "done" | "in_progress" | "next";
 
@@ -68,6 +91,8 @@ const NESTED_RAIL_LINE_BASE_CLASS =
 const NESTED_SUBSTEP_ROW_CLASS = "grid grid-cols-[24px_1fr] items-start gap-x-3";
 
 const PAYMENT_SUBTITLE = "You're financing your car through ACKO Drive.";
+
+const FULL_PAYMENT_SUBTITLE = "You paid in full — no loan or EMI.";
 
 const SELF_FINANCE_ACTION_PAYMENT_SUBTITLE =
   "Follow these steps to arrange financing with your bank.";
@@ -163,11 +188,17 @@ const SELF_FINANCE_MARGIN_SLIP_SUBSTEPS: Substep[] = [
 ];
 
 function paymentSectionSubtitle(variant: LoanProcessingWhatsNextVariant): string {
-  return variant === "self_finance_action" ||
+  if (variant === "full_payment" || variant === "full_payment_complete") {
+    return FULL_PAYMENT_SUBTITLE;
+  }
+  if (
+    variant === "self_finance_action" ||
     variant === "self_finance_down_payment" ||
     variant === "self_finance_margin_slip"
-    ? SELF_FINANCE_ACTION_PAYMENT_SUBTITLE
-    : PAYMENT_SUBTITLE;
+  ) {
+    return SELF_FINANCE_ACTION_PAYMENT_SUBTITLE;
+  }
+  return PAYMENT_SUBTITLE;
 }
 
 /** Aligns with `WhatsNextTimeline` / KYC booking — first journey step before payment (done). */
@@ -392,6 +423,7 @@ function carDeliveryNestedSubsteps(
   variant: LoanProcessingWhatsNextVariant,
 ): Substep[] | null {
   switch (variant) {
+    case "full_payment_complete":
     case "delivery_insurance_prep":
       return CAR_DELIVERY_PREP_SUBSTEPS;
     case "delivery_rto_prep":
@@ -410,6 +442,7 @@ function substepsForVariant(variant: LoanProcessingWhatsNextVariant): Substep[] 
   if (variant === "sanctioned") return SANCTIONED_SUBSTEPS;
   if (variant === "down_payment") return DOWN_PAYMENT_SUBSTEPS;
   if (variant === "down_payment_complete") return DOWN_PAYMENT_COMPLETE_SUBSTEPS;
+  if (variant === "full_payment" || variant === "full_payment_complete") return [];
   if (
     variant === "delivery_insurance_prep" ||
     variant === "delivery_rto_prep" ||
@@ -425,6 +458,7 @@ function mainStageStatuses(variant: LoanProcessingWhatsNextVariant): {
   carDelivery: SubstepStatus;
 } {
   if (
+    variant === "full_payment_complete" ||
     variant === "delivery_insurance_prep" ||
     variant === "delivery_rto_prep" ||
     variant === "delivery_schedule_prep"
@@ -504,14 +538,25 @@ function computeNestedRailLines(
 export function LoanProcessingWhatsNext({
   variant = "processing",
   downPaymentInProgressDescription,
+  paymentInProgressDescription,
+  fullPaymentJourney = false,
 }: LoanProcessingWhatsNextProps) {
   const { payment: mainPaymentStatus, carDelivery: mainCarDeliveryStatus } = useMemo(
     () => mainStageStatuses(variant),
     [variant],
   );
 
+  const paymentSubtitle = useMemo(
+    () =>
+      fullPaymentJourney ? FULL_PAYMENT_SUBTITLE : paymentSectionSubtitle(variant),
+    [fullPaymentJourney, variant],
+  );
+
   const substeps = useMemo(() => {
-    const base = substepsForVariant(variant);
+    const base =
+      fullPaymentJourney && variantUsesLoanPaymentSubsteps(variant)
+        ? []
+        : substepsForVariant(variant);
     if (variant === "down_payment" && downPaymentInProgressDescription) {
       return base.map((s) =>
         s.title === "Down payment" && s.status === "in_progress"
@@ -527,10 +572,11 @@ export function LoanProcessingWhatsNext({
       );
     }
     return base;
-  }, [variant, downPaymentInProgressDescription]);
+  }, [variant, downPaymentInProgressDescription, fullPaymentJourney]);
 
   const deliveryNestedSteps = useMemo(() => carDeliveryNestedSubsteps(variant), [variant]);
 
+  const showPaymentNested = substeps.length > 0;
   const showCarDeliveryNested = deliveryNestedSteps != null;
 
   /** Defaults: in-progress main step open, done main step closed; user can toggle. */
@@ -714,10 +760,11 @@ export function LoanProcessingWhatsNext({
           <div className="min-w-0 flex-1 border-t border-solid border-[#e8e8e8]" role="separator" />
         </div>
 
-        <button
-          type="button"
-          className="relative z-[1] flex w-full items-start gap-3 rounded-lg text-left outline-none focus-visible:ring-2 focus-visible:ring-[#121212]/20 focus-visible:ring-offset-2"
-          onClick={togglePayment}
+        {showPaymentNested ? (
+          <button
+            type="button"
+            className="relative z-[1] flex w-full items-start gap-3 rounded-lg text-left outline-none focus-visible:ring-2 focus-visible:ring-[#121212]/20 focus-visible:ring-offset-2"
+            onClick={togglePayment}
           aria-expanded={paymentExpanded}
           aria-controls="loan-payment-substeps"
           id="loan-payment-section-toggle"
@@ -749,11 +796,34 @@ export function LoanProcessingWhatsNext({
                 />
               </span>
             </span>
-            <p className="mt-1 text-xs leading-[18px] text-[#757575]">{paymentSectionSubtitle(variant)}</p>
+            <p className="mt-1 text-xs leading-[18px] text-[#757575]">{paymentSubtitle}</p>
           </span>
-        </button>
+          </button>
+        ) : (
+          <div className="relative z-[1] flex gap-3">
+            <div
+              ref={payIconRef}
+              className="relative mt-0.5 flex h-6 w-6 shrink-0 justify-center bg-white"
+            >
+              <StepStatusIcon status={mainPaymentStatus} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p
+                className={`text-sm leading-5 text-[#121212] ${stageTitleWeightClass(mainPaymentStatus)}`}
+              >
+                Payment
+              </p>
+              <p className="mt-1 text-xs leading-[18px] text-[#757575]">{paymentSubtitle}</p>
+              {paymentInProgressDescription ? (
+                <p className="mt-1 text-xs leading-[18px] text-[#757575]">
+                  {paymentInProgressDescription}
+                </p>
+              ) : null}
+            </div>
+          </div>
+        )}
 
-        {paymentExpanded ? (
+        {showPaymentNested && paymentExpanded ? (
           <div className="relative z-[1] mt-4 flex gap-3">
             <div className="mt-0.5 w-6 shrink-0 bg-transparent" aria-hidden />
             <div ref={nestedRef} className={NESTED_SUBSTEPS_CONTAINER_CLASS}>

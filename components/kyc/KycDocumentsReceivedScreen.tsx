@@ -24,7 +24,7 @@ function DocumentsSuccessIllustration() {
 }
 
 type KycDocumentsReceivedScreenProps = {
-  /** Primary CTA destination (KYC flow defaults to processing). */
+  /** Primary CTA destination (KYC flow defaults to verification in progress). */
   okayHref?: string;
 };
 
@@ -32,7 +32,7 @@ type KycDocumentsReceivedScreenProps = {
  * Documents received — Figma Post-booking-experience / node 1880:6801.
  */
 export function KycDocumentsReceivedScreen({
-  okayHref = "/kyc/processing",
+  okayHref = "/kyc/verification-in-progress",
 }: KycDocumentsReceivedScreenProps) {
   const router = useRouter();
 

@@ -1,6 +1,65 @@
 /** Booking lock amount on `/payment` without `down_payment` (read-only checkout). */
 export const BOOKING_LOCK_AMOUNT_INR = 10_000;
 
+/** Query `bank` value for full-payment checkout and success redirects. */
+export const FULL_PAYMENT_BANK_ID = "full_payment";
+
+/**
+ * Builds `/payment?bank=full_payment&down_payment=…` — mock checkout for full payment (instalments demo).
+ */
+export function buildFullPaymentCheckoutHref(
+  amountDue: string,
+  originalFullPaymentInr?: string | null,
+): string {
+  const q = new URLSearchParams();
+  q.set("bank", FULL_PAYMENT_BANK_ID);
+  q.set("down_payment", amountDue);
+  if (
+    originalFullPaymentInr != null &&
+    originalFullPaymentInr !== "" &&
+    originalFullPaymentInr !== amountDue
+  ) {
+    q.set("original_down_payment", originalFullPaymentInr);
+  }
+  return `/payment?${q.toString()}`;
+}
+
+/**
+ * Builds `/payment/pay-full-payment?…` — action screen after a partial full-payment instalment.
+ */
+export function buildPayFullPaymentHref(
+  remainingInr: number,
+  originalFullPaymentInr?: number | null,
+): string {
+  const q = new URLSearchParams();
+  q.set("bank", FULL_PAYMENT_BANK_ID);
+  const rem = Math.round(remainingInr);
+  q.set("down_payment", String(rem));
+  const orig =
+    originalFullPaymentInr != null && Number.isFinite(originalFullPaymentInr)
+      ? Math.round(originalFullPaymentInr)
+      : null;
+  if (orig != null && orig > 0 && orig !== rem) {
+    q.set("original_down_payment", String(orig));
+  }
+  return `/payment/pay-full-payment?${q.toString()}`;
+}
+
+/** Post–payment setup hero (`/payment/down-payment-insurance-setup`). */
+export function buildInsuranceSetupHref(bank: string | null): string {
+  if (bank === FULL_PAYMENT_BANK_ID) {
+    return `/payment/down-payment-insurance-setup?bank=${encodeURIComponent(FULL_PAYMENT_BANK_ID)}`;
+  }
+  return "/payment/down-payment-insurance-setup";
+}
+
+/** Appends `bank=full_payment` for downstream delivery screens in the full-payment journey. */
+export function appendFullPaymentBankQuery(path: string, bank: string | null): string {
+  if (bank !== FULL_PAYMENT_BANK_ID) return path;
+  const separator = path.includes("?") ? "&" : "?";
+  return `${path}${separator}bank=${encodeURIComponent(FULL_PAYMENT_BANK_ID)}`;
+}
+
 /**
  * Builds `/payment/pay-down-payment?…` — action screen after a partial instalment (shows remaining + CTA).
  * Pass `originalDownPaymentInr` when remaining is part of a larger commitment so the screen can show progress.

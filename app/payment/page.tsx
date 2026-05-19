@@ -6,7 +6,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { KycTopNavHeader } from "@/components/kyc/KycTopNavHeader";
 import { DefaultPageTransition } from "@/components/ui/page-transition";
 
-import { BOOKING_LOCK_AMOUNT_INR, buildDownPaymentSuccessHref } from "@/lib/paymentUrls";
+import {
+  BOOKING_LOCK_AMOUNT_INR,
+  buildDownPaymentSuccessHref,
+  FULL_PAYMENT_BANK_ID,
+} from "@/lib/paymentUrls";
 
 /** No artificial delay before navigation to the dedicated success page. */
 const PROCESSING_MS = 0;
@@ -33,13 +37,18 @@ function parseDownPaymentTotalFromSearchParams(searchParams: URLSearchParams): n
   return BOOKING_LOCK_AMOUNT_INR;
 }
 
-function readStoredRemaining(totalDue: number): number {
+function readStoredRemaining(totalDue: number, bank: string | null): number {
   if (typeof window === "undefined") return totalDue;
   try {
     const raw = sessionStorage.getItem(PAYMENT_LEDGER_STORAGE_KEY);
     if (!raw) return totalDue;
-    const parsed = JSON.parse(raw) as { totalDue?: number; remaining?: number };
-    if (parsed.totalDue !== totalDue) return totalDue;
+    const parsed = JSON.parse(raw) as {
+      bank?: string | null;
+      totalDue?: number;
+      remaining?: number;
+    };
+    const storedBank = parsed.bank ?? null;
+    if (storedBank !== bank || parsed.totalDue !== totalDue) return totalDue;
     const r = Number(parsed.remaining);
     if (!Number.isFinite(r)) return totalDue;
     const clamped = Math.min(totalDue, Math.max(0, Math.round(r)));
@@ -58,7 +67,11 @@ function readStoredRemaining(totalDue: number): number {
   }
 }
 
-function writeStoredRemaining(totalDue: number, remaining: number): void {
+function writeStoredRemaining(
+  totalDue: number,
+  remaining: number,
+  bank: string | null,
+): void {
   if (typeof window === "undefined") return;
   try {
     if (remaining <= 0) {
@@ -67,7 +80,7 @@ function writeStoredRemaining(totalDue: number, remaining: number): void {
     }
     sessionStorage.setItem(
       PAYMENT_LEDGER_STORAGE_KEY,
-      JSON.stringify({ totalDue, remaining }),
+      JSON.stringify({ bank, totalDue, remaining }),
     );
   } catch {
     /* ignore quota / private mode */
@@ -104,17 +117,24 @@ function MockRazorpayPaymentPageContent() {
     const origN = origRaw != null && origRaw !== "" ? Number(origRaw) : NaN;
     const originalDownPayment =
       hasDownPaymentParam && Number.isFinite(origN) && origN > 0 ? Math.round(origN) : due;
+    const isFullPayment = searchParams.get("bank") === FULL_PAYMENT_BANK_ID;
     return {
       totalDue: due,
       originalDownPayment,
       checkoutSubtitle: hasDownPaymentParam
-        ? "Down payment · incl. applicable taxes"
+        ? isFullPayment
+          ? "Full payment · incl. applicable taxes"
+          : "Down payment · incl. applicable taxes"
         : "Booking lock amount · incl. applicable taxes",
       isDownPaymentFromUrl: hasDownPaymentParam,
+      isFullPayment,
     };
   }, [searchParams]);
 
-  const { totalDue, originalDownPayment, checkoutSubtitle, isDownPaymentFromUrl } = checkoutMeta;
+  const { totalDue, originalDownPayment, checkoutSubtitle, isDownPaymentFromUrl, isFullPayment } =
+    checkoutMeta;
+
+  const paymentBank = searchParams.get("bank");
 
   const [remainingDue, setRemainingDue] = useState(totalDue);
   const [amountInput, setAmountInput] = useState("");
@@ -124,8 +144,8 @@ function MockRazorpayPaymentPageContent() {
 
   useEffect(() => {
     if (!isDownPaymentFromUrl) return;
-    setRemainingDue(readStoredRemaining(totalDue));
-  }, [totalDue, isDownPaymentFromUrl]);
+    setRemainingDue(readStoredRemaining(totalDue, paymentBank));
+  }, [totalDue, isDownPaymentFromUrl, paymentBank]);
 
   useEffect(() => {
     if (!isDownPaymentFromUrl || phase !== "checkout") return;
@@ -202,7 +222,7 @@ function MockRazorpayPaymentPageContent() {
       return;
     }
     const remainingAfter = Math.max(0, remainingDue - n);
-    writeStoredRemaining(totalDue, remainingAfter);
+    writeStoredRemaining(totalDue, remainingAfter, paymentBank);
     setRemainingDue(remainingAfter);
     pendingSuccessHref.current = buildDownPaymentSuccessHref({
       bank: searchParams.get("bank"),
@@ -216,7 +236,15 @@ function MockRazorpayPaymentPageContent() {
       return;
     }
     setPhase("processing");
-  }, [amountInput, isDownPaymentFromUrl, originalDownPayment, remainingDue, router, searchParams]);
+  }, [
+    amountInput,
+    isDownPaymentFromUrl,
+    originalDownPayment,
+    paymentBank,
+    remainingDue,
+    router,
+    searchParams,
+  ]);
 
   if (phase === "processing") {
     return (
@@ -302,7 +330,10 @@ function MockRazorpayPaymentPageContent() {
                 )}
                 <p className="mt-3 text-center text-xs text-[#6b7280]">{checkoutSubtitle}</p>
                 <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center text-xs text-[#6b7280]">
-                  <span>Down payment (plan) {formatInr(originalDownPayment)}</span>
+                  <span>
+                    {isFullPayment ? "Full amount due" : "Down payment (plan)"}{" "}
+                    {formatInr(originalDownPayment)}
+                  </span>
                   {remainingDue < originalDownPayment ? (
                     <>
                       <span aria-hidden className="text-[#d1d5db]">

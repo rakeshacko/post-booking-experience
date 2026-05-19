@@ -7,11 +7,12 @@ import { DownPaymentInstalmentSuccess } from "@/components/payment/DownPaymentIn
 import { CelebrationPageTransition } from "@/components/ui/page-transition";
 
 import {
+  buildInsuranceSetupHref,
   buildMarginMoneySlipActionHref,
   buildPayDownPaymentHref,
+  buildPayFullPaymentHref,
+  FULL_PAYMENT_BANK_ID,
 } from "@/lib/paymentUrls";
-
-const INSURANCE_SETUP_PATH = "/payment/down-payment-insurance-setup";
 
 function formatInr(amount: number) {
   return new Intl.NumberFormat("en-IN", {
@@ -44,7 +45,10 @@ function DownPaymentSuccessInner() {
       if (remaining > 0) {
         return {
           subline: `We’ve received ${formatInr(paid)}.`,
-          nextHref: buildPayDownPaymentHref(bank, loanAmount, remaining, original),
+          nextHref:
+            bank === FULL_PAYMENT_BANK_ID
+              ? buildPayFullPaymentHref(remaining, original)
+              : buildPayDownPaymentHref(bank, loanAmount, remaining, original),
         };
       }
       return {
@@ -56,13 +60,16 @@ function DownPaymentSuccessInner() {
               loanAmount,
               originalDownPaymentInr: original,
             })
-          : INSURANCE_SETUP_PATH,
+          : buildInsuranceSetupHref(bank),
       };
     }
 
     if (original != null) {
+      const isFullPayment = bank === FULL_PAYMENT_BANK_ID;
       return {
-        subline: `${formatInr(original)} down payment received.`,
+        subline: isFullPayment
+          ? `${formatInr(original)} full payment received.`
+          : `${formatInr(original)} down payment received.`,
         nextHref:
           bank === "self_finance"
             ? buildMarginMoneySlipActionHref({
@@ -70,13 +77,13 @@ function DownPaymentSuccessInner() {
                 loanAmount,
                 originalDownPaymentInr: original,
               })
-            : INSURANCE_SETUP_PATH,
+            : buildInsuranceSetupHref(bank),
       };
     }
 
     return {
       subline: "Your payment was received.",
-      nextHref: INSURANCE_SETUP_PATH,
+      nextHref: buildInsuranceSetupHref(bank),
     };
   }, [searchParams]);
 
