@@ -31,7 +31,9 @@ export default function RootLayout({
       </head>
       <body className="min-h-dvh font-sans antialiased">
         <AnimationProvider>
-          {children}
+          <div className="relative mx-auto flex min-h-dvh w-full max-w-[640px] flex-col">
+            {children}
+          </div>
         </AnimationProvider>
       </body>
     </html>

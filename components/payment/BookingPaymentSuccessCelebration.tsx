@@ -121,7 +121,7 @@ export function BookingPaymentSuccessCelebration({ subline }: Props) {
   return (
     <div className="relative min-h-dvh overflow-hidden bg-white font-sans">
       <div
-        className="pointer-events-none absolute left-1/2 top-0 h-[240px] w-full max-w-[360px] -translate-x-1/2"
+        className="pointer-events-none absolute left-1/2 top-0 h-[240px] w-full max-w-[640px] -translate-x-1/2"
         aria-hidden
       >
         <Image
@@ -130,13 +130,13 @@ export function BookingPaymentSuccessCelebration({ subline }: Props) {
           fill
           className="object-cover object-top"
           priority
-          sizes="360px"
+          sizes="(max-width: 640px) 100vw, 640px"
           unoptimized
         />
       </div>
 
       <div className="relative z-10 flex min-h-dvh w-full flex-col justify-center px-4">
-        <div className="mx-auto flex w-full max-w-md -translate-y-10 flex-col items-center">
+        <div className="mx-auto flex w-full -translate-y-10 flex-col items-center">
           {lottieBlock}
           {titleBlock}
           <motion.div
@@ -146,7 +146,7 @@ export function BookingPaymentSuccessCelebration({ subline }: Props) {
               y: showCarCard ? 0 : 10,
             }}
             transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-            className={`w-full max-w-md px-0 pt-8 ${!showCarCard ? "pointer-events-none" : ""}`}
+            className={`w-full px-0 pt-8 ${!showCarCard ? "pointer-events-none" : ""}`}
             aria-hidden={!showCarCard ? true : undefined}
           >
             <BookingSuccessCarCard compact={false} />

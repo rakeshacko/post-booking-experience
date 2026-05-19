@@ -62,7 +62,7 @@ export function AckoDriveFinanceConfirmedScreen() {
       />
 
       <div className="relative z-10 flex min-h-dvh flex-col justify-start pt-[64px] transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)]">
-        <main className="mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col overflow-y-auto px-4 pb-[calc(112px+32px+env(safe-area-inset-bottom))] transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)]">
+        <main className="mx-auto flex min-h-0 w-full flex-1 flex-col overflow-y-auto px-4 pb-[calc(112px+32px+env(safe-area-inset-bottom))] transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)]">
           <div className="flex w-full flex-col items-center">
             <div className="relative flex h-[96px] w-[96px] shrink-0 items-center justify-center">
               <Lottie
@@ -75,7 +75,7 @@ export function AckoDriveFinanceConfirmedScreen() {
 
             {showHeader && (
               <div
-                className={`payment-success-stagger mt-5 flex w-full max-w-[320px] flex-col items-center ${SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS}`}
+                className={`payment-success-stagger mt-5 flex w-full flex-col items-center ${SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS}`}
               >
                 <h1 className="text-center text-2xl font-semibold leading-8 tracking-[-0.1px] text-[#121212]">
                   <span className="block">You&apos;re financing with</span>
@@ -128,7 +128,7 @@ export function AckoDriveFinanceConfirmedScreen() {
           className="payment-success-stagger fixed inset-x-0 bottom-0 z-20 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_6px_0_rgba(54,53,76,0.08)]"
           style={{ animationDelay: "120ms" }}
         >
-          <div className="mx-auto flex h-[112px] w-full max-w-[360px] flex-col">
+          <div className="mx-auto flex h-[112px] w-full max-w-[640px] flex-col">
             <div className="flex h-8 w-full shrink-0 items-center justify-center bg-[#fff7e5] px-5">
               <p className="text-center text-xs leading-[18px] text-[#121212]">
                 <span className="font-medium">Up next:</span>
@@ -138,7 +138,7 @@ export function AckoDriveFinanceConfirmedScreen() {
             <div className="flex min-h-20 flex-1 items-start justify-center bg-white px-5 pt-3">
               <button
                 type="button"
-                className="primary-cta max-w-[320px] rounded-lg focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#121212]/30 focus-visible:ring-offset-2"
+                className="primary-cta w-full rounded-lg focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#121212]/30 focus-visible:ring-offset-2"
                 onClick={() =>
                   router.push(
                     `/payment/loan-documents-upload?bank=${encodeURIComponent(bank.id)}`,

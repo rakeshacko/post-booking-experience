@@ -97,17 +97,17 @@ export function EnterSanctionedLoanAmountScreen() {
     <div className="flex min-h-dvh flex-col bg-white font-sans">
       <KycTopNavHeader transparent endSlot={<GetHelpPillButton />} />
 
-      <main className="mx-auto flex min-h-0 w-full max-w-[360px] flex-1 flex-col px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-2">
+      <main className="mx-auto flex min-h-0 w-full max-w-[640px] flex-1 flex-col px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-2">
         <h1
           id="enter-sanctioned-loan-title"
-          className="payment-success-stagger mx-auto mt-0 w-full max-w-[320px] text-[24px] font-semibold leading-[32px] tracking-[-0.1px] text-[#121212]"
+          className="payment-success-stagger mx-auto mt-0 w-full text-[24px] font-semibold leading-[32px] tracking-[-0.1px] text-[#121212]"
           style={{ animationDelay: `${STAGGER_TITLE_MS}ms` }}
         >
           Your down payment details
         </h1>
 
         <div
-          className="payment-success-stagger mx-auto mt-6 w-full max-w-[320px] overflow-hidden rounded-[16px] border border-[#e8e8e8]"
+          className="payment-success-stagger mx-auto mt-6 w-full overflow-hidden rounded-[16px] border border-[#e8e8e8]"
           style={{ animationDelay: `${STAGGER_CARD_MS}ms` }}
         >
           <div className="bg-white px-4 pb-4 pt-4">
@@ -211,7 +211,7 @@ export function EnterSanctionedLoanAmountScreen() {
         </div>
 
         <div
-          className="payment-success-stagger mx-auto mt-4 min-h-[138px] w-full max-w-[320px] rounded-[16px] border border-[#ffe380] bg-[#fff7e5] px-[15px] py-3"
+          className="payment-success-stagger mx-auto mt-4 min-h-[138px] w-full rounded-[16px] border border-[#ffe380] bg-[#fff7e5] px-[15px] py-3"
           style={{ animationDelay: `${STAGGER_INFO_MS}ms` }}
           role="region"
           aria-label="Down payment parts"
@@ -263,7 +263,7 @@ export function EnterSanctionedLoanAmountScreen() {
       </main>
 
       <div className="fixed bottom-0 left-0 right-0 z-10 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_6px_0_rgba(54,53,76,0.08)]">
-        <div className="mx-auto w-full max-w-[360px] bg-white px-5 pb-5 pt-3">
+        <div className="mx-auto w-full max-w-[640px] bg-white px-5 pb-5 pt-3">
           <button
             type="button"
             onClick={navigateToPayment}

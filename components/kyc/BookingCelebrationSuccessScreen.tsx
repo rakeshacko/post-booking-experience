@@ -114,7 +114,7 @@ export function BookingCelebrationSuccessScreen({
       />
 
       <div className="relative flex min-h-dvh flex-col justify-start pt-10 transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)]">
-        <div className="mx-auto flex min-h-0 w-full max-w-[360px] flex-1 flex-col overflow-y-auto px-5 pb-44">
+        <div className="mx-auto flex min-h-0 w-full max-w-[640px] flex-1 flex-col overflow-y-auto px-5 pb-44">
           <div className="flex w-full flex-col items-center text-center">
             <div className="relative flex h-[104px] w-[104px] shrink-0 items-center justify-center">
               <Lottie
@@ -129,7 +129,7 @@ export function BookingCelebrationSuccessScreen({
 
             {showHeader && (
               <PaymentSuccessStagger
-                className={`mt-[8px] flex w-full max-w-[320px] flex-col items-center ${SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS}`}
+                className={`mt-[8px] flex w-full flex-col items-center ${SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS}`}
                 delay={0.2}
               >
                 <h1 className="text-center text-[24px] font-semibold leading-8 tracking-[-0.1px] text-[#121212]">
@@ -147,7 +147,7 @@ export function BookingCelebrationSuccessScreen({
           {showCar &&
             (showCarCard ? (
               <PaymentSuccessStagger
-                className="relative mt-8 w-full max-w-[320px] self-center overflow-hidden rounded-2xl border border-[#E8E8E8] bg-white shadow-[0_4px_16px_rgba(0,0,0,0.06)]"
+                className="relative mt-8 w-full self-center overflow-hidden rounded-2xl border border-[#E8E8E8] bg-white shadow-[0_4px_16px_rgba(0,0,0,0.06)]"
                 delay={0.6}
               >
                 <div className="relative h-[244px] w-full overflow-hidden bg-white">
@@ -159,7 +159,7 @@ export function BookingCelebrationSuccessScreen({
                         fill
                         className="object-cover"
                         style={{ objectPosition: "center 28%" }}
-                        sizes="320px"
+                        sizes="(max-width: 640px) 100vw, 640px"
                         priority
                       />
                     </div>
@@ -226,7 +226,7 @@ export function BookingCelebrationSuccessScreen({
               </PaymentSuccessStagger>
             ) : (
               <PaymentSuccessStagger
-                className="mt-8 w-full max-w-[360px] self-center"
+                className="mt-8 w-full max-w-[640px] self-center"
                 delay={0.6}
               >
                 {replaceCarCardWith}
@@ -240,7 +240,7 @@ export function BookingCelebrationSuccessScreen({
           className="fixed bottom-0 left-0 right-0 z-10 border-t border-transparent bg-[#FFFFFF] px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-4px_8px_-2px_rgba(54,53,76,0.06)]"
           delay={0.8}
         >
-          <div className="mx-auto w-full max-w-[360px]">
+          <div className="mx-auto w-full max-w-[640px]">
             <button
               type="button"
               className="primary-cta focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#121212]/30 focus-visible:ring-offset-2"

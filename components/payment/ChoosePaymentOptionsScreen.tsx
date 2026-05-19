@@ -169,7 +169,7 @@ export function ChoosePaymentOptionsScreen() {
     <div className="min-h-dvh bg-[#FFFFFF] font-sans">
       <KycTopNavHeader transparent endSlot={<GetHelpPillButton />} />
 
-      <main className="mx-auto w-full max-w-[360px] px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-[8px]">
+      <main className="mx-auto w-full max-w-[640px] px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-[8px]">
         <h1
           className="payment-success-stagger text-2xl font-semibold leading-8 tracking-tight text-[#121212]"
           style={{ animationDelay: `${STAGGER_TITLE_MS}ms` }}
@@ -245,7 +245,7 @@ export function ChoosePaymentOptionsScreen() {
       </main>
 
       <div className="fixed bottom-0 left-0 right-0 z-10 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_6px_0_rgba(54,53,76,0.08)]">
-        <div className="mx-auto w-full max-w-[360px] bg-white px-5 py-4">
+        <div className="mx-auto w-full max-w-[640px] bg-white px-5 py-4">
           <button type="button" onClick={onContinue} className="primary-cta w-full">
             {ctaLabel}
           </button>

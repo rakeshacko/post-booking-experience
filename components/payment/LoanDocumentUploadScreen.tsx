@@ -101,7 +101,7 @@ export function LoanDocumentUploadScreen() {
     <div className="min-h-dvh bg-[#FFFFFF] font-sans">
       <KycTopNavHeader />
 
-      <main className="mx-auto w-full max-w-[360px] px-5 pb-32 pt-2">
+      <main className="mx-auto w-full max-w-[640px] px-5 pb-32 pt-2">
         <h1 className="text-2xl font-semibold leading-8 tracking-[-0.1px] text-[#121212]">
           Upload documents to process your loan
         </h1>
@@ -120,7 +120,7 @@ export function LoanDocumentUploadScreen() {
       </main>
 
       <div className="fixed bottom-0 left-0 right-0 z-10 border-t border-transparent bg-[#FFFFFF] px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-4px_8px_-2px_rgba(54,53,76,0.06)]">
-        <div className="mx-auto w-full max-w-[360px]">
+        <div className="mx-auto w-full max-w-[640px]">
           <button
             type="button"
             className="primary-cta focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#121212]/30 focus-visible:ring-offset-2"

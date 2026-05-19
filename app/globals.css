@@ -100,6 +100,7 @@
   --radius-button: 10px;
   --shadow-card: 0 1px 3px rgb(36 35 36 / 0.06);
   --page-padding-x: 16px;
+  --app-max-width: 640px;
   /* Quote page (Figma — Post-booking experience) */
   --quote-header: #121212;
   --quote-timer-bg: #fff7e5;

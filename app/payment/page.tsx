@@ -238,7 +238,7 @@ function MockRazorpayPaymentPageContent() {
       <div className="min-h-dvh bg-[#f5f6f8] font-sans">
         <KycTopNavHeader title="Checkout" />
 
-        <main className="mx-auto w-full max-w-[400px] px-4 pb-32 pt-4">
+        <main className="mx-auto w-full px-4 pb-32 pt-4">
         <div className="overflow-hidden rounded-xl border border-[#e6e8eb] bg-white shadow-sm">
           <div className="border-b border-[#e6e8eb] bg-[#fafbfc] px-4 py-4">
             <div className="flex items-center justify-between gap-3">
@@ -370,7 +370,7 @@ function MockRazorpayPaymentPageContent() {
       </main>
 
       <div className="fixed bottom-0 left-0 right-0 border-t border-[#e6e8eb] bg-white px-4 py-4 shadow-[0_-4px_24px_rgba(0,0,0,0.06)]">
-        <div className="mx-auto w-full max-w-[400px]">
+        <div className="mx-auto w-full max-w-[640px]">
           <button
             type="button"
             onClick={handlePay}

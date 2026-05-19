@@ -24,7 +24,7 @@ export function BookingPaymentSuccessNext({ upNextDetail, ctaLabel, ctaHref }: P
   return (
     <div className="relative min-h-dvh overflow-hidden bg-white font-sans">
       <div
-        className="mx-auto flex w-full max-w-md flex-1 flex-col overflow-y-auto px-4 pb-[calc(112px+env(safe-area-inset-bottom))] pt-6"
+        className="mx-auto flex w-full flex-1 flex-col overflow-y-auto px-4 pb-[calc(112px+env(safe-area-inset-bottom))] pt-6"
       >
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -56,7 +56,7 @@ export function BookingPaymentSuccessNext({ upNextDetail, ctaLabel, ctaHref }: P
         className="payment-success-stagger fixed bottom-0 left-0 right-0 z-10 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_6px_0_rgba(54,53,76,0.08)]"
         style={{ animationDelay: "80ms" }}
       >
-        <div className="mx-auto w-full max-w-[360px]">
+        <div className="mx-auto w-full max-w-[640px]">
           <div className="flex h-8 items-center justify-center bg-[#fff7e5] px-5">
             <p className="text-center text-xs leading-[18px] text-[#121212]">
               <span className="font-medium">Up next:</span>

@@ -59,10 +59,10 @@ export function FinanceWhatsNextPaymentProcess() {
   const items = tab === "salaried" ? SALARIED_DOCUMENTS : SELF_EMPLOYED_DOCUMENTS;
 
   return (
-    <div className="mx-auto w-full max-w-[320px] overflow-hidden rounded-[16px] border border-solid border-[#e8e8e8] bg-white">
+    <div className="mx-auto w-full overflow-hidden rounded-[16px] border border-solid border-[#e8e8e8] bg-white">
       <h2
         id="finance-documents-heading"
-        className="mx-auto max-w-[288px] px-4 pt-[15px] text-center text-base font-medium leading-[22px] tracking-normal text-[#121212]"
+        className="mx-auto w-full px-4 pt-[15px] text-center text-base font-medium leading-[22px] tracking-normal text-[#121212]"
       >
         Keep these documents handy
       </h2>

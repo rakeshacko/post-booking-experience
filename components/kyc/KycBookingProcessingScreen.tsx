@@ -185,7 +185,7 @@ export function KycBookingProcessingScreen({
 
   return (
     <div className="flex min-h-dvh flex-col bg-white font-sans">
-      <div className="mx-auto flex w-full max-w-[360px] flex-1 flex-col">
+      <div className="mx-auto flex w-full max-w-[640px] flex-1 flex-col">
         <div
           className={`kyc-pending-hero-card relative isolate mx-auto flex min-h-0 w-full flex-1 flex-col ${HERO_MIN_HEIGHT}`}
         >

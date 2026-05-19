@@ -36,7 +36,7 @@ export function DownPaymentInstalmentSuccess({ subline, nextHref }: DownPaymentI
   return (
     <div className="relative min-h-dvh overflow-hidden bg-white font-sans">
       <div
-        className="pointer-events-none absolute left-1/2 top-0 h-[240px] w-full max-w-[360px] -translate-x-1/2"
+        className="pointer-events-none absolute left-1/2 top-0 h-[240px] w-full max-w-[640px] -translate-x-1/2"
         aria-hidden
       >
         <Image
@@ -45,12 +45,12 @@ export function DownPaymentInstalmentSuccess({ subline, nextHref }: DownPaymentI
           fill
           className="object-cover object-top"
           priority
-          sizes="360px"
+          sizes="(max-width: 640px) 100vw, 640px"
           unoptimized
         />
       </div>
       <div className="relative z-10 flex min-h-dvh flex-col items-center justify-center px-4 pb-8 pt-8">
-        <div className="-translate-y-8 flex w-full max-w-md flex-col items-center text-center">
+        <div className="-translate-y-8 flex w-full flex-col items-center text-center">
           <div className="relative flex h-[144px] w-[144px] shrink-0 items-center justify-center">
             {BOOKING_SUCCESS_LOTTIE_TICK_DATA ? (
               <Lottie

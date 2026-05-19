@@ -23,7 +23,7 @@ export function QuoteScreen() {
     <div className="relative min-h-dvh bg-[var(--color-surface-elevated)] pb-[140px]">
       {/* Dark header */}
       <header
-        className="relative mx-auto w-full max-w-[360px] overflow-hidden bg-[var(--quote-header)] pb-6 pt-4 text-white"
+        className="relative mx-auto w-full max-w-[640px] overflow-hidden bg-[var(--quote-header)] pb-6 pt-4 text-white"
         style={{ minHeight: 240 }}
       >
         <div className="relative z-[1] flex items-start justify-start px-5 pt-2">
@@ -76,7 +76,7 @@ export function QuoteScreen() {
         </div>
       </header>
 
-      <div className="relative z-[2] mx-auto w-full max-w-[360px] -mt-16 px-5">
+      <div className="relative z-[2] mx-auto w-full max-w-[640px] -mt-16 px-5">
         {/* Price hero card */}
         <section className="overflow-hidden rounded-xl border border-[var(--quote-border-light)] bg-white shadow-sm tabular-nums">
           <div className="px-3 pb-2 pt-5 text-center">
@@ -421,7 +421,7 @@ export function QuoteScreen() {
       </div>
 
       {/* Sticky footer */}
-        <div className="fixed bottom-0 left-0 right-0 z-20 mx-auto w-full max-w-[360px] bg-white shadow-[0_-4px_24px_rgba(0,0,0,0.08)] tabular-nums">
+        <div className="fixed bottom-0 left-0 right-0 z-20 mx-auto w-full max-w-[640px] bg-white shadow-[0_-4px_24px_rgba(0,0,0,0.08)] tabular-nums">
         <div
           className="flex items-center justify-center gap-2 py-2 text-xs font-medium leading-[18px]"
           style={{

@@ -103,7 +103,7 @@ export function BankTransferUtrConfirmBottomSheet({
         aria-label="Dismiss"
       />
       <div
-        className={`absolute bottom-0 left-1/2 z-10 flex max-h-[90dvh] w-full max-w-[360px] -translate-x-1/2 flex-col overflow-y-auto rounded-t-[20px] bg-white shadow-[0_-8px_24px_rgba(0,0,0,0.12)] transition-transform duration-[280ms] ease-out motion-reduce:translate-y-0 motion-reduce:transition-none ${
+        className={`absolute bottom-0 left-1/2 z-10 flex max-h-[90dvh] w-full max-w-[640px] -translate-x-1/2 flex-col overflow-y-auto rounded-t-[20px] bg-white shadow-[0_-8px_24px_rgba(0,0,0,0.12)] transition-transform duration-[280ms] ease-out motion-reduce:translate-y-0 motion-reduce:transition-none ${
           animateIn ? "translate-y-0" : "translate-y-full"
         }`}
         role="dialog"
@@ -151,7 +151,7 @@ export function BankTransferUtrConfirmBottomSheet({
               <label htmlFor="bank-transfer-utr-input" className="sr-only">
                 UTR number
               </label>
-              <div className="flex h-12 min-h-12 w-full max-w-[320px] items-center rounded-lg border border-[#e8e8e8] bg-white px-4">
+              <div className="flex h-12 min-h-12 w-full items-center rounded-lg border border-[#e8e8e8] bg-white px-4">
                 <input
                   id="bank-transfer-utr-input"
                   type="text"

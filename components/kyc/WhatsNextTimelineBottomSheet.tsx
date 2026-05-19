@@ -81,7 +81,7 @@ export function WhatsNextTimelineBottomSheet({
         aria-label="Dismiss"
       />
       <div
-        className={`absolute bottom-0 left-1/2 z-10 flex max-h-[90dvh] w-full max-w-[360px] -translate-x-1/2 flex-col overflow-y-auto rounded-t-[24px] bg-white shadow-[0_-8px_24px_rgba(0,0,0,0.12)] transition-transform duration-[280ms] ease-out motion-reduce:translate-y-0 motion-reduce:transition-none ${
+        className={`absolute bottom-0 left-1/2 z-10 flex max-h-[90dvh] w-full max-w-[640px] -translate-x-1/2 flex-col overflow-y-auto rounded-t-[24px] bg-white shadow-[0_-8px_24px_rgba(0,0,0,0.12)] transition-transform duration-[280ms] ease-out motion-reduce:translate-y-0 motion-reduce:transition-none ${
           animateIn ? "translate-y-0" : "translate-y-full"
         }`}
         role="dialog"

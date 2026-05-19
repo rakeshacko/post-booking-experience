@@ -45,11 +45,11 @@ export function KycDocumentsReceivedScreen({
       />
 
       <div className="relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center px-5 pb-36 pt-4">
-        <div className="flex w-full max-w-[360px] flex-col items-center gap-4 text-center">
+        <div className="flex w-full max-w-[640px] flex-col items-center gap-4 text-center">
           <DocumentsSuccessIllustration />
 
           <div
-            className={`flex w-full max-w-[320px] flex-col items-center text-center ${SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS}`}
+            className={`flex w-full flex-col items-center text-center ${SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS}`}
           >
             <h1 className="w-full text-[24px] font-semibold leading-8 tracking-[-0.1px] text-[#121212]">
               Documents received
@@ -62,7 +62,7 @@ export function KycDocumentsReceivedScreen({
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 z-10 border-t border-transparent bg-[#FFFFFF] px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-4px_8px_-2px_rgba(54,53,76,0.06)]">
-        <div className="mx-auto w-full max-w-[360px]">
+        <div className="mx-auto w-full max-w-[640px]">
           <button
             type="button"
             className="primary-cta focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#121212]/30 focus-visible:ring-offset-2"

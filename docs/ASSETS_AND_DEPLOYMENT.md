@@ -49,6 +49,10 @@ Keep repo `assets/` and `public/assets/` in sync when adding new art.
 - `next.config` `redirects()` (unsupported with `output: "export"`) — use client redirects in `app/` routes instead
 - `next/image` without `unoptimized: true` (already set globally for static export)
 
+## Layout width
+
+Screens use a **fluid** width (`w-full`) capped at **640px**, centered. The shell is applied in `app/layout.tsx`; fixed footers and bottom sheets also use `max-w-[640px]`. Helpers: `lib/layout-classes.ts` (`appShellClass`).
+
 ## Local development
 
 ```bash

@@ -34,7 +34,7 @@ export type KycTopNavHeaderProps = {
 
 /**
  * Sticky top bar with back control — Post-booking-experience (Figma 1890:7978):
- * 56px height, 14px left / 20px right padding, max width 360px, 24×24 chevron.
+ * 56px height, 14px left / 20px right padding, max width 640px, 24×24 chevron.
  */
 export function KycTopNavHeader({
   title,
@@ -60,7 +60,7 @@ export function KycTopNavHeader({
   return (
     <header
       className={cn(
-        "sticky top-0 mx-auto flex h-14 w-full max-w-[360px] shrink-0 items-center justify-between gap-2 pl-[14px] pr-5",
+        "sticky top-0 mx-auto flex h-14 w-full max-w-[640px] shrink-0 items-center justify-between gap-2 pl-[14px] pr-5",
         transparent
           ? cn(
               "z-20 transition-[background-color] duration-200 ease-out",
