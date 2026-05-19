@@ -1,8 +1,8 @@
-/**
- * Documents received screen — illustration from `/public/assets/` (source: `assets/`).
- */
-const asset = (filename: string) => `/assets/${encodeURIComponent(filename)}`;
+import { publicAssetPath } from "@/lib/public-asset-path";
 
+/**
+ * Documents received screen — illustration from `public/assets/` (source: `assets/`).
+ */
 export const DOCUMENTS_RECEIVED_ASSETS = {
-  illustration: asset("Documents_received.svg"),
+  illustration: publicAssetPath("Documents_received.svg"),
 } as const;

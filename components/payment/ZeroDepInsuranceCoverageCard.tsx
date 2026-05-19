@@ -3,8 +3,10 @@
 import Image from "next/image";
 import { useCallback, type MouseEvent } from "react";
 
+import { publicAssetPath } from "@/lib/public-asset-path";
+
 /** Served from `public/assets/` (synced from repo `assets/Car coverage.svg`). */
-const CAR_COVERAGE_SRC = `/assets/${encodeURIComponent("Car coverage.svg")}`;
+const CAR_COVERAGE_SRC = publicAssetPath("Car coverage.svg");
 
 export type ZeroDepInsuranceCoverageCardProps = {
   /** Optional href for “View coverage details” (e.g. policy doc URL). */

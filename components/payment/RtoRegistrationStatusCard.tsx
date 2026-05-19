@@ -2,8 +2,10 @@
 
 import Image from "next/image";
 
+import { publicAssetPath } from "@/lib/public-asset-path";
+
 /** Served from `public/assets/Info.svg` (synced from repo `assets/Info.svg`). */
-const INFO_ICON_SRC = `/assets/${encodeURIComponent("Info.svg")}`;
+const INFO_ICON_SRC = publicAssetPath("Info.svg");
 
 /**
  * RTO registration status — same chrome as `ZeroDepInsuranceCoverageCard` (grey tile + 24px icon + body copy).

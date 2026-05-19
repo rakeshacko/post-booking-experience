@@ -16,8 +16,7 @@ import {
   BOOKING_PAYMENT_SUCCESS_HERO,
   BOOKING_PAYMENT_SUCCESS_NEXT_PATH,
   BOOKING_SUCCESS_AUTO_ADVANCE_MS,
-  BOOKING_SUCCESS_FALLBACK_HEADLINE_REVEAL_MS,
-  BOOKING_SUCCESS_LOTTIE_TICK_URL,
+  BOOKING_SUCCESS_LOTTIE_TICK_DATA,
   BOOKING_SUCCESS_MAX_WAIT_BEFORE_ADVANCE_MS,
   BOOKING_SUCCESS_LOTTIE_PLAYBACK_SPEED,
   BOOKING_SUCCESS_REVEAL_CAR_AFTER_HEADLINE_MS,
@@ -30,8 +29,6 @@ type Props = Pick<PaymentSuccessCelebrationProps, "subline">;
 
 export function BookingPaymentSuccessCelebration({ subline }: Props) {
   const router = useRouter();
-  const [lottieData, setLottieData] = useState<unknown>(null);
-  const [lottieFetchComplete, setLottieFetchComplete] = useState(false);
   const [showHeadlineBlock, setShowHeadlineBlock] = useState(false);
   const [showCarCard, setShowCarCard] = useState(false);
   const headlineRevealHandledRef = useRef(false);
@@ -49,30 +46,6 @@ export function BookingPaymentSuccessCelebration({ subline }: Props) {
     headlineRevealHandledRef.current = true;
     setShowHeadlineBlock(true);
   }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch(BOOKING_SUCCESS_LOTTIE_TICK_URL, { priority: "high" } as RequestInit)
-      .then((res) => res.json())
-      .then((data) => {
-        if (!cancelled) setLottieData(data);
-      })
-      .catch(() => {
-        if (!cancelled) setLottieData(null);
-      })
-      .finally(() => {
-        if (!cancelled) setLottieFetchComplete(true);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!lottieFetchComplete || lottieData) return;
-    const id = window.setTimeout(revealHeadlineAfterAnimation, BOOKING_SUCCESS_FALLBACK_HEADLINE_REVEAL_MS);
-    return () => window.clearTimeout(id);
-  }, [lottieFetchComplete, lottieData, revealHeadlineAfterAnimation]);
 
   useEffect(() => {
     if (!showHeadlineBlock) return;
@@ -98,10 +71,10 @@ export function BookingPaymentSuccessCelebration({ subline }: Props) {
 
   const lottieBlock = (
     <div className="relative flex h-[144px] w-[144px] shrink-0 items-center justify-center">
-      {lottieData ? (
+      {BOOKING_SUCCESS_LOTTIE_TICK_DATA ? (
         <Lottie
           lottieRef={lottiePlayerRef}
-          animationData={lottieData}
+          animationData={BOOKING_SUCCESS_LOTTIE_TICK_DATA}
           loop={false}
           onComplete={revealHeadlineAfterAnimation}
           onDOMLoaded={() => {

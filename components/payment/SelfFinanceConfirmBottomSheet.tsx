@@ -10,12 +10,13 @@ import {
 } from "@/components/ui/bottom-sheet-layout";
 import { bottomSheetTitleWidthWithIllustration } from "@/components/ui/bottom-sheet-title-layout";
 import { BottomSheetCloseIcon } from "@/components/ui/BottomSheetCloseIcon";
+import { publicAssetPath } from "@/lib/public-asset-path";
 
 /** Enter/exit slide duration — keep in sync with `BankSelectionBottomSheet` */
 const SHEET_TRANSITION_MS = 280;
 
 const SHEET_ASSETS = {
-  bullet: "/assets/tick.svg",
+  bullet: publicAssetPath("tick.svg"),
 } as const;
 
 const BEFORE_YOU_PROCEED_POINTS: readonly ReactNode[] = [

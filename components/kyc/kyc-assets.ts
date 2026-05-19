@@ -1,8 +1,10 @@
+import { publicAssetPath } from "@/lib/public-asset-path";
+
 /**
  * KYC pending screen assets.
- * Files live under `/public/assets/` (sync from repo `assets/`).
+ * Files live under `public/assets/` (sync from repo `assets/`).
  */
-const asset = (filename: string) => `/assets/${encodeURIComponent(filename)}`;
+const asset = publicAssetPath;
 
 export const KYC_ASSETS = {
   /** KYC shield hero — Post-booking (Figma 2179:8514). */

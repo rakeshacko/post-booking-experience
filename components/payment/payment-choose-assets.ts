@@ -1,8 +1,10 @@
+import { publicAssetPath } from "@/lib/public-asset-path";
+
 /**
  * Choose payment screen — illustrations + radio states.
- * Files live under `/public/assets/` (sync from repo `assets/`).
+ * Files live under `public/assets/` (sync from repo `assets/`).
  */
-const asset = (filename: string) => `/assets/${encodeURIComponent(filename)}`;
+const asset = publicAssetPath;
 
 export const PAYMENT_CHOOSE_ASSETS = {
   ackoDriveLogo: asset("ACKO Drive logo.svg"),

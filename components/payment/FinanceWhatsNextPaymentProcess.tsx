@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { useState } from "react";
 
+import { publicAssetPath } from "@/lib/public-asset-path";
+
 type EmploymentTab = "salaried" | "self_employed";
 
 /** [Figma — Keep these documents handy](https://www.figma.com/design/nW5SWmJdxxsCEDlqBN7C0L/Post-booking-experience?node-id=1951-13375) */
@@ -27,7 +29,7 @@ const SELF_EMPLOYED_DOCUMENTS = [
 ] as const;
 
 /** `assets/Document.svg` — served from `public/assets` for static URL. */
-const DOCUMENT_ICON = "/assets/Document.svg";
+const DOCUMENT_ICON = publicAssetPath("Document.svg");
 
 function DocumentRow({ label }: { label: string }) {
   return (

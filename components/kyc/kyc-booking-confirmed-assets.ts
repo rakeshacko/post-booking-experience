@@ -1,15 +1,15 @@
+import { publicAssetPath, publicAssetPathIn } from "@/lib/public-asset-path";
+
 /**
- * Booking confirmed — self-hosted under `/public/assets/kyc-booking-confirmed/`
+ * Booking confirmed — self-hosted under `public/assets/kyc-booking-confirmed/`
  * (copied from Figma MCP; avoids cold CDN latency).
  */
-const asset = (filename: string) => `/assets/kyc-booking-confirmed/${encodeURIComponent(filename)}`;
-/** Repo `assets/` mirror under `/public/assets/` (e.g. design `dot separator.svg`). */
-const publicAsset = (filename: string) => `/assets/${encodeURIComponent(filename)}`;
+const asset = (filename: string) => publicAssetPathIn("kyc-booking-confirmed", filename);
 
 export const BOOKING_CONFIRMED_ASSETS = {
-  cardBackdrop: publicAsset("Car card bg.png"),
+  cardBackdrop: publicAssetPath("Car card bg.png"),
   carCutout: asset("car-cutout.png"),
-  dotSeparator: publicAsset("dot separator.svg"),
+  dotSeparator: publicAssetPath("dot separator.svg"),
   /** Express delivery bolt — `express-delivery.svg` under this folder. */
   expressDelivery: asset("express-delivery.svg"),
 } as const;

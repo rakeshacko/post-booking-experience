@@ -9,14 +9,15 @@ import {
 } from "@/components/ui/bottom-sheet-layout";
 import { bottomSheetTitleWidthWithIllustration } from "@/components/ui/bottom-sheet-title-layout";
 import { BottomSheetCloseIcon } from "@/components/ui/BottomSheetCloseIcon";
+import { publicAssetPath } from "@/lib/public-asset-path";
 
 /** Enter/exit slide duration — keep in sync with `BankSelectionBottomSheet` */
 const SHEET_TRANSITION_MS = 280;
 
 /** Illustration + list marker from `public/assets` (`doc search.svg` + `tick.svg`). */
 const SHEET_ASSETS = {
-  hero: "/assets/doc%20search.svg",
-  bullet: "/assets/tick.svg",
+  hero: publicAssetPath("doc search.svg"),
+  bullet: publicAssetPath("tick.svg"),
 } as const;
 
 const BEFORE_YOU_CONTINUE_POINTS: readonly ReactNode[] = [

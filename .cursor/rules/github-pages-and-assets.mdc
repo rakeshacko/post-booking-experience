@@ -1,0 +1,25 @@
+---
+description: GitHub Pages static export, basePath, and asset URL conventions (project defaults)
+alwaysApply: true
+---
+
+# GitHub Pages and assets (default for this repo)
+
+This project **defaults** to static export + GitHub Pages with `basePath` from `lib/site-config.ts` (`BASE_PATH`, default `/post-booking-experience`).
+
+## Assets
+
+- **Prefer** `import x from "@/assets/..."` for images, SVGs, and Lottie JSON under `assets/`.
+- For files in **`public/assets/`**, use **`publicAssetPath()`** or **`publicAssetPathIn()`** from `@/lib/public-asset-path` — never hardcode `` `/assets/...` `` (breaks on `github.io`).
+- Do not add new production dependencies on remote image/Lottie URLs.
+
+## Next.js config
+
+- Keep `output: "export"`, `basePath: BASE_PATH` from `lib/site-config.ts`, `images.unoptimized: true`.
+- Do not use `redirects()` in `next.config.ts`; use client `router.replace` pages for legacy paths.
+- Keep `public/.nojekyll` so Pages serves `_next/`.
+
+## Deploy
+
+- Pages workflow deploys `out/` on push to **`main`**.
+- See `docs/ASSETS_AND_DEPLOYMENT.md` for full conventions.

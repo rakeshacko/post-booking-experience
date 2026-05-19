@@ -1,8 +1,8 @@
 import carHero from "@/assets/Car.png";
+import infoIcon from "@/assets/Info.svg";
 
-/** Car hero from repo `assets/Car.png`. Info icon: temporary Figma MCP URL — replace with `/public/assets/` if it expires. */
+/** Quote screen imagery from repo `assets/`. */
 export const QUOTE_ASSETS = {
   carHero,
-  infoIcon:
-    "https://www.figma.com/api/mcp/asset/c259c883-7122-4082-b079-461fa230c295",
+  infoIcon,
 } as const;
