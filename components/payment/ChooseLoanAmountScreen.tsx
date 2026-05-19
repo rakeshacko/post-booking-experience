@@ -4,46 +4,24 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from "react";
 
-import { KYC_ASSETS } from "@/components/kyc/kyc-assets";
+import { GetHelpPillButton } from "@/components/kyc/GetHelpPillButton";
 import { KycTopNavHeader } from "@/components/kyc/KycTopNavHeader";
 import {
   BANK_SHEET_OPTIONS,
   PAYMENT_CHOOSE_ASSETS,
 } from "@/components/payment/payment-choose-assets";
+import {
+  DEFAULT_TENURE_MONTHS,
+  MIN_DOWN_PAYMENT_INR,
+  ON_ROAD_PRICE_INR,
+  SLIDER_STEP,
+} from "@/components/payment/loan-amount-demo-constants";
 import { LoanSubmitConfirmBottomSheet } from "@/components/payment/LoanSubmitConfirmBottomSheet";
-
-/** On-road price shown in green footer (Figma 2111:7963). */
-const ON_ROAD_PRICE_INR = 13_73_780;
-/** Minimum down payment at left end of slider (Figma). */
-const MIN_DOWN_PAYMENT_INR = 100_000;
-const SLIDER_STEP = 10_000;
-const DEFAULT_TENURE_MONTHS = 60;
 
 /** Stagger: nav + CTA immediate; then title → card → warning (`payment-success-stagger` in globals). */
 const STAGGER_TITLE_MS = 90;
 const STAGGER_CARD_MS = 300;
 const STAGGER_WARNING_MS = 540;
-
-function GetHelpButton() {
-  return (
-    <button
-      type="button"
-      className="flex h-[28px] shrink-0 items-center gap-1 rounded-lg border border-[#121212] bg-white px-3 text-xs font-medium leading-[18px] text-[#121212] transition-colors hover:bg-[#f5f5f5] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#121212]/20 focus-visible:ring-offset-2"
-    >
-      <span className="relative h-5 w-5 shrink-0" aria-hidden>
-        <Image
-          src={KYC_ASSETS.getHelp}
-          alt=""
-          fill
-          className="object-contain"
-          unoptimized
-          sizes="20px"
-        />
-      </span>
-      Ask Shivi
-    </button>
-  );
-}
 
 /** Matches `Warning.svg` shape; stroke #D16900 (quote timer / Figma yellow band). */
 function DownPaymentNoticeIcon({ className }: { className?: string }) {
@@ -154,7 +132,7 @@ export function ChooseLoanAmountScreen() {
 
   return (
     <div className="min-h-dvh bg-white font-sans">
-      <KycTopNavHeader transparent endSlot={<GetHelpButton />} />
+      <KycTopNavHeader transparent endSlot={<GetHelpPillButton />} />
 
       <main className="mx-auto w-full max-w-[360px] px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-[8px]">
         <h1

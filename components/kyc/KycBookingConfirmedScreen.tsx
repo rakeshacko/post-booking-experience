@@ -11,7 +11,7 @@ export function KycBookingConfirmedScreen() {
   return (
     <BookingCelebrationSuccessScreen
       headline={`Your booking is confirmed, ${USER_NAME}!`}
-      okayPath="/kyc/car-allocation-pending"
+      okayPath="/car-allocation/pending"
     />
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { KycBookingProcessingScreen } from "@/components/kyc/KycBookingProcessingScreen";
+import { KYC_ASSETS } from "@/components/kyc/kyc-assets";
 import { LoanProcessingWhatsNext } from "@/components/payment/LoanProcessingWhatsNext";
 
 const HEADLINE = "We've received your down payment, Sharath!";
@@ -13,6 +14,7 @@ export function DownPaymentInsuranceSetupScreen() {
     <KycBookingProcessingScreen
       headline={HEADLINE}
       subline={SUBLINE}
+      heroIllustrationSrc={KYC_ASSETS.downPaymentCompleteHero}
       nextHref="/payment/car-delivery-insurance-prep"
       prefetchHref="/payment/car-delivery-insurance-prep"
       nextCtaLabel="Next"

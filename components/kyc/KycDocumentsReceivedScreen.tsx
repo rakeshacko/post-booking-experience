@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 import { DOCUMENTS_RECEIVED_ASSETS } from "@/components/kyc/kyc-documents-received-assets";
+import { SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS } from "@/components/ui/success-screen-layout";
 
 /** 104×104 illustration from `assets/Documents_received.svg`. */
 function DocumentsSuccessIllustration() {
@@ -44,15 +45,19 @@ export function KycDocumentsReceivedScreen({
       />
 
       <div className="relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center px-5 pb-36 pt-4">
-        <div className="flex w-full max-w-[360px] flex-col items-center text-center">
+        <div className="flex w-full max-w-[360px] flex-col items-center gap-4 text-center">
           <DocumentsSuccessIllustration />
 
-          <h1 className="mt-4 max-w-[320px] text-[24px] font-semibold leading-8 tracking-[-0.1px] text-[#121212]">
-            Documents received
-          </h1>
-          <p className="mt-2 max-w-[320px] text-sm font-normal leading-5 text-[#4b4b4b]">
-            Your documents are being verified by the bank
-          </p>
+          <div
+            className={`flex w-full max-w-[320px] flex-col items-center text-center ${SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS}`}
+          >
+            <h1 className="w-full text-[24px] font-semibold leading-8 tracking-[-0.1px] text-[#121212]">
+              Documents received
+            </h1>
+            <p className="w-full text-sm font-normal leading-5 text-[#4b4b4b]">
+              Your documents are being verified by the bank
+            </p>
+          </div>
         </div>
       </div>
 

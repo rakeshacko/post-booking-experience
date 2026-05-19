@@ -4,6 +4,7 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "rea
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { KycTopNavHeader } from "@/components/kyc/KycTopNavHeader";
+import { DefaultPageTransition } from "@/components/ui/page-transition";
 
 import { BOOKING_LOCK_AMOUNT_INR, buildDownPaymentSuccessHref } from "@/lib/paymentUrls";
 
@@ -219,22 +220,25 @@ function MockRazorpayPaymentPageContent() {
 
   if (phase === "processing") {
     return (
-      <div className="fixed inset-0 z-50 flex min-h-dvh flex-col items-center justify-center bg-[#f5f6f8] font-sans">
-        <div
-          className="h-12 w-12 animate-spin rounded-full border-[3px] border-[#e6e8eb] border-t-[#3395ff]"
-          aria-hidden
-        />
-        <p className="mt-6 text-base font-medium text-[#1a1a1a]">Processing payment…</p>
-        <p className="mt-1 text-sm text-[#6b7280]">Please do not close this screen</p>
-      </div>
+      <DefaultPageTransition>
+        <div className="fixed inset-0 z-50 flex min-h-dvh flex-col items-center justify-center bg-[#f5f6f8] font-sans">
+          <div
+            className="h-12 w-12 animate-spin rounded-full border-[3px] border-[#e6e8eb] border-t-[#3395ff]"
+            aria-hidden
+          />
+          <p className="mt-6 text-base font-medium text-[#1a1a1a]">Processing payment…</p>
+          <p className="mt-1 text-sm text-[#6b7280]">Please do not close this screen</p>
+        </div>
+      </DefaultPageTransition>
     );
   }
 
   return (
-    <div className="min-h-dvh bg-[#f5f6f8] font-sans">
-      <KycTopNavHeader title="Checkout" />
+    <DefaultPageTransition>
+      <div className="min-h-dvh bg-[#f5f6f8] font-sans">
+        <KycTopNavHeader title="Checkout" />
 
-      <main className="mx-auto w-full max-w-[400px] px-4 pb-32 pt-4">
+        <main className="mx-auto w-full max-w-[400px] px-4 pb-32 pt-4">
         <div className="overflow-hidden rounded-xl border border-[#e6e8eb] bg-white shadow-sm">
           <div className="border-b border-[#e6e8eb] bg-[#fafbfc] px-4 py-4">
             <div className="flex items-center justify-between gap-3">
@@ -381,7 +385,8 @@ function MockRazorpayPaymentPageContent() {
           </button>
         </div>
       </div>
-    </div>
+      </div>
+    </DefaultPageTransition>
   );
 }
 

@@ -1,8 +1,14 @@
+import { Suspense } from "react";
+
 import { LoanSanctionedScreen } from "@/components/payment/LoanSanctionedScreen";
 
 /**
- * Loan sanctioned — same layout as `/payment/loan-processing`; CTA “Choose loan amount”.
+ * Loan sanctioned — same layout and enter behaviour as `/payment/loan-processing` (no celebration slide-in).
  */
 export default function LoanSanctionedPage() {
-  return <LoanSanctionedScreen />;
+  return (
+    <Suspense fallback={null}>
+      <LoanSanctionedScreen />
+    </Suspense>
+  );
 }

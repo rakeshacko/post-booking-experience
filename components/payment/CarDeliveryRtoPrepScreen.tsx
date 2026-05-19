@@ -1,6 +1,7 @@
 "use client";
 
 import { KycBookingProcessingScreen } from "@/components/kyc/KycBookingProcessingScreen";
+import { KYC_ASSETS } from "@/components/kyc/kyc-assets";
 import { LoanProcessingWhatsNext } from "@/components/payment/LoanProcessingWhatsNext";
 import { RtoRegistrationStatusCard } from "@/components/payment/RtoRegistrationStatusCard";
 
@@ -16,6 +17,7 @@ export function CarDeliveryRtoPrepScreen() {
     <KycBookingProcessingScreen
       headline={HEADLINE}
       subline={SUBLINE}
+      heroIllustrationSrc={KYC_ASSETS.rtoRegistrationProcessHero}
       nextHref="/payment/car-delivery-schedule"
       prefetchHref="/payment/car-delivery-schedule"
       nextCtaLabel="Next"

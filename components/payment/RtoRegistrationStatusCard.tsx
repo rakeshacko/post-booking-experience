@@ -29,7 +29,7 @@ export function RtoRegistrationStatusCard() {
           />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-normal leading-[20px] text-[rgba(75,75,75,1)]">
+          <p className="text-sm font-normal leading-[20px] text-[rgba(18,18,18,1)]">
             You&apos;ll get your car number once registration is complete.
           </p>
         </div>

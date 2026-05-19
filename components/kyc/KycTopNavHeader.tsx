@@ -25,7 +25,7 @@ export function BackChevron() {
 export type KycTopNavHeaderProps = {
   /** Optional label after back (e.g. checkout title). */
   title?: string;
-  /** Optional right-side control (e.g. “Ask Shivi”). */
+  /** Optional right-side control (e.g. “Get help” pill). */
   endSlot?: ReactNode;
   /** No solid fill — use over gradients/animations; stays above layers via z-index. */
   transparent?: boolean;
@@ -70,7 +70,7 @@ export function KycTopNavHeader({
         className
       )}
     >
-      <div className="flex min-w-0 flex-1 items-center gap-2">
+      <div className="flex min-h-0 min-w-0 flex-1 items-center gap-2">
         <button
           type="button"
           onClick={() => router.back()}
@@ -83,7 +83,7 @@ export function KycTopNavHeader({
           <h1 className="min-w-0 truncate text-base font-semibold leading-6 text-[#121212]">{title}</h1>
         ) : null}
       </div>
-      {endSlot ? <div className="shrink-0">{endSlot}</div> : null}
+      {endSlot ? <div className="flex shrink-0 items-center">{endSlot}</div> : null}
     </header>
   );
 }

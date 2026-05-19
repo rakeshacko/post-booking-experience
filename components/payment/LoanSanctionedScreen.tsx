@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 
 import { KycBookingProcessingScreen } from "@/components/kyc/KycBookingProcessingScreen";
+import { KYC_ASSETS } from "@/components/kyc/kyc-assets";
 import { LoanProcessingWhatsNext } from "@/components/payment/LoanProcessingWhatsNext";
 
 const LOAN_SANCTIONED_HEADLINE = "Your loan is approved, Sharath!";
@@ -28,6 +29,7 @@ export function LoanSanctionedScreen() {
     <KycBookingProcessingScreen
       headline={LOAN_SANCTIONED_HEADLINE}
       subline={LOAN_SANCTIONED_SUBLINE}
+      heroIllustrationSrc={KYC_ASSETS.loanApprovedHero}
       nextHref={nextHref}
       prefetchHref={nextHref}
       nextCtaLabel="Choose loan amount"

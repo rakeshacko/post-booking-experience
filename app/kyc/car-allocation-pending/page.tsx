@@ -1,15 +1,14 @@
-import { KycBookingProcessingScreen } from "@/components/kyc/KycBookingProcessingScreen";
+"use client";
 
-/**
- * After booking celebration “Okay” — same shell as `/kyc/processing`; Next → allocation confirmed.
- */
-export default function CarAllocationPendingPage() {
-  return (
-    <KycBookingProcessingScreen
-      headline="We're allocating your car, Sharath!"
-      subline="Hang tight — we're matching your selected variant and colour to available stock."
-      nextHref="/kyc/car-allocation-confirmed"
-      prefetchHref="/kyc/car-allocation-confirmed"
-    />
-  );
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+
+export default function KycCarAllocationPendingRedirect() {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace("/car-allocation/pending");
+  }, [router]);
+
+  return null;
 }

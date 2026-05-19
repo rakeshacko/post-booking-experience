@@ -1,8 +1,14 @@
-import { CarAllocationConfirmedScreen } from "@/components/kyc/CarAllocationConfirmedScreen";
+"use client";
 
-/**
- * After `/kyc/car-allocation-pending` Next — celebration + car card; Okay → `/payment/default`.
- */
-export default function CarAllocationConfirmedPage() {
-  return <CarAllocationConfirmedScreen />;
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+
+export default function KycCarAllocationConfirmedRedirect() {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace("/car-allocation/confirmed");
+  }, [router]);
+
+  return null;
 }

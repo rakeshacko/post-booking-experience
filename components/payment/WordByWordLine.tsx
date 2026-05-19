@@ -17,6 +17,11 @@ type WordByWordLineProps = {
   ariaLabel?: string;
   /** Tailwind duration class for each word’s opacity transition (default `duration-200`). */
   wordOpacityDurationClassName?: string;
+  /**
+   * When false, word reveal is paused (e.g. wait for a hero asset). When it becomes true,
+   * the sequence starts from the first word.
+   */
+  startWhen?: boolean;
 };
 
 /**
@@ -30,6 +35,7 @@ export function WordByWordLine({
   onComplete,
   ariaLabel,
   wordOpacityDurationClassName = "duration-200",
+  startWhen = true,
 }: WordByWordLineProps) {
   const words = useMemo(() => text.trim().split(/\s+/).filter(Boolean), [text]);
   const [visibleCount, setVisibleCount] = useState(0);
@@ -40,6 +46,9 @@ export function WordByWordLine({
   useEffect(() => {
     completedRef.current = false;
     setVisibleCount(0);
+    if (!startWhen) {
+      return;
+    }
     if (words.length === 0) {
       queueMicrotask(() => {
         if (!completedRef.current) {
@@ -58,7 +67,7 @@ export function WordByWordLine({
       }
     }, wordDelayMs);
     return () => window.clearInterval(id);
-  }, [wordDelayMs, words]);
+  }, [wordDelayMs, words, startWhen]);
 
   useEffect(() => {
     if (words.length === 0) return;

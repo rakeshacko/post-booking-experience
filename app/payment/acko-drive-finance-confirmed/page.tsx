@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 
 import { AckoDriveFinanceConfirmedScreen } from "@/components/payment/AckoDriveFinanceConfirmedScreen";
+import { CelebrationPageTransition } from "@/components/ui/page-transition";
 
 /**
  * ACKO Drive — banking partner chosen; success celebration (aligned with KYC booking confirmed).
@@ -8,7 +9,9 @@ import { AckoDriveFinanceConfirmedScreen } from "@/components/payment/AckoDriveF
 export default function AckoDriveFinanceConfirmedPage() {
   return (
     <Suspense fallback={<div className="min-h-dvh bg-[#fafbfb]" aria-hidden />}>
-      <AckoDriveFinanceConfirmedScreen />
+      <CelebrationPageTransition>
+        <AckoDriveFinanceConfirmedScreen />
+      </CelebrationPageTransition>
     </Suspense>
   );
 }

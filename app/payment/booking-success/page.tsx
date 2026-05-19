@@ -2,7 +2,8 @@
 
 import { Suspense } from "react";
 
-import { PaymentSuccessCelebration } from "@/components/payment/PaymentSuccessCelebration";
+import { BookingPaymentSuccessCelebration } from "@/components/payment/BookingPaymentSuccessCelebration";
+import { CelebrationPageTransition } from "@/components/ui/page-transition";
 
 import { BOOKING_LOCK_AMOUNT_INR } from "@/lib/paymentUrls";
 
@@ -16,12 +17,11 @@ function formatInr(amount: number) {
 
 function BookingPaymentSuccessInner() {
   return (
-    <PaymentSuccessCelebration
-      subline={`${formatInr(BOOKING_LOCK_AMOUNT_INR)} booking amount received`}
-      upNextDetail=" KYC verification"
-      ctaLabel="Continue"
-      ctaHref="/kyc"
-    />
+    <CelebrationPageTransition>
+      <BookingPaymentSuccessCelebration
+        subline={`${formatInr(BOOKING_LOCK_AMOUNT_INR)} booking amount received`}
+      />
+    </CelebrationPageTransition>
   );
 }
 

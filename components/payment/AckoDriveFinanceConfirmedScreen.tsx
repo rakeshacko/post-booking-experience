@@ -9,6 +9,7 @@ import ackoDriveFinanceSuccessLottie from "@/components/kyc/lottie/acko-drive-fi
 import { BankSelectionBottomSheet } from "@/components/payment/BankSelectionBottomSheet";
 import { FinanceWhatsNextPaymentProcess } from "@/components/payment/FinanceWhatsNextPaymentProcess";
 import { BANK_SHEET_OPTIONS } from "@/components/payment/payment-choose-assets";
+import { SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS } from "@/components/ui/success-screen-layout";
 
 /** Reveal headline + banking row while Lottie is still playing (do not wait for full animation). */
 const HEADER_SHOW_MS = 450;
@@ -73,7 +74,9 @@ export function AckoDriveFinanceConfirmedScreen() {
             </div>
 
             {showHeader && (
-              <div className="payment-success-stagger mt-5 flex w-full max-w-[320px] flex-col items-center gap-3">
+              <div
+                className={`payment-success-stagger mt-5 flex w-full max-w-[320px] flex-col items-center ${SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS}`}
+              >
                 <h1 className="text-center text-2xl font-semibold leading-8 tracking-[-0.1px] text-[#121212]">
                   <span className="block">You&apos;re financing with</span>
                   <span className="block">ACKO Drive</span>

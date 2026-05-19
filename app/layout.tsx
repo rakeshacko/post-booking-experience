@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 import { EUCLID_FONT_ORIGIN, EUCLID_PRELOAD_FONT_FILES, euclidFontHref } from "@/lib/euclid-font-preload";
+import { AnimationProvider } from "@/components/providers";
 
 export const metadata: Metadata = {
   title: "Post-booking experience",
@@ -28,7 +29,11 @@ export default function RootLayout({
           />
         ))}
       </head>
-      <body className="min-h-dvh font-sans antialiased">{children}</body>
+      <body className="min-h-dvh font-sans antialiased">
+        <AnimationProvider>
+          {children}
+        </AnimationProvider>
+      </body>
     </html>
   );
 }

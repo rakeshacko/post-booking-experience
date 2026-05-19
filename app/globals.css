@@ -125,11 +125,12 @@
   --white: #ffffff;
   --black: #000000;
   --transparent: transparent;
-  --blue-500: #3b82f6;
-  --indigo-300: #a5b4fc;
-  --blue-300: #93c5fd;
-  --violet-200: #ddd6fe;
-  --blue-400: #60a5fa;
+  /* ~5% less saturated toward white (slightly softer blue/violet bands) */
+  --blue-500: color-mix(in srgb, #3b82f6 95%, white);
+  --indigo-300: color-mix(in srgb, #a5b4fc 95%, white);
+  --blue-300: color-mix(in srgb, #93c5fd 95%, white);
+  --violet-200: color-mix(in srgb, #ddd6fe 95%, white);
+  --blue-400: color-mix(in srgb, #60a5fa 95%, white);
 }
 
 @theme inline {

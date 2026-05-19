@@ -7,7 +7,16 @@ import { KYC_ASSETS } from "@/components/kyc/kyc-assets";
 
 export type WhatsNextTimelineVariant = "default" | "compact";
 
+export type WhatsNextTimelineSurface = "card" | "flat";
+
 export type TimelineStepStatus = "done" | "in_progress" | "next";
+
+/** Nested rows under the main “Payment” timeline step (self finance only). */
+export type WhatsNextTimelinePaymentSubStep = {
+  title: string;
+  description?: string;
+  status: TimelineStepStatus;
+};
 
 export type WhatsNextTimelineProps = {
   /** Typically in progress (e.g. Car allocation). */
@@ -28,6 +37,16 @@ export type WhatsNextTimelineProps = {
    * `default` — elevated card (e.g. payment default).
    */
   variant?: WhatsNextTimelineVariant;
+  /**
+   * `card` — bordered panel with inner padding (e.g. `/payment/default`).
+   * `flat` — rail only: aligns with parent `px-5` (e.g. `WhatsNextTimelineBottomSheet` header).
+   */
+  surface?: WhatsNextTimelineSurface;
+  /**
+   * When set (e.g. self finance), renders a nested checklist under the second step copy.
+   * Does not add main-rail icons — connector math stays 3-step.
+   */
+  paymentSubSteps?: WhatsNextTimelinePaymentSubStep[];
 };
 
 function timelineStepTitleClassName(status: TimelineStepStatus) {
@@ -38,6 +57,13 @@ function timelineStepTitleClassName(status: TimelineStepStatus) {
 /** Subtext stays regular weight; only step titles vary by status. */
 const TIMELINE_STEP_DESCRIPTION_CLASS =
   "mt-1 text-xs font-normal leading-[18px] text-[#757575]";
+
+/** Completed / active connector — matches `LoanProcessingWhatsNext` main rail. */
+const CONNECTOR_ACTIVE = "#138808";
+
+type LineSeg = { top: number; height: number };
+
+const EMPTY_LINE: LineSeg = { top: 0, height: 0 };
 
 function TimelineStepIcon({ status }: { status: TimelineStepStatus }) {
   const src =
@@ -56,8 +82,34 @@ function TimelineStepIcon({ status }: { status: TimelineStepStatus }) {
   );
 }
 
+function TimelinePaymentSubStepIcon({ status }: { status: TimelineStepStatus }) {
+  const src =
+    status === "done"
+      ? KYC_ASSETS.timelineDone
+      : status === "in_progress"
+        ? KYC_ASSETS.timelineInProgress
+        : KYC_ASSETS.timelineNext;
+  const label =
+    status === "done" ? "Done" : status === "in_progress" ? "In progress" : "Next";
+
+  return (
+    <span
+      className="relative mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center"
+      title={label}
+    >
+      <Image src={src} alt={label} fill className="object-contain" unoptimized sizes="16px" />
+    </span>
+  );
+}
+
+function timelinePaymentSubStepTitleClassName(status: TimelineStepStatus) {
+  const weight = status === "in_progress" ? "font-medium" : "font-normal";
+  return `text-xs ${weight} leading-[18px] text-[#121212]`;
+}
+
 /**
- * Vertical connector from the center of the first status icon to the center of the last.
+ * Vertical connectors: green through completed / up to the `in_progress` step, grey for the rest.
+ * Spans the center of the first icon to the center of the last.
  * Row height depends on copy (wrapping), so we measure after layout.
  * [Figma 2052:7630](https://www.figma.com/design/nW5SWmJdxxsCEDlqBN7C0L/Post-booking-experience?node-id=2052-7630)
  */
@@ -72,25 +124,46 @@ export function WhatsNextTimeline({
   secondStepStatus = "next",
   thirdStepStatus = "next",
   variant = "default",
+  surface = "card",
+  paymentSubSteps,
 }: WhatsNextTimelineProps) {
   const railRef = useRef<HTMLDivElement>(null);
   const icon1Ref = useRef<HTMLDivElement>(null);
   const icon2Ref = useRef<HTMLDivElement>(null);
   const icon3Ref = useRef<HTMLDivElement>(null);
-  const [connector, setConnector] = useState({ top: 0, height: 0 });
+  const [connectorGreen, setConnectorGreen] = useState<LineSeg>(EMPTY_LINE);
+  const [connectorGrey, setConnectorGrey] = useState<LineSeg>(EMPTY_LINE);
 
   const updateConnector = useCallback(() => {
     const rail = railRef.current;
     const i1 = icon1Ref.current;
+    const i2 = icon2Ref.current;
     const i3 = icon3Ref.current;
-    if (!rail || !i1 || !i3) return;
+    if (!rail || !i1 || !i2 || !i3) {
+      setConnectorGreen(EMPTY_LINE);
+      setConnectorGrey(EMPTY_LINE);
+      return;
+    }
     const rr = rail.getBoundingClientRect();
-    const r1 = i1.getBoundingClientRect();
-    const r3 = i3.getBoundingClientRect();
-    const c1 = r1.top + r1.height / 2 - rr.top;
-    const c3 = r3.top + r3.height / 2 - rr.top;
-    setConnector({ top: c1, height: Math.max(0, c3 - c1) });
-  }, []);
+    const mid = (el: HTMLElement) => {
+      const r = el.getBoundingClientRect();
+      return r.top + r.height / 2 - rr.top;
+    };
+    const y = [mid(i1), mid(i2), mid(i3)] as const;
+
+    const statuses: TimelineStepStatus[] = [firstStepStatus, secondStepStatus, thirdStepStatus];
+    let splitIdx = statuses.findIndex((s) => s === "in_progress");
+    if (splitIdx < 0) {
+      if (statuses.every((s) => s === "done")) {
+        splitIdx = 2;
+      } else {
+        splitIdx = 1;
+      }
+    }
+
+    setConnectorGreen({ top: y[0], height: Math.max(0, y[splitIdx] - y[0]) });
+    setConnectorGrey({ top: y[splitIdx], height: Math.max(0, y[2] - y[splitIdx]) });
+  }, [firstStepStatus, secondStepStatus, thirdStepStatus]);
 
   useLayoutEffect(() => {
     updateConnector();
@@ -103,6 +176,8 @@ export function WhatsNextTimeline({
     secondStepStatus,
     thirdStepStatus,
     variant,
+    surface,
+    paymentSubSteps,
   ]);
 
   useEffect(() => {
@@ -117,44 +192,88 @@ export function WhatsNextTimeline({
     };
   }, [updateConnector]);
 
+  useEffect(() => {
+    const id = window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(updateConnector);
+    });
+    return () => window.cancelAnimationFrame(id);
+  }, [updateConnector]);
+
   const sectionClassName =
     variant === "compact"
       ? "rounded-2xl border border-[#e8e8e8] bg-white p-4"
       : "rounded-2xl border border-[#e8e8e8] bg-white px-5 py-6 shadow-[0_2px_8px_-2px_rgba(54,53,76,0.06)]";
   const rowGapClass = variant === "compact" ? "gap-y-3" : "gap-y-4";
 
-  return (
-    <section className={sectionClassName}>
-      <div ref={railRef} className={`relative grid grid-cols-[24px_1fr] items-start gap-x-3 ${rowGapClass}`}>
+  const timelineRail = (
+    <div ref={railRef} className={`relative grid grid-cols-[24px_1fr] items-start gap-x-3 ${rowGapClass}`}>
+      {connectorGreen.height > 0 ? (
         <div
-          className="pointer-events-none absolute left-3 w-px -translate-x-1/2 bg-[#e8e8e8]"
-          style={{ top: connector.top, height: connector.height }}
+          className="pointer-events-none absolute left-3 z-0 w-px -translate-x-1/2"
+          style={{
+            top: connectorGreen.top,
+            height: connectorGreen.height,
+            backgroundColor: CONNECTOR_ACTIVE,
+          }}
           aria-hidden
         />
-        <div ref={icon1Ref} className="relative z-[1] flex h-6 w-6 shrink-0 justify-center">
-          <TimelineStepIcon status={firstStepStatus} />
-        </div>
-        <div className="min-w-0">
-          <p className={timelineStepTitleClassName(firstStepStatus)}>{firstStepTitle}</p>
-          <p className={TIMELINE_STEP_DESCRIPTION_CLASS}>{firstStepDescription}</p>
-          <hr className="mt-3 border-0 border-t border-[#e8e8e8]" />
-        </div>
-        <div ref={icon2Ref} className="relative z-[1] flex h-6 w-6 shrink-0 justify-center">
-          <TimelineStepIcon status={secondStepStatus} />
-        </div>
-        <div className="min-w-0">
-          <p className={timelineStepTitleClassName(secondStepStatus)}>{secondStepTitle}</p>
-          <p className={TIMELINE_STEP_DESCRIPTION_CLASS}>{secondStepDescription}</p>
-          <hr className="mt-3 border-0 border-t border-[#e8e8e8]" />
-        </div>
-        <div ref={icon3Ref} className="relative z-[1] flex h-6 w-6 shrink-0 justify-center">
-          <TimelineStepIcon status={thirdStepStatus} />
-        </div>
-        <div className="min-w-0">
-          <p className={timelineStepTitleClassName(thirdStepStatus)}>{thirdStepTitle}</p>
-          <p className={TIMELINE_STEP_DESCRIPTION_CLASS}>{thirdStepDescription}</p>
-        </div>
+      ) : null}
+      {connectorGrey.height > 0 ? (
+        <div
+          className="pointer-events-none absolute left-3 z-0 w-px -translate-x-1/2 bg-[#e8e8e8]"
+          style={{ top: connectorGrey.top, height: connectorGrey.height }}
+          aria-hidden
+        />
+      ) : null}
+      <div ref={icon1Ref} className="relative z-[1] flex h-6 w-6 shrink-0 justify-center">
+        <TimelineStepIcon status={firstStepStatus} />
       </div>
-    </section>
+      <div className="min-w-0">
+        <p className={timelineStepTitleClassName(firstStepStatus)}>{firstStepTitle}</p>
+        <p className={TIMELINE_STEP_DESCRIPTION_CLASS}>{firstStepDescription}</p>
+        <hr className="mt-3 border-0 border-t border-[#e8e8e8]" />
+      </div>
+      <div ref={icon2Ref} className="relative z-[1] flex h-6 w-6 shrink-0 justify-center">
+        <TimelineStepIcon status={secondStepStatus} />
+      </div>
+      <div className="min-w-0">
+        <p className={timelineStepTitleClassName(secondStepStatus)}>{secondStepTitle}</p>
+        <p className={TIMELINE_STEP_DESCRIPTION_CLASS}>{secondStepDescription}</p>
+        {paymentSubSteps && paymentSubSteps.length > 0 ? (
+          <ul
+            className="mt-3 space-y-3 border-l border-[#e8e8e8] pl-3"
+            aria-label="Payment steps"
+          >
+            {paymentSubSteps.map((step, index) => (
+              <li key={`${step.title}-${index}`} className="flex gap-2">
+                <TimelinePaymentSubStepIcon status={step.status} />
+                <div className="min-w-0">
+                  <p className={timelinePaymentSubStepTitleClassName(step.status)}>{step.title}</p>
+                  {step.description ? (
+                    <p className="mt-0.5 text-xs font-normal leading-[18px] text-[#757575]">
+                      {step.description}
+                    </p>
+                  ) : null}
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        <hr className="mt-3 border-0 border-t border-[#e8e8e8]" />
+      </div>
+      <div ref={icon3Ref} className="relative z-[1] flex h-6 w-6 shrink-0 justify-center">
+        <TimelineStepIcon status={thirdStepStatus} />
+      </div>
+      <div className="min-w-0">
+        <p className={timelineStepTitleClassName(thirdStepStatus)}>{thirdStepTitle}</p>
+        <p className={TIMELINE_STEP_DESCRIPTION_CLASS}>{thirdStepDescription}</p>
+      </div>
+    </div>
   );
+
+  if (surface === "flat") {
+    return timelineRail;
+  }
+
+  return <section className={sectionClassName}>{timelineRail}</section>;
 }

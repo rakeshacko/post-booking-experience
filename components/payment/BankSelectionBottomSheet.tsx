@@ -7,6 +7,11 @@ import {
   BANK_SHEET_OPTIONS,
   PAYMENT_CHOOSE_ASSETS,
 } from "@/components/payment/payment-choose-assets";
+import {
+  BOTTOM_SHEET_BODY_BEFORE_CTA_CLASS,
+  BOTTOM_SHEET_CTA_STRIP_TOP_CLASS,
+} from "@/components/ui/bottom-sheet-layout";
+import { BottomSheetCloseIcon } from "@/components/ui/BottomSheetCloseIcon";
 
 /** Enter/exit slide duration — keep in sync with CSS transition duration below */
 const SHEET_TRANSITION_MS = 280;
@@ -17,20 +22,6 @@ function RadioIndicator({ selected }: { selected: boolean }) {
     <span className="relative h-4 w-4 shrink-0" aria-hidden>
       <Image src={src} alt="" fill className="object-contain" unoptimized sizes="16px" />
     </span>
-  );
-}
-
-function CloseIcon() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="block h-6 w-6" aria-hidden>
-      <path
-        d="M18 6L6 18M6 6l12 12"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 }
 
@@ -129,7 +120,7 @@ export function BankSelectionBottomSheet({
         aria-modal="true"
         aria-labelledby="bank-sheet-title"
       >
-        <div className="px-5 pb-4 pt-6">
+        <div className={`px-5 pt-6 ${BOTTOM_SHEET_BODY_BEFORE_CTA_CLASS}`}>
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <h2
@@ -159,7 +150,7 @@ export function BankSelectionBottomSheet({
               className="cta-ghost -mr-1 -mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-[#121212] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#121212]/20 focus-visible:ring-offset-2"
               aria-label="Close"
             >
-              <CloseIcon />
+              <BottomSheetCloseIcon />
             </button>
           </div>
 
@@ -205,7 +196,9 @@ export function BankSelectionBottomSheet({
           </div>
         </div>
 
-        <div className="shrink-0 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4">
+        <div
+          className={`shrink-0 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] ${BOTTOM_SHEET_CTA_STRIP_TOP_CLASS}`}
+        >
           <button type="button" onClick={handleConfirm} className="primary-cta w-full">
             Confirm banking partner
           </button>
