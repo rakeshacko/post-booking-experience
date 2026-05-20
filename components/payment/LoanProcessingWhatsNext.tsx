@@ -21,6 +21,8 @@ export type LoanProcessingWhatsNextVariant =
   | "full_payment"
   /** Full payment — car payment complete; car delivery prep active (no loan substeps). */
   | "full_payment_complete"
+  /** Pay insurance premium — loan disbursement / full payment done; premium due under Car delivery. */
+  | "insurance_premium_due"
   | "delivery_insurance_prep"
   /** Insurance issued; RTO registration in progress (next screen after insurance prep). */
   | "delivery_rto_prep"
@@ -36,6 +38,7 @@ export type LoanProcessingWhatsNextVariant =
 export type LoanProcessingWhatsNextProps = {
   /**
    * `down_payment` — pay next; `down_payment_complete` — DP done, loan disbursement next;
+   * `insurance_premium_due` — disbursement / car payment done; insurance premium due next;
    * `delivery_insurance_prep` — policy issuing; `delivery_rto_prep` — RTO in progress;
    * `delivery_schedule_prep` — pick delivery slot; `self_finance_action` — self-arranged bank loan
    * checklist under Payment; `self_finance_down_payment` — same checklist with DP step in progress;
@@ -58,12 +61,17 @@ export type LoanProcessingWhatsNextProps = {
    * Set from `?bank=full_payment` on post-payment delivery screens.
    */
   fullPaymentJourney?: boolean;
+  /**
+   * Self-finance journey — payment nested steps use the self-finance checklist (not ACKO loan substeps).
+   */
+  selfFinanceJourney?: boolean;
 };
 
 /** Loan-style nested payment rail (skipped when `fullPaymentJourney` is true). */
 function variantUsesLoanPaymentSubsteps(variant: LoanProcessingWhatsNextVariant): boolean {
   return (
     variant === "down_payment_complete" ||
+    variant === "insurance_premium_due" ||
     variant === "delivery_insurance_prep" ||
     variant === "delivery_rto_prep" ||
     variant === "delivery_schedule_prep"
@@ -130,6 +138,35 @@ const SELF_FINANCE_PROFORMA_COMPLETED_ON = "2 Mar 2026";
 const SELF_FINANCE_DECLARE_DISBURSEMENT_COMPLETED_ON = "15 Apr 2026";
 
 const SELF_FINANCE_DOWN_PAYMENT_COMPLETED_ON = "20 Apr 2026";
+const SELF_FINANCE_MARGIN_SLIP_COMPLETED_ON = "22 Apr 2026";
+
+const SELF_FINANCE_PAYMENT_COMPLETE_SUBSTEPS: Substep[] = [
+  {
+    status: "done",
+    title: "Download proforma invoice",
+    description: `Completed on ${SELF_FINANCE_PROFORMA_COMPLETED_ON}.`,
+  },
+  {
+    status: "done",
+    title: "Declare loan disbursement amount",
+    description: `Completed on ${SELF_FINANCE_DECLARE_DISBURSEMENT_COMPLETED_ON}.`,
+  },
+  {
+    status: "done",
+    title: "Downpayment",
+    description: `Completed on ${SELF_FINANCE_DOWN_PAYMENT_COMPLETED_ON}.`,
+  },
+  {
+    status: "done",
+    title: "Download margin money slip",
+    description: `Completed on ${SELF_FINANCE_MARGIN_SLIP_COMPLETED_ON}.`,
+  },
+  {
+    status: "done",
+    title: "Confirm disbursement from bank",
+    description: "Bank transfer confirmed.",
+  },
+];
 
 const SELF_FINANCE_DOWN_PAYMENT_SUBSTEPS: Substep[] = [
   {
@@ -358,6 +395,26 @@ const DELIVERY_INSURANCE_PREP_PAYMENT_SUBSTEPS: Substep[] = [
   },
 ];
 
+/** Nested under “Car delivery” on pay-insurance-premium (premium not yet paid). */
+const CAR_DELIVERY_INSURANCE_PREMIUM_DUE_SUBSTEPS: Substep[] = [
+  {
+    status: "in_progress",
+    title: "Insurance premium",
+    description: "Pay to activate your Zero Dep policy before delivery.",
+  },
+  {
+    status: "next",
+    title: "RTO registration",
+    description:
+      "Your car will be registered with RTO and you'll get your car number.",
+  },
+  {
+    status: "next",
+    title: "Select delivery date",
+    description: "You can schedule your car delivery.",
+  },
+];
+
 /** Nested under “Car delivery” for `delivery_insurance_prep` (policy issuing first). */
 const CAR_DELIVERY_PREP_SUBSTEPS: Substep[] = [
   {
@@ -424,8 +481,11 @@ function carDeliveryNestedSubsteps(
 ): Substep[] | null {
   switch (variant) {
     case "full_payment_complete":
+    case "insurance_premium_due":
     case "delivery_insurance_prep":
-      return CAR_DELIVERY_PREP_SUBSTEPS;
+      return variant === "insurance_premium_due"
+        ? CAR_DELIVERY_INSURANCE_PREMIUM_DUE_SUBSTEPS
+        : CAR_DELIVERY_PREP_SUBSTEPS;
     case "delivery_rto_prep":
       return CAR_DELIVERY_RTO_PREP_SUBSTEPS;
     case "delivery_schedule_prep":
@@ -435,7 +495,10 @@ function carDeliveryNestedSubsteps(
   }
 }
 
-function substepsForVariant(variant: LoanProcessingWhatsNextVariant): Substep[] {
+function substepsForVariant(
+  variant: LoanProcessingWhatsNextVariant,
+  selfFinanceJourney = false,
+): Substep[] {
   if (variant === "self_finance_margin_slip") return SELF_FINANCE_MARGIN_SLIP_SUBSTEPS;
   if (variant === "self_finance_down_payment") return SELF_FINANCE_DOWN_PAYMENT_SUBSTEPS;
   if (variant === "self_finance_action") return SELF_FINANCE_ACTION_PAYMENT_SUBSTEPS;
@@ -446,9 +509,12 @@ function substepsForVariant(variant: LoanProcessingWhatsNextVariant): Substep[] 
   if (
     variant === "delivery_insurance_prep" ||
     variant === "delivery_rto_prep" ||
-    variant === "delivery_schedule_prep"
+    variant === "delivery_schedule_prep" ||
+    variant === "insurance_premium_due"
   ) {
-    return DELIVERY_INSURANCE_PREP_PAYMENT_SUBSTEPS;
+    return selfFinanceJourney
+      ? SELF_FINANCE_PAYMENT_COMPLETE_SUBSTEPS
+      : DELIVERY_INSURANCE_PREP_PAYMENT_SUBSTEPS;
   }
   return PROCESSING_SUBSTEPS;
 }
@@ -459,6 +525,7 @@ function mainStageStatuses(variant: LoanProcessingWhatsNextVariant): {
 } {
   if (
     variant === "full_payment_complete" ||
+    variant === "insurance_premium_due" ||
     variant === "delivery_insurance_prep" ||
     variant === "delivery_rto_prep" ||
     variant === "delivery_schedule_prep"
@@ -540,23 +607,24 @@ export function LoanProcessingWhatsNext({
   downPaymentInProgressDescription,
   paymentInProgressDescription,
   fullPaymentJourney = false,
+  selfFinanceJourney = false,
 }: LoanProcessingWhatsNextProps) {
   const { payment: mainPaymentStatus, carDelivery: mainCarDeliveryStatus } = useMemo(
     () => mainStageStatuses(variant),
     [variant],
   );
 
-  const paymentSubtitle = useMemo(
-    () =>
-      fullPaymentJourney ? FULL_PAYMENT_SUBTITLE : paymentSectionSubtitle(variant),
-    [fullPaymentJourney, variant],
-  );
+  const paymentSubtitle = useMemo(() => {
+    if (fullPaymentJourney) return FULL_PAYMENT_SUBTITLE;
+    if (selfFinanceJourney) return SELF_FINANCE_ACTION_PAYMENT_SUBTITLE;
+    return paymentSectionSubtitle(variant);
+  }, [fullPaymentJourney, selfFinanceJourney, variant]);
 
   const substeps = useMemo(() => {
     const base =
       fullPaymentJourney && variantUsesLoanPaymentSubsteps(variant)
         ? []
-        : substepsForVariant(variant);
+        : substepsForVariant(variant, selfFinanceJourney);
     if (variant === "down_payment" && downPaymentInProgressDescription) {
       return base.map((s) =>
         s.title === "Down payment" && s.status === "in_progress"
@@ -572,7 +640,7 @@ export function LoanProcessingWhatsNext({
       );
     }
     return base;
-  }, [variant, downPaymentInProgressDescription, fullPaymentJourney]);
+  }, [variant, downPaymentInProgressDescription, fullPaymentJourney, selfFinanceJourney]);
 
   const deliveryNestedSteps = useMemo(() => carDeliveryNestedSubsteps(variant), [variant]);
 

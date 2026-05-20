@@ -4,6 +4,27 @@ export const BOOKING_LOCK_AMOUNT_INR = 10_000;
 /** Query `bank` value for full-payment checkout and success redirects. */
 export const FULL_PAYMENT_BANK_ID = "full_payment";
 
+/** Query flag on mock checkout — full-payment insurance premium (fixed amount). */
+export const INSURANCE_PAYMENT_KIND = "insurance";
+
+/** Optional query context preserved across insurance premium screens. */
+export type InsuranceJourneyQuery = {
+  bank?: string | null;
+  loanAmount?: string | null;
+};
+
+function appendInsuranceJourneyQuery(
+  q: URLSearchParams,
+  params?: InsuranceJourneyQuery,
+): void {
+  if (params?.bank) {
+    q.set("bank", params.bank);
+  } else if (!params?.loanAmount) {
+    q.set("bank", FULL_PAYMENT_BANK_ID);
+  }
+  if (params?.loanAmount) q.set("loan_amount", params.loanAmount);
+}
+
 /**
  * Builds `/payment?bank=full_payment&down_payment=…` — mock checkout for full payment (instalments demo).
  */
@@ -67,6 +88,51 @@ export function buildLoanDisbursementReceivedHref(loanAmount?: string | null): s
   const q = new URLSearchParams();
   q.set("loan_amount", loanAmount);
   return `/payment/loan-disbursement-received?${q.toString()}`;
+}
+
+/** Prompt to pay fixed insurance premium before car insurance prep. */
+export function buildPayInsurancePremiumHref(params?: InsuranceJourneyQuery): string {
+  const q = new URLSearchParams();
+  appendInsuranceJourneyQuery(q, params);
+  const qs = q.toString();
+  return qs ? `/payment/pay-insurance-premium?${qs}` : "/payment/pay-insurance-premium";
+}
+
+/** Mock checkout for insurance premium (fixed ₹37,000). */
+export function buildInsurancePremiumCheckoutHref(
+  insuranceAmountInr: number,
+  params?: InsuranceJourneyQuery,
+): string {
+  const q = new URLSearchParams();
+  appendInsuranceJourneyQuery(q, params);
+  q.set("down_payment", String(Math.round(insuranceAmountInr)));
+  q.set("payment_kind", INSURANCE_PAYMENT_KIND);
+  return `/payment?${q.toString()}`;
+}
+
+/** After insurance premium mock checkout — ack before car insurance prep. */
+export function buildInsurancePremiumSuccessHref(
+  paidInr: number,
+  params?: InsuranceJourneyQuery,
+): string {
+  const q = new URLSearchParams();
+  appendInsuranceJourneyQuery(q, params);
+  q.set("paid", String(Math.round(paidInr)));
+  return `/payment/insurance-premium-success?${q.toString()}`;
+}
+
+/** Post–insurance premium payment — “We're insuring your car” hero. */
+export function buildCarDeliveryInsurancePrepHref(params?: InsuranceJourneyQuery): string {
+  const q = new URLSearchParams();
+  const bank = params?.bank;
+  if (bank === FULL_PAYMENT_BANK_ID) {
+    q.set("bank", FULL_PAYMENT_BANK_ID);
+  } else if (bank) {
+    q.set("bank", bank);
+  }
+  if (params?.loanAmount) q.set("loan_amount", params.loanAmount);
+  const qs = q.toString();
+  return qs ? `/payment/car-delivery-insurance-prep?${qs}` : "/payment/car-delivery-insurance-prep";
 }
 
 /** Appends `bank=full_payment` for downstream delivery screens in the full-payment journey. */

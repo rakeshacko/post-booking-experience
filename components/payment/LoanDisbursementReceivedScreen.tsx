@@ -5,29 +5,21 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
+import loanApprovedIllustration from "@/assets/loan approved.svg";
 import { DEMO_DEFAULT_LOAN_DISBURSEMENT_INR } from "@/components/payment/loan-amount-demo-constants";
-import { PAYMENT_SUCCESS_ACK_ASSETS } from "@/components/payment/payment-success-ack-assets";
 import { SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS } from "@/components/ui/success-screen-layout";
+import { buildPayInsurancePremiumHref } from "@/lib/paymentUrls";
 
 const HEADLINE = "Loan disbursed!";
 const SUBLINE =
   "The bank has sent the full loan amount to the dealer. Your car is now being prepped for delivery.";
 
-/** After illustration, delay before header + subtext (step 2). */
-const HEADER_AFTER_ILLUSTRATION_MS = 420;
-/** After header, delay before disbursed amount card (step 3). */
-const AMOUNT_AFTER_HEADER_MS = 420;
+/** After header + subtext, delay before disbursed amount card (step 3). */
+const CARD_AFTER_HEADER_MS = 420;
 /** After amount card, delay before bottom CTA (step 4). */
-const CTA_AFTER_AMOUNT_MS = 420;
-/** If illustration `onLoadingComplete` never fires, still reveal art + copy. */
-const ILLUSTRATION_FALLBACK_MS = 1200;
-
-const FADE_TRANSITION = { duration: 0.45, ease: [0.22, 1, 0.36, 1] as const };
-
-/** Reserved height so header fade-in does not shift layout. */
-const HEADER_SLOT_MIN_HEIGHT_CLASS = "min-h-[96px]";
-/** Reserved height for disbursed amount card slot. */
-const AMOUNT_SLOT_MIN_HEIGHT_CLASS = "min-h-[52px]";
+const CTA_AFTER_CARD_MS = 420;
+/** If hero art never loads, still reveal copy so the user is not stuck. */
+const HEADER_FALLBACK_MS = 2200;
 
 function formatInr(amount: number) {
   return new Intl.NumberFormat("en-IN", {
@@ -45,25 +37,34 @@ function parseLoanAmountInr(raw: string | null): number {
 }
 
 type LoanDisbursementReceivedScreenProps = {
-  /** Primary CTA destination (defaults to insurance prep). */
+  /** Primary CTA destination (defaults to pay insurance premium). */
   okayHref?: string;
 };
 
 /**
- * Loan disbursement acknowledged — success layout (same shell as documents received).
- * Load order: illustration → header + subtext → disbursed amount → CTA.
- * Slots are always mounted with reserved height so nothing shifts vertically.
+ * Loan disbursement acknowledged — same load sequence and CTA chrome as
+ * {@link SelfFinanceConfirmedScreen} / {@link FullPaymentConfirmedScreen}.
+ * Sequence: hero illustration → header + subtext → disbursed amount → Continue.
  */
 export function LoanDisbursementReceivedScreen({
-  okayHref = "/payment/car-delivery-insurance-prep",
+  okayHref: okayHrefProp,
 }: LoanDisbursementReceivedScreenProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const headerRevealedByIllustrationRef = useRef(false);
-  const [showIllustration, setShowIllustration] = useState(false);
+  const headerRevealedByHeroRef = useRef(false);
   const [showHeader, setShowHeader] = useState(false);
-  const [showAmount, setShowAmount] = useState(false);
+  const [showAmountCard, setShowAmountCard] = useState(false);
   const [showFooter, setShowFooter] = useState(false);
+
+  const okayHref = useMemo(
+    () =>
+      okayHrefProp ??
+      buildPayInsurancePremiumHref({
+        bank: searchParams.get("bank"),
+        loanAmount: searchParams.get("loan_amount"),
+      }),
+    [okayHrefProp, searchParams],
+  );
 
   const disbursedAmountInr = useMemo(
     () => parseLoanAmountInr(searchParams.get("loan_amount")),
@@ -71,36 +72,38 @@ export function LoanDisbursementReceivedScreen({
   );
 
   const revealHeader = useCallback(() => {
-    headerRevealedByIllustrationRef.current = true;
+    headerRevealedByHeroRef.current = true;
     setShowHeader(true);
   }, []);
 
-  const onIllustrationLoaded = useCallback(() => {
-    setShowIllustration(true);
-    window.setTimeout(revealHeader, HEADER_AFTER_ILLUSTRATION_MS);
+  const onHeroLoaded = useCallback(() => {
+    revealHeader();
   }, [revealHeader]);
 
   useEffect(() => {
     const id = window.setTimeout(() => {
-      if (!headerRevealedByIllustrationRef.current) {
-        setShowIllustration(true);
+      if (!headerRevealedByHeroRef.current) {
         revealHeader();
       }
-    }, ILLUSTRATION_FALLBACK_MS);
+    }, HEADER_FALLBACK_MS);
     return () => window.clearTimeout(id);
   }, [revealHeader]);
 
   useEffect(() => {
     if (!showHeader) return;
-    const id = window.setTimeout(() => setShowAmount(true), AMOUNT_AFTER_HEADER_MS);
+    const id = window.setTimeout(() => setShowAmountCard(true), CARD_AFTER_HEADER_MS);
     return () => window.clearTimeout(id);
   }, [showHeader]);
 
   useEffect(() => {
-    if (!showAmount) return;
-    const id = window.setTimeout(() => setShowFooter(true), CTA_AFTER_AMOUNT_MS);
+    if (!showAmountCard) return;
+    const id = window.setTimeout(() => setShowFooter(true), CTA_AFTER_CARD_MS);
     return () => window.clearTimeout(id);
-  }, [showAmount]);
+  }, [showAmountCard]);
+
+  const onContinue = useCallback(() => {
+    router.push(okayHref);
+  }, [okayHref, router]);
 
   return (
     <div className="relative min-h-dvh overflow-hidden bg-[#fafbfb] font-sans shadow-[0_-4px_8px_-2px_rgba(54,53,76,0.06)]">
@@ -109,76 +112,71 @@ export function LoanDisbursementReceivedScreen({
         aria-hidden
       />
 
-      <div className="relative z-10 flex min-h-dvh w-full flex-col justify-start px-5 pb-[calc(48px+max(20px,env(safe-area-inset-bottom)))] pt-[calc(48px+clamp(4rem,14vh,6.5rem))]">
-        <main className="mx-auto flex w-full max-w-[640px] flex-col items-center gap-4 text-center">
-          <motion.div
-            animate={{ opacity: showIllustration ? 1 : 0 }}
-            transition={FADE_TRANSITION}
-            className={`relative mx-auto h-[104px] w-[104px] shrink-0 ${showIllustration ? "" : "pointer-events-none"}`}
-            aria-hidden={!showIllustration}
-          >
+      <div className="relative z-10 flex min-h-dvh w-full flex-col justify-start px-4 pb-[max(5.5rem,env(safe-area-inset-bottom))] pt-[calc(48px+clamp(4rem,14vh,6.5rem))]">
+        <main className="mx-auto flex w-full max-w-[640px] flex-col items-center overflow-y-auto text-center">
+          <div className="relative flex h-[96px] w-[96px] shrink-0 items-center justify-center">
             <Image
-              src={PAYMENT_SUCCESS_ACK_ASSETS.loanDisbursedIllustration}
+              src={loanApprovedIllustration}
               alt=""
-              width={104}
-              height={104}
-              className="h-[104px] w-[104px] object-contain"
+              width={96}
+              height={96}
+              className="h-full w-full object-contain"
               unoptimized
               priority
-              onLoadingComplete={onIllustrationLoaded}
+              onLoadingComplete={onHeroLoaded}
             />
-          </motion.div>
+          </div>
 
-          <motion.div
-            animate={{ opacity: showHeader ? 1 : 0 }}
-            transition={FADE_TRANSITION}
-            className={`flex w-full flex-col items-center text-center ${SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS} ${HEADER_SLOT_MIN_HEIGHT_CLASS} ${
-              showHeader ? "" : "pointer-events-none"
-            }`}
-            aria-hidden={!showHeader}
-          >
-            <h1 className="w-full text-[24px] font-semibold leading-8 tracking-[-0.1px] text-[#121212]">
-              {HEADLINE}
-            </h1>
-            <p className="w-full text-sm font-normal leading-5 text-[#4b4b4b]">{SUBLINE}</p>
-          </motion.div>
+          {showHeader && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              className={`mt-5 flex w-full flex-col items-center ${SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS}`}
+            >
+              <h1 className="text-center text-2xl font-semibold leading-8 tracking-[-0.1px] text-[#121212]">
+                {HEADLINE}
+              </h1>
+              <p className="w-full text-center text-sm font-normal leading-5 text-[#4b4b4b]">
+                {SUBLINE}
+              </p>
+            </motion.div>
+          )}
 
-          <motion.section
-            animate={{ opacity: showAmount ? 1 : 0 }}
-            transition={FADE_TRANSITION}
-            className={`w-full ${AMOUNT_SLOT_MIN_HEIGHT_CLASS} ${showAmount ? "" : "pointer-events-none"}`}
-            aria-hidden={!showAmount}
-            aria-label="Disbursed amount summary"
-          >
-            <div className="w-full rounded-xl border border-[#e8e8e8] bg-white px-4 py-3 text-left">
-              <dl className="m-0 flex items-center justify-between gap-3">
-                <dt className="text-sm font-normal leading-5 text-[#4b4b4b]">Disbursed amount</dt>
-                <dd className="text-base font-semibold leading-6 text-[#121212]">
-                  {formatInr(disbursedAmountInr)}
-                </dd>
-              </dl>
-            </div>
-          </motion.section>
+          {showAmountCard && (
+            <motion.section
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              className="mt-5 w-full"
+              aria-label="Disbursed amount summary"
+            >
+              <div className="w-full rounded-xl border border-[#e8e8e8] bg-white px-4 py-3 text-left">
+                <dl className="m-0 flex items-center justify-between gap-3">
+                  <dt className="text-sm font-normal leading-5 text-[#4b4b4b]">Disbursed amount</dt>
+                  <dd className="text-base font-semibold leading-6 text-[#121212]">
+                    {formatInr(disbursedAmountInr)}
+                  </dd>
+                </dl>
+              </div>
+            </motion.section>
+          )}
         </main>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-10 px-5 pb-[max(20px,env(safe-area-inset-bottom))]">
-        <motion.div
-          animate={{ opacity: showFooter ? 1 : 0 }}
-          transition={FADE_TRANSITION}
-          className={`mx-auto w-full max-w-[640px] ${showFooter ? "" : "pointer-events-none"}`}
-        >
-          <button
-            type="button"
-            className="primary-cta w-full focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#121212]/30 focus-visible:ring-offset-2"
-            tabIndex={showFooter ? 0 : -1}
-            aria-hidden={!showFooter}
-            onClick={() => router.push(okayHref)}
-          >
-            Okay
-          </button>
-        </motion.div>
-      </div>
+      {showFooter && (
+        <div className="fixed inset-x-0 bottom-0 z-20 bg-white pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[0_-4px_6px_0_rgba(54,53,76,0.08)]">
+          <div className="mx-auto flex w-full max-w-[640px] items-start justify-center px-5 pt-3">
+            <button
+              type="button"
+              className="primary-cta w-full rounded-lg focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#121212]/30 focus-visible:ring-offset-2"
+              onClick={onContinue}
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

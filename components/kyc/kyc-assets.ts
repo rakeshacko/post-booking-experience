@@ -19,6 +19,8 @@ export const KYC_ASSETS = {
   carDeliveryHero: asset("Car delivery.svg"),
   /** Car insurance setup hero — `/payment/car-delivery-insurance-prep`. */
   insuranceInProgressHero: asset("Insurance in progress.svg"),
+  /** Insurance premium payment hero — `/payment/pay-insurance-premium`. */
+  insurancePremiumHero: asset("Insurance premium.svg"),
   /** Loan sanctioned / approved moment. */
   loanApprovedHero: asset("loan approved.svg"),
   /** Payment prompt hero — `/payment/default` and similar. */

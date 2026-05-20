@@ -7,7 +7,7 @@ import { KycBookingProcessingScreen } from "@/components/kyc/KycBookingProcessin
 import { KYC_ASSETS } from "@/components/kyc/kyc-assets";
 import { LoanProcessingWhatsNext } from "@/components/payment/LoanProcessingWhatsNext";
 import { useFullPaymentJourney } from "@/components/payment/use-full-payment-journey";
-import { buildLoanDisbursementReceivedHref } from "@/lib/paymentUrls";
+import { buildLoanDisbursementReceivedHref, buildPayInsurancePremiumHref } from "@/lib/paymentUrls";
 
 const LOAN_HEADLINE = "Down payment received";
 const LOAN_BANK_TRANSFER_HEADLINE = "Payment received";
@@ -23,7 +23,7 @@ const FULL_PAYMENT_SUBLINE =
 /** Post–full down payment: hero + CTA + timeline (DP done; disbursement or delivery next). */
 export function DownPaymentInsuranceSetupScreen() {
   const searchParams = useSearchParams();
-  const { isFullPayment, withBank } = useFullPaymentJourney();
+  const { isFullPayment } = useFullPaymentJourney();
   const loanAmount = searchParams.get("loan_amount");
   const bank = searchParams.get("bank");
   const bankTransferRef = searchParams.get("bank_transfer_ref");
@@ -57,20 +57,27 @@ export function DownPaymentInsuranceSetupScreen() {
     );
   }, [bankTransferRef, isFullPayment]);
 
-  const whatsNextCard = useMemo(
-    () => (
-      <LoanProcessingWhatsNext
-        variant={isFullPayment ? "full_payment_complete" : "down_payment_complete"}
-        fullPaymentJourney={isFullPayment}
-      />
-    ),
-    [isFullPayment],
-  );
+  const whatsNextCard = useMemo(() => {
+    if (isFullPayment) {
+      return (
+        <LoanProcessingWhatsNext variant="full_payment_complete" fullPaymentJourney />
+      );
+    }
+    if (isSelfFinance) {
+      return (
+        <LoanProcessingWhatsNext variant="insurance_premium_due" selfFinanceJourney />
+      );
+    }
+    return <LoanProcessingWhatsNext variant="down_payment_complete" />;
+  }, [isFullPayment, isSelfFinance]);
 
   const nextHref = isFullPayment
-    ? withBank("/payment/car-delivery-insurance-prep")
+    ? buildPayInsurancePremiumHref()
     : isSelfFinance
-      ? "/payment/car-delivery-insurance-prep"
+      ? buildPayInsurancePremiumHref({
+          bank: bank ?? "self_finance",
+          loanAmount,
+        })
       : buildLoanDisbursementReceivedHref(loanAmount);
 
   return (

@@ -280,7 +280,7 @@ export function KycBookingProcessingScreen({
 
             {heroSummaryCard ? (
               <div
-                className={`mt-[20px] w-full transition-opacity ${HERO_FADE_DURATION_CLASS} ease-out ${
+                className={`mt-6 w-full transition-opacity ${HERO_FADE_DURATION_CLASS} ease-out ${
                   showSubline ? "opacity-100" : "opacity-0"
                 }`}
                 aria-hidden={!showSubline}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 
 import { KycBookingProcessingScreen } from "@/components/kyc/KycBookingProcessingScreen";
 import { KYC_ASSETS } from "@/components/kyc/kyc-assets";
@@ -14,16 +15,19 @@ const SUBLINE = `We're insuring your car. This usually takes ${INSURANCE_PREP_DA
 
 /** After down-payment / disbursement messaging — delivery prep + insurance (hero card + timeline). */
 export function CarDeliveryInsurancePrepScreen() {
+  const searchParams = useSearchParams();
   const { isFullPayment, withBank } = useFullPaymentJourney();
+  const isSelfFinance = searchParams.get("bank") === "self_finance";
 
   const whatsNextCard = useMemo(
     () => (
       <LoanProcessingWhatsNext
         variant="delivery_insurance_prep"
         fullPaymentJourney={isFullPayment}
+        selfFinanceJourney={isSelfFinance}
       />
     ),
-    [isFullPayment],
+    [isFullPayment, isSelfFinance],
   );
 
   return (

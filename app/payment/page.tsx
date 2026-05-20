@@ -6,10 +6,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { KycTopNavHeader } from "@/components/kyc/KycTopNavHeader";
 import { DefaultPageTransition } from "@/components/ui/page-transition";
 
+import { FULL_PAYMENT_INSURANCE_INR } from "@/components/payment/loan-amount-demo-constants";
 import {
   BOOKING_LOCK_AMOUNT_INR,
   buildDownPaymentSuccessHref,
+  buildInsurancePremiumSuccessHref,
   FULL_PAYMENT_BANK_ID,
+  INSURANCE_PAYMENT_KIND,
 } from "@/lib/paymentUrls";
 
 /** No artificial delay before navigation to the dedicated success page. */
@@ -100,6 +103,7 @@ function parseInrInputDigits(value: string): number {
  * Pay → loader → dedicated success route (`/payment/booking-success` or `/payment/down-payment-success`).
  * Booking flow: `/payment` (no `down_payment`) — fixed booking lock, read-only.
  * Down payment flow: `?down_payment=` (e.g. from pay-down-payment) — editable amount / instalments (demo).
+ * Insurance premium: `?payment_kind=insurance` — fixed insurance amount (read-only).
  */
 function MockRazorpayPaymentPageContent() {
   const router = useRouter();
@@ -118,21 +122,33 @@ function MockRazorpayPaymentPageContent() {
     const originalDownPayment =
       hasDownPaymentParam && Number.isFinite(origN) && origN > 0 ? Math.round(origN) : due;
     const isFullPayment = searchParams.get("bank") === FULL_PAYMENT_BANK_ID;
+    const isInsurancePayment =
+      searchParams.get("payment_kind") === INSURANCE_PAYMENT_KIND;
+    const insuranceDue = FULL_PAYMENT_INSURANCE_INR;
     return {
-      totalDue: due,
-      originalDownPayment,
-      checkoutSubtitle: hasDownPaymentParam
-        ? isFullPayment
-          ? "Full payment · incl. applicable taxes"
-          : "Down payment · incl. applicable taxes"
-        : "Booking lock amount · incl. applicable taxes",
+      totalDue: isInsurancePayment ? insuranceDue : due,
+      originalDownPayment: isInsurancePayment ? insuranceDue : originalDownPayment,
+      checkoutSubtitle: isInsurancePayment
+        ? "Insurance premium · incl. applicable taxes"
+        : hasDownPaymentParam
+          ? isFullPayment
+            ? "Full payment · incl. applicable taxes"
+            : "Down payment · incl. applicable taxes"
+          : "Booking lock amount · incl. applicable taxes",
       isDownPaymentFromUrl: hasDownPaymentParam,
       isFullPayment,
+      isInsurancePayment,
     };
   }, [searchParams]);
 
-  const { totalDue, originalDownPayment, checkoutSubtitle, isDownPaymentFromUrl, isFullPayment } =
-    checkoutMeta;
+  const {
+    totalDue,
+    originalDownPayment,
+    checkoutSubtitle,
+    isDownPaymentFromUrl,
+    isFullPayment,
+    isInsurancePayment,
+  } = checkoutMeta;
 
   const paymentBank = searchParams.get("bank");
 
@@ -143,15 +159,15 @@ function MockRazorpayPaymentPageContent() {
   const [phase, setPhase] = useState<Phase>("checkout");
 
   useEffect(() => {
-    if (!isDownPaymentFromUrl) return;
+    if (!isDownPaymentFromUrl || isInsurancePayment) return;
     setRemainingDue(readStoredRemaining(totalDue, paymentBank));
-  }, [totalDue, isDownPaymentFromUrl, paymentBank]);
+  }, [totalDue, isDownPaymentFromUrl, isInsurancePayment, paymentBank]);
 
   useEffect(() => {
     if (!isDownPaymentFromUrl || phase !== "checkout") return;
-    setAmountInput(String(remainingDue));
+    setAmountInput(isInsurancePayment ? String(totalDue) : String(remainingDue));
     setCheckoutError(null);
-  }, [remainingDue, phase, isDownPaymentFromUrl]);
+  }, [remainingDue, phase, isDownPaymentFromUrl, isInsurancePayment, totalDue]);
 
   const parsedPayAmount = useMemo(
     () => parseInrInputDigits(amountInput),
@@ -159,13 +175,19 @@ function MockRazorpayPaymentPageContent() {
   );
 
   const isPayAmountValid = useMemo(() => {
+    if (isInsurancePayment) return true;
     if (!isDownPaymentFromUrl) return true;
     if (remainingDue <= 0) return false;
     if (!Number.isFinite(parsedPayAmount)) return false;
     if (parsedPayAmount < MIN_PAYMENT_INR) return false;
     if (parsedPayAmount > remainingDue) return false;
     return true;
-  }, [isDownPaymentFromUrl, parsedPayAmount, remainingDue]);
+  }, [isDownPaymentFromUrl, isInsurancePayment, parsedPayAmount, remainingDue]);
+
+  useEffect(() => {
+    if (!isInsurancePayment) return;
+    setRemainingDue(totalDue);
+  }, [isInsurancePayment, totalDue]);
 
   useEffect(() => {
     if (phase !== "processing") return;
@@ -208,6 +230,20 @@ function MockRazorpayPaymentPageContent() {
     }
 
     setCheckoutError(null);
+
+    if (isInsurancePayment) {
+      pendingSuccessHref.current = buildInsurancePremiumSuccessHref(FULL_PAYMENT_INSURANCE_INR, {
+        bank: searchParams.get("bank"),
+        loanAmount: searchParams.get("loan_amount"),
+      });
+      if (PROCESSING_MS <= 0) {
+        router.push(pendingSuccessHref.current);
+        return;
+      }
+      setPhase("processing");
+      return;
+    }
+
     const n = parseInrInputDigits(amountInput);
     if (!Number.isFinite(n)) {
       setCheckoutError("Enter a valid amount.");
@@ -239,6 +275,7 @@ function MockRazorpayPaymentPageContent() {
   }, [
     amountInput,
     isDownPaymentFromUrl,
+    isInsurancePayment,
     originalDownPayment,
     paymentBank,
     remainingDue,
@@ -287,7 +324,15 @@ function MockRazorpayPaymentPageContent() {
           </div>
 
           <div className="px-4 py-6">
-            {isDownPaymentFromUrl ? (
+            {isInsurancePayment ? (
+              <>
+                <p className="text-center text-xs text-[#6b7280]">Insurance premium</p>
+                <p className="mt-1 text-center text-3xl font-semibold tabular-nums tracking-tight text-[#1a1a1a]">
+                  {formatInr(FULL_PAYMENT_INSURANCE_INR)}
+                </p>
+                <p className="mt-2 text-center text-xs text-[#9ca3af]">{checkoutSubtitle}</p>
+              </>
+            ) : isDownPaymentFromUrl ? (
               <>
                 <p className="text-center text-xs text-[#6b7280]">Amount to pay now</p>
                 <div className="mt-2 flex justify-center">
@@ -408,11 +453,13 @@ function MockRazorpayPaymentPageContent() {
             disabled={!isPayAmountValid}
             className="primary-cta focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#3395ff] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isDownPaymentFromUrl &&
-            isPayAmountValid &&
-            Number.isFinite(parsedPayAmount)
-              ? `Pay ${formatInr(parsedPayAmount)}`
-              : "Pay"}
+            {isInsurancePayment
+              ? `Pay ${formatInr(FULL_PAYMENT_INSURANCE_INR)}`
+              : isDownPaymentFromUrl &&
+              isPayAmountValid &&
+              Number.isFinite(parsedPayAmount)
+                ? `Pay ${formatInr(parsedPayAmount)}`
+                : "Pay"}
           </button>
         </div>
       </div>
