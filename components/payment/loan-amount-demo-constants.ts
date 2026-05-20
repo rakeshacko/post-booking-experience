@@ -14,7 +14,9 @@ export const FULL_PAYMENT_INSURANCE_INR = 37_000;
 /** Car portion when paying full on-road price upfront (on-road total minus insurance). */
 export const FULL_PAYMENT_CAR_AMOUNT_INR = ON_ROAD_PRICE_INR - FULL_PAYMENT_INSURANCE_INR;
 
-/** Due-date copy on full-payment amount breakdown. */
+/** Demo default loan disbursement when `loan_amount` is not on the URL (choose-loan default DP ₹3L). */
+export const DEMO_DEFAULT_LOAN_DISBURSEMENT_INR = ON_ROAD_PRICE_INR - 300_000;
+
 export const FULL_PAYMENT_CAR_DUE_LABEL = "30 May 2026";
 /** Secondary line under insurance amount on full-payment breakdown. */
 export const FULL_PAYMENT_INSURANCE_DUE_LINE = "Due before car registration";

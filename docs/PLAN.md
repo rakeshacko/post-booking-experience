@@ -28,6 +28,8 @@ Living document: update this file when flows, routes, or UI behavior change.
 | `/payment/loan-sanctioned` | Loan sanctioned — same shell family as loan-processing |
 | `/payment/choose-loan-amount` | Choose loan / down payment range |
 | `/payment/pay-down-payment` | Pay down payment screen |
+| `/payment/down-payment-insurance-setup` | Down payment received — disbursement processing (loan) or payment complete (full payment) |
+| `/payment/loan-disbursement-received` | Loan disbursed success ack — **Okay** → insurance prep |
 | `/payment/self-finance-confirmed` | Self finance — post-confirm celebration; **Continue** → `/payment/self-finance-action` |
 | `/payment/self-finance-action` | Self finance — proforma hero + **`LoanProcessingWhatsNext variant="self_finance_action"`**; primary CTA → `/payment/pay-down-payment` (current wire) |
 | `/payment` | Payment flow / hub (e.g. full payment path from choose) |

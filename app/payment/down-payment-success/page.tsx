@@ -60,7 +60,7 @@ function DownPaymentSuccessInner() {
               loanAmount,
               originalDownPaymentInr: original,
             })
-          : buildInsuranceSetupHref(bank),
+          : buildInsuranceSetupHref(bank, loanAmount),
       };
     }
 
@@ -77,13 +77,13 @@ function DownPaymentSuccessInner() {
                 loanAmount,
                 originalDownPaymentInr: original,
               })
-            : buildInsuranceSetupHref(bank),
+            : buildInsuranceSetupHref(bank, loanAmount),
       };
     }
 
     return {
       subline: "Your payment was received.",
-      nextHref: buildInsuranceSetupHref(bank),
+      nextHref: buildInsuranceSetupHref(bank, loanAmount),
     };
   }, [searchParams]);
 

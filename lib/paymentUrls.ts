@@ -46,11 +46,27 @@ export function buildPayFullPaymentHref(
 }
 
 /** Post–payment setup hero (`/payment/down-payment-insurance-setup`). */
-export function buildInsuranceSetupHref(bank: string | null): string {
+export function buildInsuranceSetupHref(
+  bank: string | null,
+  loanAmount?: string | null,
+): string {
+  const q = new URLSearchParams();
   if (bank === FULL_PAYMENT_BANK_ID) {
-    return `/payment/down-payment-insurance-setup?bank=${encodeURIComponent(FULL_PAYMENT_BANK_ID)}`;
+    q.set("bank", FULL_PAYMENT_BANK_ID);
+  } else if (bank) {
+    q.set("bank", bank);
   }
-  return "/payment/down-payment-insurance-setup";
+  if (loanAmount) q.set("loan_amount", loanAmount);
+  const qs = q.toString();
+  return qs ? `/payment/down-payment-insurance-setup?${qs}` : "/payment/down-payment-insurance-setup";
+}
+
+/** Loan disbursed success ack — between down-payment setup and insurance prep. */
+export function buildLoanDisbursementReceivedHref(loanAmount?: string | null): string {
+  if (!loanAmount) return "/payment/loan-disbursement-received";
+  const q = new URLSearchParams();
+  q.set("loan_amount", loanAmount);
+  return `/payment/loan-disbursement-received?${q.toString()}`;
 }
 
 /** Appends `bank=full_payment` for downstream delivery screens in the full-payment journey. */
