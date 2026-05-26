@@ -25,10 +25,14 @@ export function BackChevron() {
 export type KycTopNavHeaderProps = {
   /** Optional label after back (e.g. checkout title). */
   title?: string;
+  /** Content after back with 24px gap (e.g. buying-guide progress). */
+  afterBack?: ReactNode;
   /** Optional right-side control (e.g. “Get help” pill). */
   endSlot?: ReactNode;
   /** No solid fill — use over gradients/animations; stays above layers via z-index. */
   transparent?: boolean;
+  /** Override default `router.back()` for the back chevron. */
+  onBack?: () => void;
   className?: string;
 };
 
@@ -38,8 +42,10 @@ export type KycTopNavHeaderProps = {
  */
 export function KycTopNavHeader({
   title,
+  afterBack,
   endSlot,
   transparent = false,
+  onBack,
   className,
 }: KycTopNavHeaderProps = {}) {
   const router = useRouter();
@@ -70,15 +76,23 @@ export function KycTopNavHeader({
         className
       )}
     >
-      <div className="flex min-h-0 min-w-0 flex-1 items-center gap-2">
+      <div
+        className={cn(
+          "flex min-h-0 min-w-0 flex-1 items-center",
+          afterBack != null ? "gap-6" : "gap-2"
+        )}
+      >
         <button
           type="button"
-          onClick={() => router.back()}
+          onClick={() => (onBack != null ? onBack() : router.back())}
           className="cta-ghost -ml-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-[#121212] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#121212]/20 focus-visible:ring-offset-2"
           aria-label="Go back"
         >
           <BackChevron />
         </button>
+        {afterBack != null ? (
+          <div className="flex min-h-0 min-w-0 flex-1 items-center">{afterBack}</div>
+        ) : null}
         {title ? (
           <h1 className="min-w-0 truncate text-base font-semibold leading-6 text-[#121212]">{title}</h1>
         ) : null}

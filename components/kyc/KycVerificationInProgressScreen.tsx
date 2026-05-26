@@ -10,6 +10,11 @@ import { KYC_ASSETS } from "@/components/kyc/kyc-assets";
 import { KycTopNavHeader } from "@/components/kyc/KycTopNavHeader";
 import { WordByWordLine } from "@/components/payment/WordByWordLine";
 import { AuroraLightLayer } from "@/components/ui/aurora-light-layer";
+import {
+  HERO_ACTION_HEADLINE_SUBLINE_GAP_CLASS,
+  HERO_ICON_TOP_PT,
+  HERO_ILLUSTRATION_TO_COPY_MT,
+} from "@/components/ui/success-screen-layout";
 import { ManageBookingBottomSheet } from "@/components/kyc/ManageBookingBottomSheet";
 
 const HEADLINE = "KYC verification in progress";
@@ -25,9 +30,6 @@ const HERO_FADE_DURATION_CLASS = "duration-[450ms]";
 const SUBLINE_TO_CTA_DELAY_MS = 240;
 /** Hero block (header + aurora + content) fills at least 90% of the viewport; uses `dvh` for mobile browser chrome. */
 const HERO_MIN_HEIGHT = "min-h-[90dvh]";
-
-/** Vertical offset from nav bottom to KYC icon top — aligned with `KycBookingProcessingScreen` (`pt-[72px]`). */
-const HERO_ICON_TOP_PT = "pt-[72px]";
 
 function MenuOptionsButton({ onClick }: { onClick: () => void }) {
   return (
@@ -120,7 +122,7 @@ export function KycVerificationInProgressScreen({
               />
             </div>
 
-            <div className="mt-8 flex w-full flex-col gap-4 text-center">
+            <div className={`${HERO_ILLUSTRATION_TO_COPY_MT} flex w-full flex-col ${HERO_ACTION_HEADLINE_SUBLINE_GAP_CLASS} text-center`}>
               {reduceMotion ? (
                 <h1 className="text-2xl font-semibold leading-8 tracking-tight text-[#121212]">
                   {HEADLINE}

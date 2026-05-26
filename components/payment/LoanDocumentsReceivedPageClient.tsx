@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { KycDocumentsReceivedScreen } from "@/components/kyc/KycDocumentsReceivedScreen";
 
 /**
- * Builds Okay CTA href so `bank` is preserved into loan processing when present.
+ * Preserves `bank` query into loan processing on auto-advance when present.
  */
 export function LoanDocumentsReceivedPageClient() {
   const searchParams = useSearchParams();

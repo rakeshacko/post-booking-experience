@@ -2,8 +2,37 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+
+import { QuoteFlowMenuSheet } from "@/components/quote/QuoteFlowMenuSheet";
+import {
+  DEFAULT_EXPERIENCE_FLOW,
+  getExperienceFlowDefinition,
+  readExperienceFlow,
+  writeExperienceFlow,
+  type ExperienceFlow,
+} from "@/lib/experience-flow";
 import { QUOTE_ASSETS } from "./quote-assets";
+
+function MenuIconButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-[#f0f0f0] bg-white shadow-[0_4px_16px_rgba(0,0,0,0.12)] transition-transform active:scale-[0.98] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#121212]/20 focus-visible:ring-offset-2"
+      aria-label="Switch experience flow"
+    >
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <path
+          d="M4 7h16M4 12h16M4 17h16"
+          stroke="#121212"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+      </svg>
+    </button>
+  );
+}
 
 function DottedRule() {
   return (
@@ -18,31 +47,38 @@ export function QuoteScreen() {
   const router = useRouter();
   const [otherOpen, setOtherOpen] = useState(true);
   const [discountOpen, setDiscountOpen] = useState(true);
+  const [flowMenuOpen, setFlowMenuOpen] = useState(false);
+  const [activeFlow, setActiveFlow] = useState<ExperienceFlow>(DEFAULT_EXPERIENCE_FLOW);
+
+  useEffect(() => {
+    setActiveFlow(readExperienceFlow());
+  }, []);
+
+  const handleFlowChange = useCallback(
+    (flow: ExperienceFlow) => {
+      writeExperienceFlow(flow);
+      setActiveFlow(flow);
+      const entryPath = getExperienceFlowDefinition(flow).entryPath;
+      router.replace(entryPath);
+    },
+    [router],
+  );
 
   return (
     <div className="relative min-h-dvh bg-[var(--color-surface-elevated)] pb-[140px]">
+      {/* Floating flow menu — sits above header / content */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-30 mx-auto max-w-[640px] px-5 pt-4">
+        <div className="pointer-events-auto">
+          <MenuIconButton onClick={() => setFlowMenuOpen(true)} />
+        </div>
+      </div>
+
       {/* Dark header */}
       <header
         className="relative mx-auto w-full max-w-[640px] overflow-hidden bg-[var(--quote-header)] pb-6 pt-4 text-white"
         style={{ minHeight: 240 }}
       >
-        <div className="relative z-[1] flex items-start justify-start px-5 pt-2">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="cta-ghost cta-ghost-on-dark flex h-10 w-10 items-center justify-center rounded-lg focus-visible:outline focus-visible:ring-2 focus-visible:ring-white/50"
-            aria-label="Close"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <path
-                d="M18 6L6 18M6 6l12 12"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
-          </button>
-        </div>
+        <div className="relative z-[1] h-10 px-5 pt-2" aria-hidden />
         <div className="relative z-[1] mt-4 flex gap-4 px-5">
           <div className="min-w-0 flex-1">
             <h1 className="text-base font-semibold leading-6 tracking-[-0.1px] text-white">
@@ -450,6 +486,13 @@ export function QuoteScreen() {
           </button>
         </div>
       </div>
+
+      <QuoteFlowMenuSheet
+        open={flowMenuOpen}
+        activeFlow={activeFlow}
+        onClose={() => setFlowMenuOpen(false)}
+        onFlowChange={handleFlowChange}
+      />
     </div>
   );
 }

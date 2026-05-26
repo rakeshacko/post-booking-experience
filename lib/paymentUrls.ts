@@ -1,6 +1,17 @@
 /** Booking lock amount on `/payment` without `down_payment` (read-only checkout). */
 export const BOOKING_LOCK_AMOUNT_INR = 10_000;
 
+/** After booking-lock payment — celebration at `/kyc/booking-confirmed`. */
+export function buildBookingLockSuccessHref(paidInr: number): string {
+  const q = new URLSearchParams();
+  q.set("source", "payment");
+  q.set("paid", String(Math.round(paidInr)));
+  return `/kyc/booking-confirmed?${q.toString()}`;
+}
+
+/** Default booking-lock success URL (uses {@link BOOKING_LOCK_AMOUNT_INR}). */
+export const BOOKING_LOCK_SUCCESS_PATH = buildBookingLockSuccessHref(BOOKING_LOCK_AMOUNT_INR);
+
 /** Query `bank` value for full-payment checkout and success redirects. */
 export const FULL_PAYMENT_BANK_ID = "full_payment";
 

@@ -1,24 +1,17 @@
 "use client";
 
-import { Suspense } from "react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-import { BOOKING_PAYMENT_SUCCESS_PHASE2_DEFAULTS } from "@/components/payment/booking-success-shared";
-import { BookingPaymentSuccessNext } from "@/components/payment/BookingPaymentSuccessNext";
+import { BUYING_GUIDE_ENTRY_PATH } from "@/lib/buying-guide-urls";
 
-function BookingPaymentSuccessNextInner() {
-  return (
-    <BookingPaymentSuccessNext
-      upNextDetail={BOOKING_PAYMENT_SUCCESS_PHASE2_DEFAULTS.upNextDetail}
-      ctaLabel={BOOKING_PAYMENT_SUCCESS_PHASE2_DEFAULTS.ctaLabel}
-      ctaHref={BOOKING_PAYMENT_SUCCESS_PHASE2_DEFAULTS.ctaHref}
-    />
-  );
-}
+/** Legacy — Shivi RM intro removed; redirects to buying-guide step 1. */
+export default function LegacyBookingSuccessNextPage() {
+  const router = useRouter();
 
-export default function BookingPaymentSuccessNextPage() {
-  return (
-    <Suspense fallback={null}>
-      <BookingPaymentSuccessNextInner />
-    </Suspense>
-  );
+  useEffect(() => {
+    router.replace(BUYING_GUIDE_ENTRY_PATH);
+  }, [router]);
+
+  return null;
 }

@@ -18,6 +18,11 @@ import { ManageBookingBottomSheet } from "@/components/kyc/ManageBookingBottomSh
 import { KycTopNavHeader } from "@/components/kyc/KycTopNavHeader";
 import { WordByWordLine } from "@/components/payment/WordByWordLine";
 import { AuroraLightLayer } from "@/components/ui/aurora-light-layer";
+import {
+  HERO_ACTION_HEADLINE_SUBLINE_GAP_CLASS,
+  HERO_ICON_TOP_PT,
+  HERO_ILLUSTRATION_TO_COPY_MT,
+} from "@/components/ui/success-screen-layout";
 
 const DEFAULT_PROCESSING_HEADLINE = "We're processing your booking, Sharath!";
 
@@ -33,8 +38,6 @@ const SUBLINE_TO_CTA_DELAY_MS = 240;
 const CTA_TO_WARNING_DELAY_MS = 480;
 
 const HERO_MIN_HEIGHT = "min-h-[90dvh]";
-/** Matches `KycPendingScreen` — vertical rhythm under the nav bar (24px tighter than legacy 96px). */
-const HERO_ICON_TOP_PT = "pt-[72px]";
 
 /** “What’s next” — car allocation step (shared with payment default timeline). */
 const WHATS_NEXT_ALLOCATION_SUBLINE =
@@ -216,7 +219,7 @@ export function KycBookingProcessingScreen({
               />
             </div>
 
-            <div className="mt-8 flex w-full flex-col gap-4 text-center">
+            <div className={`${HERO_ILLUSTRATION_TO_COPY_MT} flex w-full flex-col ${HERO_ACTION_HEADLINE_SUBLINE_GAP_CLASS} text-center`}>
               {reduceMotion ? (
                 <h1 className="text-2xl font-semibold leading-8 tracking-tight text-[#121212]">
                   {headlineLine2 ? (

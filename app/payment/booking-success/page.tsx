@@ -1,34 +1,17 @@
 "use client";
 
-import { Suspense } from "react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-import { BookingPaymentSuccessCelebration } from "@/components/payment/BookingPaymentSuccessCelebration";
-import { CelebrationPageTransition } from "@/components/ui/page-transition";
+import { BOOKING_LOCK_SUCCESS_PATH } from "@/lib/paymentUrls";
 
-import { BOOKING_LOCK_AMOUNT_INR } from "@/lib/paymentUrls";
+/** Legacy — booking-lock success now lives at `/kyc/booking-confirmed?source=payment`. */
+export default function LegacyBookingSuccessPage() {
+  const router = useRouter();
 
-function formatInr(amount: number) {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
+  useEffect(() => {
+    router.replace(BOOKING_LOCK_SUCCESS_PATH);
+  }, [router]);
 
-function BookingPaymentSuccessInner() {
-  return (
-    <CelebrationPageTransition>
-      <BookingPaymentSuccessCelebration
-        subline={`${formatInr(BOOKING_LOCK_AMOUNT_INR)} booking amount received`}
-      />
-    </CelebrationPageTransition>
-  );
-}
-
-export default function BookingPaymentSuccessPage() {
-  return (
-    <Suspense fallback={null}>
-      <BookingPaymentSuccessInner />
-    </Suspense>
-  );
+  return null;
 }

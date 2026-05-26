@@ -9,6 +9,7 @@ import { DefaultPageTransition } from "@/components/ui/page-transition";
 import { FULL_PAYMENT_INSURANCE_INR } from "@/components/payment/loan-amount-demo-constants";
 import {
   BOOKING_LOCK_AMOUNT_INR,
+  buildBookingLockSuccessHref,
   buildDownPaymentSuccessHref,
   buildInsurancePremiumSuccessHref,
   FULL_PAYMENT_BANK_ID,
@@ -100,7 +101,7 @@ function parseInrInputDigits(value: string): number {
 
 /**
  * Mock Razorpay-style checkout for demos only — not connected to Razorpay APIs.
- * Pay → loader → dedicated success route (`/payment/booking-success` or `/payment/down-payment-success`).
+ * Pay → loader → dedicated success route (`/kyc/booking-confirmed?source=payment` or `/payment/down-payment-success`).
  * Booking flow: `/payment` (no `down_payment`) — fixed booking lock, read-only.
  * Down payment flow: `?down_payment=` (e.g. from pay-down-payment) — editable amount / instalments (demo).
  * Insurance premium: `?payment_kind=insurance` — fixed insurance amount (read-only).
@@ -220,7 +221,7 @@ function MockRazorpayPaymentPageContent() {
   const handlePay = useCallback(() => {
     if (!isDownPaymentFromUrl) {
       setCheckoutError(null);
-      pendingSuccessHref.current = "/payment/booking-success";
+      pendingSuccessHref.current = buildBookingLockSuccessHref(BOOKING_LOCK_AMOUNT_INR);
       if (PROCESSING_MS <= 0) {
         router.push(pendingSuccessHref.current);
         return;

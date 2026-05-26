@@ -15,6 +15,7 @@ import { PAYMENT_CHOOSE_ASSETS } from "@/components/payment/payment-choose-asset
 import {
   BOTTOM_SHEET_BODY_BEFORE_CTA_CLASS,
   BOTTOM_SHEET_CTA_STRIP_TOP_CLASS,
+  BOTTOM_SHEET_MAX_HEIGHT_CLASS,
 } from "@/components/ui/bottom-sheet-layout";
 import { bottomSheetTitleWidthWithIllustration } from "@/components/ui/bottom-sheet-title-layout";
 import { BottomSheetCloseIcon } from "@/components/ui/BottomSheetCloseIcon";
@@ -189,7 +190,7 @@ export function DisbursementAmountCollectionBottomSheet({
         aria-label="Dismiss"
       />
       <div
-        className={`absolute bottom-0 left-1/2 z-10 flex max-h-[90dvh] w-full max-w-[640px] -translate-x-1/2 flex-col overflow-y-auto rounded-t-[20px] bg-white shadow-[0_-8px_24px_rgba(0,0,0,0.12)] transition-transform duration-[280ms] ease-out motion-reduce:translate-y-0 motion-reduce:transition-none ${
+        className={`absolute bottom-0 left-1/2 z-10 flex ${BOTTOM_SHEET_MAX_HEIGHT_CLASS} w-full max-w-[640px] -translate-x-1/2 flex-col overflow-hidden rounded-t-[20px] bg-white shadow-[0_-8px_24px_rgba(0,0,0,0.12)] transition-transform duration-[280ms] ease-out motion-reduce:translate-y-0 motion-reduce:transition-none ${
           animateIn ? "translate-y-0" : "translate-y-full"
         }`}
         role="dialog"
@@ -207,7 +208,7 @@ export function DisbursementAmountCollectionBottomSheet({
             <BottomSheetCloseIcon />
           </button>
 
-          <div className={`min-h-0 flex-1 px-5 pt-6 ${BOTTOM_SHEET_BODY_BEFORE_CTA_CLASS}`}>
+          <div className={`min-h-0 flex-1 overflow-y-auto px-5 pt-6 ${BOTTOM_SHEET_BODY_BEFORE_CTA_CLASS}`}>
             <div className="relative h-[72px] w-[72px] shrink-0 overflow-hidden bg-white" aria-hidden>
               <Image
                 src={PAYMENT_CHOOSE_ASSETS.sanctionedAmount}

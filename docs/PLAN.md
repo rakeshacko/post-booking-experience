@@ -34,14 +34,15 @@ Living document: update this file when flows, routes, or UI behavior change.
 | `/payment/self-finance-action` | Self finance — proforma hero + **`LoanProcessingWhatsNext variant="self_finance_action"`**; primary CTA → `/payment/pay-down-payment` (current wire) |
 | `/payment` | Payment flow / hub (e.g. full payment path from choose) |
 | `/payment/default` | Default payment prompt — CTA to **`/payment/choose`** |
-| `/payment/booking-success` | Booking-lock payment success — Lottie + headline + car card; **`router.replace`** → `/payment/booking-success/next` **3s** after car shows (max **10s**) |
-| `/payment/booking-success/next` | Shivi RM intro + fixed **Up next:** + **Continue** → `/kyc` |
-| `/kyc` | KYC hub / redirect |
+| `/payment/booking-success` | Legacy redirect → `/kyc/booking-confirmed?source=payment` |
+| `/payment/booking-success/next` | Legacy redirect → `/kyc/buying-guide/1` |
+| `/kyc/buying-guide/[1-4]` | Buying process onboarding (Figma 2460:7661); step 4 **Continue** → `/kyc` |
+| `/kyc` | KYC pending — Shivi intro bottom sheet on load ([Figma 2479:7600](https://www.figma.com/design/nW5SWmJdxxsCEDlqBN7C0L/Post-booking-experience?node-id=2479-7600)); **Got it** → hero + **Complete KYC Now** |
 | `/kyc/upload` | Document upload |
 | `/kyc/documents-received` | Documents received |
 | `/kyc/verification-in-progress` | KYC verification in progress (between documents received and processing) |
 | `/kyc/processing` | Processing |
-| `/kyc/booking-confirmed` | Booking confirmed |
+| `/kyc/booking-confirmed` | Booking confirmed — default: **Okay** → `/car-allocation/pending`; `?source=payment`: **See how the buying works** → `/kyc/buying-guide/1` |
 | `/car-allocation/pending` | Car allocation in progress (“matching stock”) |
 | `/car-allocation/confirmed` | Car allocated celebration; **Okay** → `/payment/default` |
 

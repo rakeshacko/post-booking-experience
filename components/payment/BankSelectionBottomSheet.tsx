@@ -10,6 +10,7 @@ import {
 import {
   BOTTOM_SHEET_BODY_BEFORE_CTA_CLASS,
   BOTTOM_SHEET_CTA_STRIP_TOP_CLASS,
+  BOTTOM_SHEET_MAX_HEIGHT_CLASS,
 } from "@/components/ui/bottom-sheet-layout";
 import { BottomSheetCloseIcon } from "@/components/ui/BottomSheetCloseIcon";
 
@@ -113,14 +114,15 @@ export function BankSelectionBottomSheet({
         aria-label="Dismiss"
       />
       <div
-        className={`absolute bottom-0 left-1/2 z-10 flex max-h-[90dvh] w-full max-w-[640px] -translate-x-1/2 flex-col overflow-y-auto rounded-t-[20px] bg-white shadow-[0_-8px_24px_rgba(0,0,0,0.12)] transition-transform duration-[280ms] ease-out motion-reduce:translate-y-0 motion-reduce:transition-none ${
+        className={`absolute bottom-0 left-1/2 z-10 flex ${BOTTOM_SHEET_MAX_HEIGHT_CLASS} w-full max-w-[640px] -translate-x-1/2 flex-col overflow-hidden rounded-t-[20px] bg-white shadow-[0_-8px_24px_rgba(0,0,0,0.12)] transition-transform duration-[280ms] ease-out motion-reduce:translate-y-0 motion-reduce:transition-none ${
           animateIn ? "translate-y-0" : "translate-y-full"
         }`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="bank-sheet-title"
       >
-        <div className={`px-5 pt-6 ${BOTTOM_SHEET_BODY_BEFORE_CTA_CLASS}`}>
+        <div className="relative flex min-h-0 flex-1 flex-col">
+          <div className={`min-h-0 flex-1 overflow-y-auto px-5 pt-6 ${BOTTOM_SHEET_BODY_BEFORE_CTA_CLASS}`}>
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <h2
@@ -194,14 +196,15 @@ export function BankSelectionBottomSheet({
               );
             })}
           </div>
-        </div>
+          </div>
 
-        <div
-          className={`shrink-0 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] ${BOTTOM_SHEET_CTA_STRIP_TOP_CLASS}`}
-        >
-          <button type="button" onClick={handleConfirm} className="primary-cta w-full">
-            Confirm banking partner
-          </button>
+          <div
+            className={`shrink-0 bg-white px-5 pb-[max(1rem,env(safe-area-inset-bottom))] ${BOTTOM_SHEET_CTA_STRIP_TOP_CLASS}`}
+          >
+            <button type="button" onClick={handleConfirm} className="primary-cta w-full">
+              Confirm banking partner
+            </button>
+          </div>
         </div>
       </div>
     </div>

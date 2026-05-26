@@ -1,75 +1,86 @@
 "use client";
 
 import Image from "next/image";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Lottie from "lottie-react";
 
-import { DOCUMENTS_RECEIVED_ASSETS } from "@/components/kyc/kyc-documents-received-assets";
+import { DOWN_PAYMENT_SUCCESS_AUTO_REDIRECT_MS } from "@/components/payment/DownPaymentInstalmentSuccess";
+import {
+  BOOKING_PAYMENT_SUCCESS_HERO,
+  BOOKING_SUCCESS_LOTTIE_TICK_DATA,
+} from "@/components/payment/booking-success-shared";
 import { SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS } from "@/components/ui/success-screen-layout";
 
-/** 104×104 illustration from `assets/Documents_received.svg`. */
-function DocumentsSuccessIllustration() {
-  return (
-    <div className="relative mx-auto h-[104px] w-[104px] shrink-0" aria-hidden>
-      <Image
-        src={DOCUMENTS_RECEIVED_ASSETS.illustration}
-        alt=""
-        width={104}
-        height={104}
-        className="h-[104px] w-[104px] object-contain"
-        unoptimized
-        priority
-      />
-    </div>
-  );
-}
-
 type KycDocumentsReceivedScreenProps = {
-  /** Primary CTA destination (KYC flow defaults to verification in progress). */
+  /** Auto-advance destination (KYC flow defaults to verification in progress). */
   okayHref?: string;
 };
 
 /**
  * Documents received — Figma Post-booking-experience / node 1880:6801.
+ * No CTA; same Lottie + hero layout as payment received; auto-advances after 3s.
  */
 export function KycDocumentsReceivedScreen({
   okayHref = "/kyc/verification-in-progress",
 }: KycDocumentsReceivedScreenProps) {
   const router = useRouter();
+  const hasNavigatedRef = useRef(false);
+
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      if (hasNavigatedRef.current) return;
+      hasNavigatedRef.current = true;
+      router.replace(okayHref);
+    }, DOWN_PAYMENT_SUCCESS_AUTO_REDIRECT_MS);
+    return () => window.clearTimeout(id);
+  }, [okayHref, router]);
 
   return (
-    <div className="relative flex min-h-dvh flex-col overflow-hidden bg-[#fafbfb] font-sans shadow-[0_-4px_8px_-2px_rgba(54,53,76,0.06)]">
-      {/* Same light green wash as payment success (app/payment/page.tsx success phase) */}
+    <div className="relative min-h-dvh overflow-hidden bg-white font-sans">
       <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-[50%] bg-gradient-to-b from-[#e8f8ef]/90 via-[#f4fbf7]/40 to-transparent transition-opacity duration-700"
+        className="pointer-events-none absolute left-1/2 top-0 h-[240px] w-full max-w-[640px] -translate-x-1/2"
         aria-hidden
-      />
-
-      <div className="relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center px-5 pb-36 pt-4">
-        <div className="flex w-full max-w-[640px] flex-col items-center gap-4 text-center">
-          <DocumentsSuccessIllustration />
-
+      >
+        <Image
+          src={BOOKING_PAYMENT_SUCCESS_HERO}
+          alt=""
+          fill
+          className="object-cover object-top"
+          priority
+          sizes="(max-width: 640px) 100vw, 640px"
+          unoptimized
+        />
+      </div>
+      <div className="relative z-10 flex min-h-dvh flex-col items-center justify-center px-4 pb-8 pt-8">
+        <div className="-translate-y-8 flex w-full flex-col items-center text-center">
+          <div className="relative flex h-[144px] w-[144px] shrink-0 items-center justify-center">
+            {BOOKING_SUCCESS_LOTTIE_TICK_DATA ? (
+              <Lottie
+                animationData={BOOKING_SUCCESS_LOTTIE_TICK_DATA}
+                loop={false}
+                className="h-full w-full"
+                aria-label="Documents received animation"
+              />
+            ) : (
+              <div
+                className="flex h-full w-full items-center justify-center rounded-full bg-[#22c55e] text-4xl text-white shadow-[0_0_48px_rgba(34,197,94,0.45)]"
+                aria-hidden
+              >
+                ✓
+              </div>
+            )}
+          </div>
           <div
-            className={`flex w-full flex-col items-center text-center ${SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS}`}
+            className={`mt-2 flex w-full flex-col items-center ${SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS}`}
           >
-            <h1 className="w-full text-[24px] font-semibold leading-8 tracking-[-0.1px] text-[#121212]">
+            <h1 className="text-[24px] font-semibold leading-7 tracking-tight text-[#1a1a1a]">
               Documents received
             </h1>
-            <p className="w-full text-sm font-normal leading-5 text-[#4b4b4b]">
-              Your documents are being verified by the bank
+            <p className="max-w-sm text-sm font-normal leading-5 text-[#6b7280]">
+              We are verifying your identity...
             </p>
           </div>
-        </div>
-      </div>
-
-      <div className="fixed bottom-0 left-0 right-0 z-10 border-t border-transparent bg-[#FFFFFF] px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-4px_8px_-2px_rgba(54,53,76,0.06)]">
-        <div className="mx-auto w-full max-w-[640px]">
-          <button
-            type="button"
-            className="primary-cta focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#121212]/30 focus-visible:ring-offset-2"
-            onClick={() => router.push(okayHref)}
-          >
-            Okay
-          </button>
         </div>
       </div>
     </div>

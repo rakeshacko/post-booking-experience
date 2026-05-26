@@ -6,7 +6,11 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import Lottie from "lottie-react";
 
 import { BOOKING_CONFIRMED_ASSETS } from "@/components/kyc/kyc-booking-confirmed-assets";
-import { SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS } from "@/components/ui/success-screen-layout";
+import {
+  CELEBRATION_LOTTIE_TO_HEADLINE_MT,
+  HERO_ICON_TOP_PT,
+  SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS,
+} from "@/components/ui/success-screen-layout";
 import { PaymentSuccessStagger } from "@/components/ui/stagger-container";
 
 import bookingSuccessLottie from "./lottie/booking-success.json";
@@ -47,8 +51,10 @@ export type BookingCelebrationSuccessScreenProps = {
    * When set, replaces the default car summary card (e.g. ACKO Drive “What’s next” payment steps).
    */
   replaceCarCardWith?: ReactNode;
-  /** Route for the primary “Okay” CTA. */
+  /** Route for the primary CTA. */
   okayPath: string;
+  /** Primary bottom button label (default **Okay**). */
+  ctaLabel?: string;
   /** Override bundled success animation (default: booking-success). */
   lottieAnimation?: unknown;
   /**
@@ -67,6 +73,7 @@ export function BookingCelebrationSuccessScreen({
   belowHeadline,
   replaceCarCardWith,
   okayPath,
+  ctaLabel = "Okay",
   lottieAnimation,
   lottieFallbackMs = DEFAULT_LOTTIE_FALLBACK_MS,
 }: BookingCelebrationSuccessScreenProps) {
@@ -113,7 +120,7 @@ export function BookingCelebrationSuccessScreen({
         aria-hidden
       />
 
-      <div className="relative flex min-h-dvh flex-col justify-start pt-10 transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)]">
+      <div className={`relative flex min-h-dvh flex-col justify-start ${HERO_ICON_TOP_PT} transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)]`}>
         <div className="mx-auto flex min-h-0 w-full max-w-[640px] flex-1 flex-col overflow-y-auto px-5 pb-44">
           <div className="flex w-full flex-col items-center text-center">
             <div className="relative flex h-[104px] w-[104px] shrink-0 items-center justify-center">
@@ -129,7 +136,7 @@ export function BookingCelebrationSuccessScreen({
 
             {showHeader && (
               <PaymentSuccessStagger
-                className={`mt-[8px] flex w-full flex-col items-center ${SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS}`}
+                className={`${CELEBRATION_LOTTIE_TO_HEADLINE_MT} flex w-full flex-col items-center ${SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS}`}
                 delay={0.2}
               >
                 <h1 className="text-center text-[24px] font-semibold leading-8 tracking-[-0.1px] text-[#121212]">
@@ -185,7 +192,7 @@ export function BookingCelebrationSuccessScreen({
                     </div>
                   </div>
 
-                  <div className="absolute bottom-2 left-1/2 w-[calc(100%-16px)] max-w-[304px] -translate-x-1/2 overflow-hidden rounded-xl border border-white/60 bg-white/90 shadow-sm backdrop-blur-[12px]">
+                  <div className="absolute inset-x-2 bottom-2 overflow-hidden rounded-xl border border-white/60 bg-white/90 shadow-sm backdrop-blur-[12px]">
                     <div className="px-3 py-3 text-left">
                       <p className="text-base font-medium leading-6 text-[#121212]">{CAR_TITLE}</p>
                       <div className="mt-1 flex flex-wrap items-center gap-[4px] text-xs leading-[18px] text-[#121212]">
@@ -246,7 +253,7 @@ export function BookingCelebrationSuccessScreen({
               className="primary-cta focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#121212]/30 focus-visible:ring-offset-2"
               onClick={() => router.push(okayPath)}
             >
-              Okay
+              {ctaLabel}
             </button>
           </div>
         </PaymentSuccessStagger>
