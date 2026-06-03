@@ -316,8 +316,8 @@ function ManageBookingBottomSheetInner({
   );
 
   const modifyFeeTier = useMemo(
-    () => resolveModifyBookingFeeTier(pathname, searchParams),
-    [pathname, searchParams],
+    () => resolveModifyBookingFeeTier(pathname),
+    [pathname],
   );
 
   const changeSelectionDescription = useMemo(
