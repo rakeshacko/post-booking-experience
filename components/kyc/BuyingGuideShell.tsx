@@ -6,8 +6,6 @@ import { useCallback, useMemo, type ReactNode } from "react";
 import { BuyingGuideProgress } from "@/components/kyc/BuyingGuideProgress";
 import { isBuyingGuideStep } from "@/components/kyc/buying-guide-content";
 import { KycTopNavHeader } from "@/components/kyc/KycTopNavHeader";
-import { buyingGuidePrevPath } from "@/lib/buying-guide-urls";
-
 type BuyingGuideShellProps = {
   children: ReactNode;
 };
@@ -22,14 +20,10 @@ export function BuyingGuideShell({ children }: BuyingGuideShellProps) {
     return isBuyingGuideStep(stepNumber) ? stepNumber : 1;
   }, [params.step]);
 
+  /** Pop history — forward steps use `push`, so `back` matches Next without duplicating entries. */
   const handleBack = useCallback(() => {
-    const prevHref = buyingGuidePrevPath(currentStep);
-    if (prevHref != null) {
-      router.push(prevHref);
-    } else {
-      router.back();
-    }
-  }, [currentStep, router]);
+    router.back();
+  }, [router]);
 
   return (
     <div className="relative flex h-dvh flex-col overflow-hidden bg-white font-sans">

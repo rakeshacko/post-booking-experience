@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 import menuIcon from "@/assets/menu.svg";
+import infoIcon from "@/assets/Info.svg";
+import kycInProgressHero from "@/assets/KYC in progress.svg";
 import { GetHelpPillButton } from "@/components/kyc/GetHelpPillButton";
-import { KYC_ASSETS } from "@/components/kyc/kyc-assets";
 import { KycTopNavHeader } from "@/components/kyc/KycTopNavHeader";
 import { WordByWordLine } from "@/components/payment/WordByWordLine";
 import { AuroraLightLayer } from "@/components/ui/aurora-light-layer";
@@ -16,11 +17,14 @@ import {
   HERO_ILLUSTRATION_TO_COPY_MT,
 } from "@/components/ui/success-screen-layout";
 import { ManageBookingBottomSheet } from "@/components/kyc/ManageBookingBottomSheet";
+import { recordKycVerificationFailure } from "@/lib/kyc-verification-attempts";
+import { DEMO_NAV_CTA_LABEL } from "@/lib/demo-nav-cta";
+import { KYC_VERIFICATION_FAILED_HREF } from "@/lib/kyc-verification-outcome";
+import { cn } from "@/lib/utils";
 
-const HEADLINE = "KYC verification in progress";
+const HEADLINE = "Verification in progress";
 
-const SUBLINE =
-  "We're verifying your identity. This usually takes a short while.";
+const INFO_BOX = "No need to wait here, you will hear from us as soon as we are done verifying.";
 
 /** Word cadence for the hero headline. */
 const HEADLINE_WORD_DELAY_MS = 135;
@@ -111,7 +115,7 @@ export function KycVerificationInProgressScreen({
           <div className={`relative z-10 flex min-h-0 w-full flex-1 flex-col items-center px-5 pb-10 ${HERO_ICON_TOP_PT}`}>
             <div className="relative h-20 w-20 shrink-0">
               <Image
-                src={KYC_ASSETS.kycHero}
+                src={kycInProgressHero}
                 alt=""
                 width={80}
                 height={80}
@@ -122,43 +126,73 @@ export function KycVerificationInProgressScreen({
               />
             </div>
 
-            <div className={`${HERO_ILLUSTRATION_TO_COPY_MT} flex w-full flex-col ${HERO_ACTION_HEADLINE_SUBLINE_GAP_CLASS} text-center`}>
-              {reduceMotion ? (
-                <h1 className="text-2xl font-semibold leading-8 tracking-tight text-[#121212]">
-                  {HEADLINE}
-                </h1>
-              ) : (
-                <WordByWordLine
-                  as="h1"
-                  ariaLabel={HEADLINE}
-                  text={HEADLINE}
-                  wordDelayMs={HEADLINE_WORD_DELAY_MS}
-                  wordOpacityDurationClassName={HERO_FADE_DURATION_CLASS}
-                  className="text-2xl font-semibold leading-8 tracking-tight text-[#121212]"
-                  onComplete={onHeadlineComplete}
-                  startWhen={heroArtReady}
-                />
-              )}
-              <p
-                className={`text-sm font-normal leading-[22px] text-[#4b4b4b] transition-opacity ${HERO_FADE_DURATION_CLASS} ease-out ${
+            <div className={`${HERO_ILLUSTRATION_TO_COPY_MT} flex w-full flex-col text-center`}>
+              <div className={`flex w-full flex-col ${HERO_ACTION_HEADLINE_SUBLINE_GAP_CLASS}`}>
+                {reduceMotion ? (
+                  <h1 className="text-2xl font-semibold leading-8 tracking-tight text-[#121212]">
+                    {HEADLINE}
+                  </h1>
+                ) : (
+                  <WordByWordLine
+                    as="h1"
+                    ariaLabel={HEADLINE}
+                    text={HEADLINE}
+                    wordDelayMs={HEADLINE_WORD_DELAY_MS}
+                    wordOpacityDurationClassName={HERO_FADE_DURATION_CLASS}
+                    className="text-2xl font-semibold leading-8 tracking-tight text-[#121212]"
+                    onComplete={onHeadlineComplete}
+                    startWhen={heroArtReady}
+                  />
+                )}
+                <p
+                  className={`text-sm font-normal leading-[22px] text-[#4b4b4b] transition-opacity ${HERO_FADE_DURATION_CLASS} ease-out ${
+                    showSubline ? "opacity-100" : "opacity-0"
+                  }`}
+                  aria-hidden={!showSubline}
+                >
+                  We are verifying your documents.
+                  <br />
+                  This usually takes 1-2 hours.
+                </p>
+              </div>
+              <div
+                className={`mt-6 flex items-center gap-3 rounded-2xl border border-[#E8E8E8] bg-white px-3 py-3 text-left transition-opacity ${HERO_FADE_DURATION_CLASS} ease-out ${
                   showSubline ? "opacity-100" : "opacity-0"
                 }`}
                 aria-hidden={!showSubline}
               >
-                {SUBLINE}
-              </p>
+                <span className="relative h-5 w-5 shrink-0">
+                  <Image
+                    src={infoIcon}
+                    alt=""
+                    fill
+                    className="object-contain"
+                    unoptimized
+                    sizes="20px"
+                  />
+                </span>
+                <p className="text-xs leading-[18px] text-[#121212]">{INFO_BOX}</p>
+              </div>
             </div>
 
             <div className="mt-auto w-full pt-8">
               <button
                 type="button"
-                className={`primary-cta transition-opacity ${HERO_FADE_DURATION_CLASS} ease-out focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#121212]/30 focus-visible:ring-offset-2 ${
-                  showCta ? "opacity-100" : "pointer-events-none opacity-0"
-                }`}
+                className={cn(
+                  "demo-nav-cta transition-opacity",
+                  HERO_FADE_DURATION_CLASS,
+                  "ease-out focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#121212]/30 focus-visible:ring-offset-2",
+                  showCta ? "opacity-100" : "pointer-events-none opacity-0",
+                )}
                 tabIndex={showCta ? 0 : -1}
-                onClick={() => router.push(nextHref)}
+                onClick={() => {
+                  if (nextHref === KYC_VERIFICATION_FAILED_HREF) {
+                    recordKycVerificationFailure();
+                  }
+                  router.push(nextHref);
+                }}
               >
-                Next
+                {DEMO_NAV_CTA_LABEL}
               </button>
             </div>
           </div>

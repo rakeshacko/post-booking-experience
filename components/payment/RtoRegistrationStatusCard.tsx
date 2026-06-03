@@ -2,40 +2,33 @@
 
 import Image from "next/image";
 
-import { publicAssetPath } from "@/lib/public-asset-path";
+import infoIcon from "@/assets/Info.svg";
 
-/** Served from `public/assets/Info.svg` (synced from repo `assets/Info.svg`). */
-const INFO_ICON_SRC = publicAssetPath("Info.svg");
+const RTO_REGISTRATION_INFO_COPY =
+  "You'll get your car number once registration is complete.";
 
 /**
- * RTO registration status — same chrome as `ZeroDepInsuranceCoverageCard` (grey tile + 24px icon + body copy).
+ * RTO registration status — matches hero info callout on `KycBookingProcessingScreen` (info icon + xs body).
  */
 export function RtoRegistrationStatusCard() {
   return (
     <section
-      className="w-full rounded-xl border border-[#e8e8e8] bg-white pl-[12px] pr-3 pb-3 pt-3 text-left"
+      className="flex w-full items-center gap-3 rounded-2xl border border-[#E8E8E8] bg-white px-3 py-3 text-left"
       aria-label="RTO registration status"
     >
-      <div className="flex items-center gap-3">
-        <div
-          className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[#f5f5f5]"
-          aria-hidden
-        >
-          <Image
-            src={INFO_ICON_SRC}
-            alt=""
-            width={24}
-            height={24}
-            className="size-6 object-contain"
-            unoptimized
-          />
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-normal leading-[20px] text-[rgba(18,18,18,1)]">
-            You&apos;ll get your car number once registration is complete.
-          </p>
-        </div>
-      </div>
+      <span className="relative h-5 w-5 shrink-0" aria-hidden>
+        <Image
+          src={infoIcon}
+          alt=""
+          fill
+          className="object-contain"
+          unoptimized
+          sizes="20px"
+        />
+      </span>
+      <p className="min-w-0 flex-1 text-xs font-normal leading-[18px] text-[#121212]">
+        {RTO_REGISTRATION_INFO_COPY}
+      </p>
     </section>
   );
 }

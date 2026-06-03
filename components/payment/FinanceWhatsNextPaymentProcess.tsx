@@ -51,7 +51,7 @@ function DocumentRow({ label }: { label: string }) {
 }
 
 /**
- * “Keep these documents handy” card — tabs + document list per employment type.
+ * Document checklist card — tabs + document list per employment type.
  * Matches documents card in [Figma 1952:6652](https://www.figma.com/design/nW5SWmJdxxsCEDlqBN7C0L/Post-booking-experience?node-id=1952-6652).
  */
 export function FinanceWhatsNextPaymentProcess() {
@@ -60,15 +60,8 @@ export function FinanceWhatsNextPaymentProcess() {
 
   return (
     <div className="mx-auto w-full overflow-hidden rounded-[16px] border border-solid border-[#e8e8e8] bg-white">
-      <h2
-        id="finance-documents-heading"
-        className="mx-auto w-full px-4 pt-[15px] text-center text-base font-medium leading-[22px] tracking-normal text-[#121212]"
-      >
-        Keep these documents handy
-      </h2>
-
       <div
-        className="mt-3 flex w-full border-b border-solid border-[#e8e8e8]"
+        className="flex w-full border-b border-solid border-[#e8e8e8] pt-[15px]"
         role="tablist"
         aria-label="Employment type"
       >
@@ -79,7 +72,7 @@ export function FinanceWhatsNextPaymentProcess() {
           aria-controls="finance-documents-panel"
           id="finance-tab-salaried"
           onClick={() => setTab("salaried")}
-          className={`-mb-px flex h-10 flex-1 items-center justify-center border-b-2 px-4 text-center text-xs leading-[18px] transition-colors ${
+          className={`-mb-px flex h-8 flex-1 items-center justify-center border-b-2 px-4 pb-1 text-center text-[12px] leading-[18px] transition-colors ${
             tab === "salaried"
               ? "border-[#121212] font-medium text-[#121212]"
               : "border-transparent font-normal text-[#757575]"
@@ -94,7 +87,7 @@ export function FinanceWhatsNextPaymentProcess() {
           aria-controls="finance-documents-panel"
           id="finance-tab-self-employed"
           onClick={() => setTab("self_employed")}
-          className={`-mb-px flex h-10 flex-1 items-center justify-center border-b-2 px-4 text-center text-xs leading-[18px] transition-colors ${
+          className={`-mb-px flex h-8 flex-1 items-center justify-center border-b-2 px-4 pb-1 text-center text-[12px] leading-[18px] transition-colors ${
             tab === "self_employed"
               ? "border-[#121212] font-medium text-[#121212]"
               : "border-transparent font-normal text-[#757575]"

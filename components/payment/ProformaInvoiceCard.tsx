@@ -28,7 +28,7 @@ export function ProformaInvoiceCard({ downloadHref }: ProformaInvoiceCardProps) 
     >
       <div className="flex items-start gap-3">
         <div
-          className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[#f5f5f5]"
+          className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[#f5f5f5]"
           aria-hidden
         >
           <Image

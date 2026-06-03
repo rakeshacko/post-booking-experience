@@ -10,8 +10,38 @@ Living document: update this file when flows, routes, or UI behavior change.
 ## Tech stack
 
 - Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS 4
-- Local dev: `npm run dev` → **http://localhost:3000** (`next dev --turbopack --port 3000`)
-- Static assets: `/public/assets/` (keep in sync with repo `assets/` where applicable)
+- Local dev: `npm run dev` → **http://localhost:3000/post-booking-experience** (`next dev --turbopack --port 3000`; `BASE_PATH` from `lib/site-config.ts`, default `/post-booking-experience`)
+- Static export + GitHub Pages: `npm run build` → `out/`; prefer `import` from `@/assets/` or `publicAssetPath()` for `/public/assets/`
+
+---
+
+## Experience flows (Express / Standard / Verification failed)
+
+Switch on **`/quote`** via the top-left menu (`QuoteFlowMenuSheet`). Active flow is stored in **`sessionStorage`** (`post-booking-experience-flow`) via `readExperienceFlow()` in `lib/experience-flow.ts`.
+
+| Flow | Selectable | Journey |
+|------|------------|---------|
+| **Express delivery** | Yes | Default — full route map below |
+| **Standard delivery** | Yes | **Same routes as express** until a screen branches on `readExperienceFlow() === "standard"` |
+| **Verification failed** | Yes | Same as express until KYC verification in progress → `lib/kyc-verification-outcome.ts` |
+
+### Common vs flow-specific changes
+
+- **Common** — edit shared components/libs with **no** flow guard; applies to Express and Standard.
+- **Standard only** — `isStandardDeliveryFlow()` / helpers in `lib/experience-flow-content.ts` (e.g. car card delivery line + icon).
+- **Express only** — `isExpressDeliveryFlow()` or default branch when not standard.
+
+### Journey map (`lib/journey-routes.ts`)
+
+- **`JOURNEY_PATHS`** — canonical path strings for milestones (KYC hub → processing → booking accepted → car allocation → payment).
+- **`resolveJourneyPhase(pathname)`** — coarse phase for fees and future branching (not payment instalment state).
+- **`isIdentityFunnelPhase`** — free modify-booking fees (`/kyc` through `/kyc/processing` only).
+- Prefer importing paths from here when touching navigation; migrate `router.push` strings incrementally.
+
+### Demo vs product CTAs (GitHub Pages)
+
+- **`primary-cta`** — filled `#121212`; real user actions (Pay, Complete KYC, Choose how to pay, etc.).
+- **`demo-nav-cta`** — outline `#121212`, no fill; label **`Next`** only (`lib/demo-nav-cta.ts`, `primaryOrDemoNavCtaClass()`). Used on `KycBookingProcessingScreen`, `KycVerificationInProgressScreen`, buying guide steps 1–3.
 
 ---
 
@@ -22,14 +52,29 @@ Living document: update this file when flows, routes, or UI behavior change.
 | `/` | Redirects to `/quote` |
 | `/quote` | Entry / quote screen |
 | `/payment/choose` | Choose payment method (ACKO Drive / self finance / full payment) |
-| `/payment/acko-drive-finance-confirmed` | After bank sheet **Confirm banking partner** — celebration + docs card; **Continue** → `/payment/loan-documents-upload?bank=` |
-| `/payment/loan-documents-upload` | Loan document upload (after ACKO Drive confirmation); accepts optional `?bank=` |
+| `/payment/acko-drive-finance-confirmed` | After bank sheet **Confirm banking partner** — celebration + docs card; **Continue** → `/payment/acko-drive-finance-action?bank=` |
+| `/payment/acko-drive-finance-action` | ACKO Drive loan application action — same content as confirmed; **Continue with loan application** → `/payment/loan-documents-upload?bank=` |
+| `/payment/loan-documents-upload` | Loan document upload (after ACKO Drive action step); accepts optional `?bank=` |
 | `/payment/loan-processing` | ACKO loan processing — `LoanBookingProcessingScreen` + **`LoanProcessingWhatsNext`** (`variant` default `processing`) |
 | `/payment/loan-sanctioned` | Loan sanctioned — same shell family as loan-processing |
-| `/payment/choose-loan-amount` | Choose loan / down payment range |
-| `/payment/pay-down-payment` | Pay down payment screen |
-| `/payment/down-payment-insurance-setup` | Down payment received — disbursement processing (loan) or payment complete (full payment) |
-| `/payment/loan-disbursement-received` | Loan disbursed success ack — **Okay** → insurance prep |
+| `/payment/choose-loan-amount` | Choose loan amount slider (`?bank=`); **Confirm loan amount** → `LoanSubmitConfirmBottomSheet` → `/payment/pay-down-payment?bank=&loan_amount=&down_payment=` |
+| `/payment/pay-down-payment` | Pay down payment hero (`KycBookingProcessingScreen`); CTA → `/payment?down_payment=` (instalments demo) |
+| `/payment/down-payment-success` | Instalment / full DP celebration → remaining or `/payment/down-payment-insurance-setup` |
+| `/payment/down-payment-insurance-setup` | Down payment received — loan disbursement processing or full-payment complete; `?loan_amount=` (+ `original_down_payment` / `down_payment=0` when DP complete) |
+| `/payment/loan-disbursement-received` | Loan disbursed ack (`?loan_amount=`, optional `?transaction_id=`) — **Continue** → `/payment/pay-insurance-premium` |
+| `/payment/pay-insurance-premium` | Insurance premium due — `ZeroDepInsuranceCoverageCard` + CTA → mock checkout |
+| `/payment/insurance-premium-success` | After insurance payment |
+| `/payment/car-delivery-insurance-prep` | Car insurance prep in progress |
+| `/payment/car-delivery-rto` | RTO registration in progress — `RtoRegistrationStatusCard` info callout |
+| `/payment/car-delivery-schedule` | Pick delivery slot |
+| `/payment/enter-sanctioned-loan-amount` | Self finance — declare sanctioned / disbursement amount |
+| `/payment/margin-money-slip` | Self finance — margin money slip after full DP |
+| `/payment/pay-full-payment` | Full payment action screen |
+| `/payment/full-payment-option-confirmed` | Full payment celebration — “Payment option confirmed”; auto-advance (~3s) → action |
+| `/payment/full-payment-confirmed` | Full payment action — `KycBookingProcessingScreen` + amount breakdown; **Continue** → `/payment/pay-full-payment` |
+| `/payment/loan-application` | Wizard entry (redirects to first step) |
+| `/payment/loan-application/loan-details` … `references`, `submitted` | ACKO loan application wizard (`lib/loan-application-state.ts`) |
+| `/kyc/verification-failed` | KYC verification failed — 1 retry; 2nd failure → cancelled + refund screen (demo: `sessionStorage` attempt count) |
 | `/payment/self-finance-confirmed` | Self finance — post-confirm celebration; **Continue** → `/payment/self-finance-action` |
 | `/payment/self-finance-action` | Self finance — proforma hero + **`LoanProcessingWhatsNext variant="self_finance_action"`**; primary CTA → `/payment/pay-down-payment` (current wire) |
 | `/payment` | Payment flow / hub (e.g. full payment path from choose) |
@@ -38,10 +83,11 @@ Living document: update this file when flows, routes, or UI behavior change.
 | `/payment/booking-success/next` | Legacy redirect → `/kyc/buying-guide/1` |
 | `/kyc/buying-guide/[1-4]` | Buying process onboarding (Figma 2460:7661); step 4 **Continue** → `/kyc` |
 | `/kyc` | KYC pending — Shivi intro bottom sheet on load ([Figma 2479:7600](https://www.figma.com/design/nW5SWmJdxxsCEDlqBN7C0L/Post-booking-experience?node-id=2479-7600)); **Got it** → hero + **Complete KYC Now** |
-| `/kyc/upload` | Document upload |
+| `/kyc/upload` | Document upload — default upload UI ([Figma 2501:8136](https://www.figma.com/design/nW5SWmJdxxsCEDlqBN7C0L/Post-booking-experience?node-id=2501-8136)); **Upload file** opens source bottom sheet ([2502:8777](https://www.figma.com/design/nW5SWmJdxxsCEDlqBN7C0L/Post-booking-experience?node-id=2502-8777)); uploaded state ([2502:8901](https://www.figma.com/design/nW5SWmJdxxsCEDlqBN7C0L/Post-booking-experience?node-id=2502-8901)); **Submit documents** → `/kyc/documents-received` |
 | `/kyc/documents-received` | Documents received |
 | `/kyc/verification-in-progress` | KYC verification in progress (between documents received and processing) |
-| `/kyc/processing` | Processing |
+| `/kyc/processing` | Processing — **Next** → `/kyc/booking-accepted` |
+| `/kyc/booking-accepted` | Booking accepted — **Next** → `/kyc/booking-confirmed` |
 | `/kyc/booking-confirmed` | Booking confirmed — default: **Okay** → `/car-allocation/pending`; `?source=payment`: **See how the buying works** → `/kyc/buying-guide/1` |
 | `/car-allocation/pending` | Car allocation in progress (“matching stock”) |
 | `/car-allocation/confirmed` | Car allocated celebration; **Okay** → `/payment/default` |
@@ -67,20 +113,39 @@ Entry: **`/payment/choose`** (`ChoosePaymentOptionsScreen`).
 |------|-----------|
 | Choose | CTA **“See bank options”** opens **`BankSelectionBottomSheet`**. |
 | Bank partner | **Confirm banking partner** → **`/payment/acko-drive-finance-confirmed?bank={id}`**. |
-| Confirmed | **`AckoDriveFinanceConfirmedScreen`**: ACKO Drive success Lottie, headline + selected bank (**Change** reopens sheet), **`FinanceWhatsNextPaymentProcess`** (“Keep these documents handy”), amber **Up next** strip. **Continue** → **`/payment/loan-documents-upload?bank={id}`**. |
-| Documents upload | **`LoanDocumentUploadScreen`** (`/payment/loan-documents-upload`). |
+| Confirmed | **`AckoDriveFinanceConfirmedScreen`**: brief success (Lottie + headline + banking partner); auto-advances (~3s) → **`/payment/acko-drive-finance-action?bank={id}`**. |
+| Action | **`AckoDriveFinanceActionScreen`**: `KycBookingProcessingScreen` (two-line headline, banking partner, documents info box, **`LoanProcessingWhatsNext variant="acko_drive_action"`**); **Continue with loan application** → **`/payment/loan-application/loan-details?bank={id}`**. |
+| Loan application wizard | Four milestones (horizontal rail in header): **Loan details** → **Personal details** (personal + address substeps) → **Documents** (KYC-style upload, no DigiLocker) → **References** (2 references). Final CTA opens **`LoanSubmitConfirmBottomSheet`** → **`/payment/loan-processing?bank={id}`**. State: `lib/loan-application-state.ts` (session). Legacy **`/payment/loan-documents-upload`** redirects to documents step. |
 | Processing | **`LoanBookingProcessingScreen`** (`/payment/loan-processing`) with **`LoanProcessingWhatsNext`** default **`processing`** — expandable **Payment** section, measured inner green/grey rail, `text-sm` nested substeps (documents uploaded → loan processing → choose loan amount → down payment → loan disbursement, etc.). |
-| Later stages | **`LoanProcessingWhatsNext`** other variants (`sanctioned`, `down_payment`, `down_payment_complete`, delivery prep variants) on respective screens (`loan-sanctioned`, `pay-down-payment`, car-delivery flows, …). |
+| Loan sanctioned | **`LoanSanctionedScreen`** — `SanctionedAmountSummaryCard`; CTA → choose loan amount |
+| Choose loan | **`ChooseLoanAmountScreen`** — slider min **₹1L** (`MIN_LOAN_INR`), max on-road price; down-payment split card (car DP + insurance); **`ChooseLoanPaymentSummaryCard`** |
+| Before pay DP | **`LoanSubmitConfirmBottomSheet`** on confirm — bullets + **Agree and continue** → pay-down-payment |
+| Pay DP | **`PayDownPaymentScreen`** — car DP summary card; partial remaining uses **`DownPaymentSummaryCard`** (car amounts) |
+| DP complete | **`buildInsuranceSetupHref`** carries `loan_amount`, `original_down_payment`, `down_payment=0` |
+| Disbursement wait | **`DownPaymentInsuranceSetupScreen`** — info: insurance ₹37k after disbursement |
+| Disbursed | **`LoanDisbursementReceivedScreen`** — amount + transaction ID; headline **Loan disbursed, Sharath!** |
+| Insurance | **`PayInsurancePremiumScreen`** — coverage sheet ([Figma 2585:68086](https://www.figma.com/design/nW5SWmJdxxsCEDlqBN7C0L/Post-booking-experience?node-id=2585-68086)) |
+| Later stages | **`LoanProcessingWhatsNext`** variants (`sanctioned`, `down_payment`, `down_payment_complete`, `insurance_premium_due`, delivery `*_prep`, …) on respective screens |
 
 **Key files**
 
 - `components/payment/ChoosePaymentOptionsScreen.tsx` — ACKO branch + bank sheet open
 - `components/payment/BankSelectionBottomSheet.tsx`
 - `components/payment/AckoDriveFinanceConfirmedScreen.tsx`
+- `components/payment/AckoDriveFinanceActionScreen.tsx`
 - `components/payment/FinanceWhatsNextPaymentProcess.tsx`
-- `components/payment/LoanDocumentUploadScreen.tsx`
+- `components/payment/loan-application/*` — wizard shell, milestone rail, step screens
+- `lib/loan-application-urls.ts`, `lib/loan-application-state.ts`
+- `components/payment/LoanDocumentUploadScreen.tsx` (legacy; route redirects)
 - `components/payment/LoanBookingProcessingScreen.tsx`
 - `components/payment/LoanProcessingWhatsNext.tsx`
+- `components/payment/ChooseLoanAmountScreen.tsx`, `ChooseLoanPaymentSummaryCard.tsx`
+- `components/payment/LoanSubmitConfirmBottomSheet.tsx`, `LoanSanctionedScreen.tsx`, `SanctionedAmountSummaryCard.tsx`
+- `components/payment/PayDownPaymentScreen.tsx`, `DownPaymentAmountSummaryCard.tsx`, `DownPaymentSummaryCard.tsx`
+- `components/payment/DownPaymentInsuranceSetupScreen.tsx`, `LoanDisbursementReceivedScreen.tsx`
+- `components/payment/PayInsurancePremiumScreen.tsx`, `ZeroDepInsuranceCoverageCard.tsx`, `InsuranceCoverageBottomSheet.tsx`
+- `components/payment/loan-amount-demo-constants.ts` — pricing demo, `MIN_LOAN_INR`, `carDownPaymentFromTotalInr()`, `DEMO_LOAN_DISBURSEMENT_TRANSACTION_ID`
+- `lib/paymentUrls.ts` — checkout / success / insurance-setup href builders
 
 ### Self finance (customer arranges loan with their bank)
 
@@ -115,7 +180,65 @@ Initial UI statuses in code: first substep **`in_progress`**, others **`next`** 
 
 ### Full payment
 
-From choose: **“I’ll go with full payment”** → **`/payment`** (no ACKO sheet, no self-finance sheets).
+| Step | Behaviour |
+|------|-----------|
+| Choose | CTA opens **`FullPaymentConfirmBottomSheet`** → **Agree and continue** |
+| Confirmed | **`/payment/full-payment-option-confirmed`** — celebration (tick Lottie, “Payment option confirmed”); auto-advance ~3s |
+| Action | **`/payment/full-payment-confirmed`** — `KycBookingProcessingScreen` + breakdown; **Continue** → **`/payment/pay-full-payment`** |
+
+**Key files:** `FullPaymentConfirmBottomSheet.tsx`, `FullPaymentOptionConfirmedScreen.tsx`, `FullPaymentConfirmedScreen.tsx`, `PayFullPaymentScreen.tsx`
+
+---
+
+## Manage booking — payment summary & modify booking
+
+**Component:** `components/kyc/ManageBookingBottomSheet.tsx` (opened from nav menu on `KycBookingProcessingScreen` and KYC screens).
+
+### Payment summary (query-driven)
+
+| URL context | Card shown |
+|-------------|------------|
+| No `loan_amount` | **`PaymentSummaryCard`** — ACKO price, booking paid, amount to pay |
+| `loan_amount` + `down_payment` (pending / partial) | **`ChooseLoanPaymentSummaryCard`** — loan amount; optional **Down payment paid** row when `original_down_payment` > remaining; footer **Remaining down payment** or **Down payment amount** |
+| `loan_amount` + full DP (`down_payment` absent, `0`, or post–insurance-setup params) | Same card — **Down payment paid** (full); **no** grey footer row |
+
+Parser: `parseConfirmedLoanPlan()` in manage sheet; derives full DP from `ON_ROAD_PRICE_INR − loan_amount` when only `loan_amount` is present (e.g. after `buildInsuranceSetupHref`).
+
+### Modify booking
+
+Hidden when URL parsers detect money paid toward down payment or full payment:
+
+| Journey | Hide modify when |
+|---------|------------------|
+| ACKO Drive finance + self finance (`loan_amount` on URL) | Partial DP (`downPaymentPaidInr` from `original_down_payment` − remaining) or full DP (`downPaymentFullyPaid`) |
+| Full payment (`bank=full_payment`, no `loan_amount`) | Any instalment paid (`paymentPaidInr` > 0 on `parseFullPaymentPlan`) |
+
+When visible, **Change selection** and **Cancel booking** are both shown. Fee copy uses journey phase (`lib/journey-routes.ts` → `lib/manage-booking-modify.ts`):
+
+| Fee tier | When | Change selection | Cancel booking |
+|----------|------|------------------|----------------|
+| **Free** | Identity funnel only: **`/kyc`** (Verify your identity) through **`/kyc/processing`** — hub, upload, documents received, verification in progress / failed, processing | No change fee | No cancellation fee |
+| **Standard** | From **`/kyc/booking-accepted`** through **`/payment/pay-down-payment`** (and other post-accepted routes: buying guide, booking celebration, car allocation, payment choice) until down payment is paid (ACKO Drive, self finance, full payment — no DP instalment on URL) | Change fee **₹5,000** | Cancellation fee **₹5,000** (50% of **₹10,000** booking lock — amount shown, not %) |
+
+`showVehicleIdentification` only affects the car card (engine/chassis rows), not modify actions.
+
+Post-allocation car card is enabled when `manageBookingShowVehicleIdentification` is set or `whatsNextCard != null` / car allocation step `done` on `KycBookingProcessingScreen`.
+
+---
+
+## UI patterns — hero info callout & bottom sheets
+
+Shared **info callout** (icon + `text-xs` body, `rounded-2xl`, `border-[#E8E8E8]`, `px-3 py-3`):
+
+- `KycBookingProcessingScreen` — `infoBox` / `sublineLine2` below subline
+- `DownPaymentInsuranceSetupScreen` — insurance payable after disbursement
+- `RtoRegistrationStatusCard` — RTO registration message on `/payment/car-delivery-rto`
+
+**Bottom sheets** (280ms slide + `bg-black/90` backdrop, `BottomSheetPortal`, `max-w-[640px]`, `rounded-t-[24px]`):
+
+- `BankSelectionBottomSheet`, `LoanSubmitConfirmBottomSheet`, `ManageBookingBottomSheet`, `InsuranceCoverageBottomSheet` ([2585:68086](https://www.figma.com/design/nW5SWmJdxxsCEDlqBN7C0L/Post-booking-experience?node-id=2585-68086)), `WhatsNextTimelineBottomSheet`, …
+
+**Insurance coverage sheet:** ZD + TP rows (`assets/ZD cover.svg`, `assets/TP cover.svg`), 20px gap between rows; opened from **View coverage details** on `ZeroDepInsuranceCoverageCard` (button unless `coverageDetailsHref` set).
 
 ---
 
@@ -125,7 +248,7 @@ From choose: **“I’ll go with full payment”** → **`/payment`** (no ACKO s
 
 - On **Finance with ACKO Drive**, primary CTA label is **“See bank options”** (not direct checkout).
 - Tap opens **`BankSelectionBottomSheet`** (modal over dimmed backdrop).
-- **Confirm banking partner** closes the sheet and navigates to **`/payment/acko-drive-finance-confirmed`**; user continues from there to **loan document upload** (see **Payment journeys** above). Chosen bank id is carried in **`?bank=`** on downstream routes where wired — persistence to checkout/API remains backlog.
+- **Confirm banking partner** closes the sheet and navigates to **`/payment/acko-drive-finance-confirmed`**; user continues to **`/payment/acko-drive-finance-action`**, then **loan document upload** (see **Payment journeys** above). Chosen bank id is carried in **`?bank=`** on downstream routes where wired — persistence to checkout/API remains backlog.
 
 ### Files
 
@@ -172,9 +295,12 @@ These paths are **gitignored** (see root `.gitignore`). They are optional helper
 
 1. **Persist selected bank** on Confirm (`?bank=` already used on navigation; persist to checkout/API / session as needed).
 2. **Self finance journey state** — drive nested substep statuses from backend or `sessionStorage`; wire **ProformaInvoiceCard** `downloadHref` to real PDF.
-3. **Accessibility:** focus trap in sheets, return focus to trigger on close, optional `aria-describedby` for subtitle.
-4. **Z-index / stacking:** confirm no clash with other fixed layers (e.g. choose-screen footer).
-5. **KYC + payment sequencing:** align route guards and deep links with final product copy in the DOCX.
+3. **Loan / DP state** — replace URL query demo (`loan_amount`, `down_payment`, `original_down_payment`) with session or API; real transaction IDs on disbursement screen.
+4. **Manage booking payment summary** — align “post-allocation” flag with true car-allocation milestone (today also true when `whatsNextCard` is set on early payment screens).
+5. **Accessibility:** focus trap in sheets, return focus to trigger on close, optional `aria-describedby` for subtitle.
+6. **Z-index / stacking:** confirm no clash with other fixed layers (e.g. choose-screen footer).
+7. **KYC + payment sequencing:** align route guards and deep links with final product copy in the DOCX.
+8. **Static export / prerender:** wrap `useSearchParams()` consumers (e.g. `/kyc/processing`, manage booking) in `Suspense` where build fails.
 
 ---
 
@@ -182,11 +308,18 @@ These paths are **gitignored** (see root `.gitignore`). They are optional helper
 
 - [x] Payment choose screen with three options + partner strip
 - [x] ACKO Drive → bank selection bottom sheet (Figma-aligned iterations)
-- [x] ACKO Drive confirmed → loan document upload
+- [x] ACKO Drive confirmed → finance action → loan document upload
 - [x] Self finance → confirm bottom sheet → celebration → action screen + proforma card
 - [x] Self finance “What’s next” uses **`LoanProcessingWhatsNext`** (`self_finance_action`) for parity with loan-processing timeline UX
 - [x] Sheet motion, strong backdrop, layout and radio placement refinements
 - [x] ACKO Drive logo in sheet subtitle
+- [x] Choose loan amount — slider ₹1L–on-road, payment summary card, confirm bottom sheet copy + **Agree and continue**
+- [x] Pay down payment — car DP hero card, partial/remaining summary, confirmed subline
+- [x] Down payment complete → insurance setup info callout; manage-booking loan payment summary
+- [x] Loan disbursed screen — transaction ID, personalised headline
+- [x] Insurance coverage bottom sheet (Figma 2585:68086) from **View coverage details**
+- [x] RTO prep info callout aligned with hero info pattern
+- [x] Manage booking — post-allocation cancel fee ₹5,000; loan plan summary with partial/full DP states
 - [ ] Pass selected `bankId` / self-finance step state into payment/checkout and APIs
 - [ ] Full a11y pass on sheets
 - [ ] End-to-end journey documented in README (optional)

@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/bottom-sheet-layout";
 import { bottomSheetTitleWidthWithIllustration } from "@/components/ui/bottom-sheet-title-layout";
 import { BottomSheetCloseIcon } from "@/components/ui/BottomSheetCloseIcon";
+import { BottomSheetPortal } from "@/components/ui/BottomSheetPortal";
+import { FULL_PAYMENT_INSURANCE_INR } from "@/components/payment/loan-amount-demo-constants";
 import { publicAssetPath } from "@/lib/public-asset-path";
 
 /** Enter/exit slide duration — keep in sync with `BankSelectionBottomSheet` */
@@ -21,26 +23,37 @@ const SHEET_ASSETS = {
   bullet: publicAssetPath("tick.svg"),
 } as const;
 
+function formatInr(amount: number) {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
 const BEFORE_YOU_CONTINUE_POINTS: readonly ReactNode[] = [
   <>
-    The down payment must be completed{" "}
-    <span className="font-semibold">before 31 March 2026.</span>
+    Down payment must be completed{" "}
+    <span className="font-semibold">before 31 March 2026</span>
   </>,
   <>
     You may pay the down payment in a{" "}
-    <span className="font-semibold">single payment or multiple instalments.</span>
+    <span className="font-semibold">single payment or multiple instalments</span>
   </>,
   <>
-    The bank will disburse the approved loan amount to the dealership after the down payment is
-    completed.
+    The insurance amount of{" "}
+    <span className="font-semibold">{formatInr(FULL_PAYMENT_INSURANCE_INR)}</span> is payable after
+    your loan is disbursed
   </>,
-  <>Once confirmed, the payment structure cannot be changed.</>,
+  <>
+    The bank will disburse the loan amount to the dealer after down payment is completed
+  </>,
 ];
 
 type LoanSubmitConfirmBottomSheetProps = {
   open: boolean;
   onClose: () => void;
-  /** User tapped “Agree and continue” — e.g. navigate to loan processing. */
+  /** User tapped “Agree and continue” — e.g. navigate to pay-down-payment. */
   onConfirm: () => void;
 };
 
@@ -102,7 +115,8 @@ export function LoanSubmitConfirmBottomSheet({
   if (!mounted) return null;
 
   return (
-    <div className="fixed inset-0 z-[100]">
+    <BottomSheetPortal>
+      <div className="fixed inset-0 z-[100]">
       <button
         type="button"
         className={`absolute inset-0 bg-black/90 transition-opacity duration-[280ms] ease-out motion-reduce:opacity-100 motion-reduce:transition-none ${
@@ -184,6 +198,7 @@ export function LoanSubmitConfirmBottomSheet({
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </BottomSheetPortal>
   );
 }

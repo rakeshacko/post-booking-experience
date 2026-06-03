@@ -1,65 +1,73 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import Lottie from "lottie-react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import ackoDriveFinanceSuccessLottie from "@/components/kyc/lottie/acko-drive-finance-success.json";
-import { SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS } from "@/components/ui/success-screen-layout";
+import { useReducedMotion } from "@/lib/animations/utils";
 
-/** After header + subtext mount, delay before showing the bottom CTA (reads as step 3). */
-const CTA_AFTER_HEADER_MS = 420;
+const USER_NAME = "Sharath";
+
+const HEADLINE = `You're financing your own way, ${USER_NAME}`;
+const SUBLINE =
+  "Arrange the loan with your bank. We will provide all the documents your bank needs.";
+
 /** If Lottie `onComplete` never fires, still reveal copy so the user is not stuck. */
 const HEADER_FALLBACK_MS = 2200;
+/** After copy mounts, delay before showing the bottom CTA (reads as step 3). */
+const CTA_AFTER_COPY_MS = 420;
+
+const FADE_DURATION = 0.45;
+const FADE_EASE = [0.22, 1, 0.36, 1] as const;
 
 /**
- * Self finance — payment option confirmed. Sequence: Lottie completes → header + subtext → CTA.
+ * Self finance — payment option confirmed. Sequence: Lottie → headline + subtext → CTA.
+ * Copy and footer stay in the DOM from first paint (opacity only) to avoid layout shift.
  */
 export function SelfFinanceConfirmedScreen() {
   const router = useRouter();
-  const headerRevealedByLottieRef = useRef(false);
-  const [showHeader, setShowHeader] = useState(false);
-  const [showFooter, setShowFooter] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
+  const copyRevealedByLottieRef = useRef(false);
+  const [showCopy, setShowCopy] = useState(prefersReducedMotion);
+  const [showFooter, setShowFooter] = useState(prefersReducedMotion);
 
-  const revealHeader = useCallback(() => {
-    headerRevealedByLottieRef.current = true;
-    setShowHeader(true);
+  const revealCopy = useCallback(() => {
+    copyRevealedByLottieRef.current = true;
+    setShowCopy(true);
   }, []);
 
   const onLottieComplete = useCallback(() => {
-    revealHeader();
-  }, [revealHeader]);
+    revealCopy();
+  }, [revealCopy]);
 
   useEffect(() => {
+    if (prefersReducedMotion) return;
     const id = window.setTimeout(() => {
-      if (!headerRevealedByLottieRef.current) {
-        revealHeader();
+      if (!copyRevealedByLottieRef.current) {
+        revealCopy();
       }
     }, HEADER_FALLBACK_MS);
     return () => window.clearTimeout(id);
-  }, [revealHeader]);
+  }, [prefersReducedMotion, revealCopy]);
 
   useEffect(() => {
-    if (!showHeader) return;
-    const id = window.setTimeout(() => setShowFooter(true), CTA_AFTER_HEADER_MS);
+    if (!showCopy || prefersReducedMotion) return;
+    const id = window.setTimeout(() => setShowFooter(true), CTA_AFTER_COPY_MS);
     return () => window.clearTimeout(id);
-  }, [showHeader]);
-
-  const onContinue = useCallback(() => {
-    router.push("/payment/self-finance-action");
-  }, [router]);
+  }, [showCopy, prefersReducedMotion]);
 
   return (
-    <div className="relative min-h-dvh overflow-hidden bg-[#fafbfb] font-sans shadow-[0_-4px_8px_-2px_rgba(54,53,76,0.06)]">
+    <div className="relative flex h-dvh flex-col overflow-hidden bg-[#fafbfb] font-sans">
       <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-[50%] bg-gradient-to-b from-[#e8f8ef]/90 via-[#f4fbf7]/40 to-transparent transition-opacity duration-700"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[50%] bg-gradient-to-b from-[#e8f8ef]/90 via-[#f4fbf7]/40 to-transparent"
         aria-hidden
       />
 
-      <div className="relative z-10 flex min-h-dvh w-full flex-col justify-start px-4 pb-[max(5.5rem,env(safe-area-inset-bottom))] pt-[calc(48px+clamp(4rem,14vh,6.5rem))]">
-        <main className="mx-auto flex w-full flex-col items-center overflow-y-auto text-center">
-          <div className="relative flex h-[96px] w-[96px] shrink-0 items-center justify-center">
+      <div className="relative flex min-h-0 flex-1 flex-col items-center justify-center px-5">
+        <div className="-translate-y-8 flex w-full max-w-[640px] flex-col items-center text-center">
+          <div className="relative flex h-[104px] w-[104px] shrink-0 items-center justify-center">
             <Lottie
               animationData={ackoDriveFinanceSuccessLottie}
               loop={false}
@@ -69,38 +77,38 @@ export function SelfFinanceConfirmedScreen() {
             />
           </div>
 
-          {showHeader && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-              className={`mt-5 flex w-full flex-col items-center ${SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS}`}
-            >
-              <h1 className="text-center text-2xl font-semibold leading-8 tracking-[-0.1px] text-[#121212]">
-                <span className="block">You&apos;re proceeding with</span>
-                <span className="block">Self finance</span>
-              </h1>
-              <p className="w-full text-center text-sm font-normal leading-5 text-[#4b4b4b]">
-                Arrange the loan with your bank your way. We&apos;ll guide you through documents
-              </p>
-            </motion.div>
-          )}
-        </main>
+          <motion.div
+            className="mt-6 flex w-full flex-col items-center gap-3"
+            initial={false}
+            animate={{ opacity: showCopy ? 1 : 0 }}
+            transition={{ duration: FADE_DURATION, ease: FADE_EASE }}
+            aria-hidden={!showCopy}
+          >
+            <h1 className="text-center text-[24px] font-semibold leading-8 tracking-[-0.1px] text-[#121212]">
+              {HEADLINE}
+            </h1>
+            <p className="max-w-sm text-sm font-normal leading-5 text-[#4b4b4b]">{SUBLINE}</p>
+          </motion.div>
+        </div>
       </div>
 
-      {showFooter && (
-        <div className="fixed inset-x-0 bottom-0 z-20 bg-white pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[0_-4px_6px_0_rgba(54,53,76,0.08)]">
-          <div className="mx-auto flex w-full max-w-[640px] items-start justify-center px-5 pt-3">
-            <button
-              type="button"
-              className="primary-cta w-full rounded-lg focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#121212]/30 focus-visible:ring-offset-2"
-              onClick={onContinue}
-            >
-              Continue
-            </button>
-          </div>
-        </div>
-      )}
+      <motion.div
+        className="relative z-10 shrink-0 bg-white px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-4px_6px_0_rgba(54,53,76,0.08)]"
+        initial={false}
+        animate={{ opacity: showFooter ? 1 : 0 }}
+        transition={{ duration: FADE_DURATION, ease: FADE_EASE }}
+        style={{ pointerEvents: showFooter ? "auto" : "none" }}
+        aria-hidden={!showFooter}
+      >
+        <button
+          type="button"
+          className="primary-cta w-full focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#121212]/30 focus-visible:ring-offset-2"
+          onClick={() => router.push("/payment/self-finance-action")}
+          tabIndex={showFooter ? 0 : -1}
+        >
+          Continue
+        </button>
+      </motion.div>
     </div>
   );
 }

@@ -197,7 +197,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1, h2, h3 { text-wrap: balance; }
+/* Headings use default line wrapping — avoid global `text-wrap: balance` (awkward breaks on payment/KYC titles). */
 p { text-wrap: pretty; }
 ```
 

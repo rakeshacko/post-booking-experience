@@ -1,15 +1,17 @@
 "use client";
 
-import Image from "next/image";
+import Image, { type StaticImageData } from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { ChevronUp } from "lucide-react";
 
+import infoIcon from "@/assets/Info.svg";
 import menuIcon from "@/assets/menu.svg";
 
 import { GetHelpPillButton } from "@/components/kyc/GetHelpPillButton";
 import {
   WhatsNextTimeline,
+  type TimelineStepStatus,
   type WhatsNextTimelineVariant,
 } from "@/components/kyc/WhatsNextTimeline";
 import { WhatsNextTimelineBottomSheet } from "@/components/kyc/WhatsNextTimelineBottomSheet";
@@ -18,6 +20,8 @@ import { ManageBookingBottomSheet } from "@/components/kyc/ManageBookingBottomSh
 import { KycTopNavHeader } from "@/components/kyc/KycTopNavHeader";
 import { WordByWordLine } from "@/components/payment/WordByWordLine";
 import { AuroraLightLayer } from "@/components/ui/aurora-light-layer";
+import { primaryOrDemoNavCtaClass } from "@/lib/demo-nav-cta";
+import { cn } from "@/lib/utils";
 import {
   HERO_ACTION_HEADLINE_SUBLINE_GAP_CLASS,
   HERO_ICON_TOP_PT,
@@ -26,7 +30,8 @@ import {
 
 const DEFAULT_PROCESSING_HEADLINE = "We're processing your booking, Sharath!";
 
-const DEFAULT_PROCESSING_SUBLINE = "We will send you an OTP to confirm.";
+const DEFAULT_PROCESSING_SUBLINE =
+  "We are finding the right dealer with your exact Creta variant and colour in stock.";
 
 const DEFAULT_NEXT_HREF = "/kyc/booking-confirmed";
 
@@ -39,9 +44,9 @@ const CTA_TO_WARNING_DELAY_MS = 480;
 
 const HERO_MIN_HEIGHT = "min-h-[90dvh]";
 
-/** “What’s next” — car allocation step (shared with payment default timeline). */
-const WHATS_NEXT_ALLOCATION_SUBLINE =
-  "Your selected variant and colour are being matched to available stock.";
+/** “What’s next” — car allocation when it is the upcoming step (e.g. `/kyc/processing`). */
+const WHATS_NEXT_ALLOCATION_UP_NEXT =
+  "Your selected variant and colour will be matched to available stock.";
 
 /** “What’s next” — payment step description (shared with payment default timeline). */
 const WHATS_NEXT_PAYMENT_SUBLINE =
@@ -67,12 +72,19 @@ export type KycBookingProcessingScreenProps = {
   /** When set, shown as a second block below `headline` (word-by-word after line 1 completes). */
   headlineLine2?: string;
   subline?: string;
+  /** Optional info box below `subline` (dealer OTP callout, car allocation explainer, etc.). */
+  sublineLine2?: string;
+  /** Optional titled info callout below `subline` (preferred when a heading is needed). */
+  infoBox?: { title?: string; body: ReactNode };
   /** Primary “Next” CTA destination. */
   nextHref?: string;
   /** Route to warm in the background (defaults to `nextHref`). */
   prefetchHref?: string;
   /** Passed to `WhatsNextTimeline` — use `compact` on loan processing only. */
   whatsNextTimelineVariant?: WhatsNextTimelineVariant;
+  /** Car allocation row in the delivery timeline sheet (default: up next). */
+  whatsNextFirstStepStatus?: TimelineStepStatus;
+  whatsNextFirstStepDescription?: string;
   /** When set, replaces the default “What’s next?” timeline (e.g. loan processing stepper). */
   whatsNextCard?: ReactNode;
   /** Orange deadline copy above the primary CTA (same pattern as `/payment/default`). */
@@ -85,8 +97,21 @@ export type KycBookingProcessingScreenProps = {
   onPrimaryCtaClick?: () => void;
   /** Optional summary card rendered inside the hero, directly below the subline. */
   heroSummaryCard?: ReactNode;
+  /** When set, replaces the default hero image (e.g. Lottie animation). */
+  heroIllustrationSlot?: ReactNode;
+  /** Optional block between headline and subline (e.g. banking partner row). */
+  belowHeadline?: ReactNode;
   /** Hero illustration (default: booking-processing art). */
-  heroIllustrationSrc?: string;
+  heroIllustrationSrc?: string | StaticImageData;
+  /** Intrinsic width for `next/image` (default 80; wide heroes e.g. 280). */
+  heroIllustrationWidth?: number;
+  /** Intrinsic height for `next/image` (default 80). */
+  heroIllustrationHeight?: number;
+  /**
+   * Manage-booking sheet — post–car-allocation car card (engine/chassis + copy).
+   * When omitted, enabled when car allocation is done or a custom `whatsNextCard` is set.
+   */
+  manageBookingShowVehicleIdentification?: boolean;
 };
 
 /**
@@ -97,15 +122,24 @@ export function KycBookingProcessingScreen({
   headline = DEFAULT_PROCESSING_HEADLINE,
   headlineLine2,
   subline = DEFAULT_PROCESSING_SUBLINE,
+  sublineLine2,
+  infoBox,
   nextHref = DEFAULT_NEXT_HREF,
   prefetchHref = nextHref,
   whatsNextTimelineVariant = "default",
+  whatsNextFirstStepStatus = "next",
+  whatsNextFirstStepDescription = WHATS_NEXT_ALLOCATION_UP_NEXT,
   whatsNextCard,
   ctaWarningLine,
   nextCtaLabel = "Next",
   onPrimaryCtaClick,
   heroSummaryCard,
+  heroIllustrationSlot,
+  belowHeadline,
   heroIllustrationSrc = KYC_ASSETS.bookingProcessingHero,
+  heroIllustrationWidth = 80,
+  heroIllustrationHeight = 80,
+  manageBookingShowVehicleIdentification,
 }: KycBookingProcessingScreenProps = {}) {
   const router = useRouter();
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -118,6 +152,10 @@ export function KycBookingProcessingScreen({
   const [showWarning, setShowWarning] = useState(false);
   const [manageBookingOpen, setManageBookingOpen] = useState(false);
   const [whatsNextSheetOpen, setWhatsNextSheetOpen] = useState(false);
+
+  const showManageBookingVehicleIdentification =
+    manageBookingShowVehicleIdentification ??
+    (whatsNextFirstStepStatus === "done" || whatsNextCard != null);
 
   const onHeadlineComplete = useCallback(() => {
     setShowSubline(true);
@@ -152,6 +190,11 @@ export function KycBookingProcessingScreen({
   }, [reduceMotion]);
 
   useEffect(() => {
+    if (heroIllustrationSlot == null || reduceMotion) return;
+    setHeroArtReady(true);
+  }, [heroIllustrationSlot, reduceMotion]);
+
+  useEffect(() => {
     setHeadlineLineOneDone(false);
   }, [headline, headlineLine2]);
 
@@ -171,14 +214,15 @@ export function KycBookingProcessingScreen({
           variant={whatsNextTimelineVariant}
           surface="flat"
           firstStepTitle="Car allocation"
-          firstStepDescription={WHATS_NEXT_ALLOCATION_SUBLINE}
+          firstStepDescription={whatsNextFirstStepDescription}
+          firstStepStatus={whatsNextFirstStepStatus}
           secondStepTitle="Payment"
           secondStepDescription={WHATS_NEXT_PAYMENT_SUBLINE}
           thirdStepTitle="Car delivery"
           thirdStepDescription="Estimated delivery by 2 Mar 2026"
         />
       ),
-    [whatsNextCard, whatsNextTimelineVariant],
+    [whatsNextCard, whatsNextTimelineVariant, whatsNextFirstStepDescription, whatsNextFirstStepStatus],
   );
 
   const ctaRevealClass =
@@ -194,6 +238,7 @@ export function KycBookingProcessingScreen({
         >
           <KycTopNavHeader
             transparent
+            className="z-[1]"
             endSlot={
               <div className="flex shrink-0 items-center gap-2">
                 <GetHelpPillButton />
@@ -205,80 +250,126 @@ export function KycBookingProcessingScreen({
           <div
             className={`relative z-10 flex min-h-0 w-full flex-1 flex-col items-center px-5 pb-[max(32px,env(safe-area-inset-bottom,0px))] ${HERO_ICON_TOP_PT}`}
           >
-            {/* Illustration sizing matches `KycPendingScreen` (80 × 80, `h-20 w-20`). */}
-            <div className="relative h-20 w-20 shrink-0">
-              <Image
-                src={heroIllustrationSrc}
-                alt=""
-                width={80}
-                height={80}
-                className="h-20 w-20 object-contain"
-                unoptimized
-                priority
-                onLoadingComplete={() => setHeroArtReady(true)}
-              />
-            </div>
-
-            <div className={`${HERO_ILLUSTRATION_TO_COPY_MT} flex w-full flex-col ${HERO_ACTION_HEADLINE_SUBLINE_GAP_CLASS} text-center`}>
-              {reduceMotion ? (
-                <h1 className="text-2xl font-semibold leading-8 tracking-tight text-[#121212]">
-                  {headlineLine2 ? (
-                    <>
-                      <span className="block">{headline}</span>
-                      <span className="block">{headlineLine2}</span>
-                    </>
-                  ) : (
-                    headline
-                  )}
-                </h1>
-              ) : headlineLine2 ? (
-                <h1
-                  className="text-2xl font-semibold leading-8 tracking-tight text-[#121212]"
-                  aria-label={headlineAriaLabel}
-                >
-                  <span className="block">
-                    <WordByWordLine
-                      as="span"
-                      text={headline}
-                      wordDelayMs={HEADLINE_WORD_DELAY_MS}
-                      wordOpacityDurationClassName={HERO_FADE_DURATION_CLASS}
-                      className="text-2xl font-semibold leading-8 tracking-tight text-[#121212]"
-                      onComplete={() => setHeadlineLineOneDone(true)}
-                      startWhen={heroArtReady}
-                    />
-                  </span>
-                  <span className="block">
-                    <WordByWordLine
-                      as="span"
-                      text={headlineLine2}
-                      wordDelayMs={HEADLINE_WORD_DELAY_MS}
-                      wordOpacityDurationClassName={HERO_FADE_DURATION_CLASS}
-                      className="text-2xl font-semibold leading-8 tracking-tight text-[#121212]"
-                      onComplete={onHeadlineComplete}
-                      startWhen={headlineLineOneDone}
-                    />
-                  </span>
-                </h1>
-              ) : (
-                <WordByWordLine
-                  as="h1"
-                  ariaLabel={headline}
-                  text={headline}
-                  wordDelayMs={HEADLINE_WORD_DELAY_MS}
-                  wordOpacityDurationClassName={HERO_FADE_DURATION_CLASS}
-                  className="text-2xl font-semibold leading-8 tracking-tight text-[#121212]"
-                  onComplete={onHeadlineComplete}
-                  startWhen={heroArtReady}
+            {heroIllustrationSlot != null ? (
+              <div className="relative flex h-24 w-full shrink-0 items-center justify-center">
+                {heroIllustrationSlot}
+              </div>
+            ) : (
+              <div className="relative h-20 w-full shrink-0">
+                <Image
+                  src={heroIllustrationSrc}
+                  alt=""
+                  width={heroIllustrationWidth}
+                  height={heroIllustrationHeight}
+                  className="mx-auto h-20 w-auto max-w-full object-contain"
+                  unoptimized
+                  priority
+                  onLoadingComplete={() => setHeroArtReady(true)}
                 />
-              )}
-              <p
-                className={`text-sm font-normal leading-[20px] text-[#4b4b4b] transition-opacity ${HERO_FADE_DURATION_CLASS} ease-out ${
-                  showSubline ? "opacity-100" : "opacity-0"
-                }`}
-                aria-hidden={!showSubline}
-              >
-                {subline}
-              </p>
+              </div>
+            )}
+
+            <div className={`${HERO_ILLUSTRATION_TO_COPY_MT} flex w-full flex-col text-center`}>
+              <div className={`flex w-full flex-col ${HERO_ACTION_HEADLINE_SUBLINE_GAP_CLASS}`}>
+                {reduceMotion ? (
+                  <h1 className="text-2xl font-semibold leading-8 tracking-tight text-[#121212]">
+                    {headlineLine2 ? (
+                      <>
+                        <span className="block">{headline}</span>
+                        <span className="block">{headlineLine2}</span>
+                      </>
+                    ) : (
+                      headline
+                    )}
+                  </h1>
+                ) : headlineLine2 ? (
+                  <h1
+                    className="text-2xl font-semibold leading-8 tracking-tight text-[#121212]"
+                    aria-label={headlineAriaLabel}
+                  >
+                    <span className="block">
+                      <WordByWordLine
+                        as="span"
+                        text={headline}
+                        wordDelayMs={HEADLINE_WORD_DELAY_MS}
+                        wordOpacityDurationClassName={HERO_FADE_DURATION_CLASS}
+                        className="text-2xl font-semibold leading-8 tracking-tight text-[#121212]"
+                        onComplete={() => setHeadlineLineOneDone(true)}
+                        startWhen={heroArtReady}
+                      />
+                    </span>
+                    <span className="block">
+                      <WordByWordLine
+                        as="span"
+                        text={headlineLine2}
+                        wordDelayMs={HEADLINE_WORD_DELAY_MS}
+                        wordOpacityDurationClassName={HERO_FADE_DURATION_CLASS}
+                        className="text-2xl font-semibold leading-8 tracking-tight text-[#121212]"
+                        onComplete={onHeadlineComplete}
+                        startWhen={headlineLineOneDone}
+                      />
+                    </span>
+                  </h1>
+                ) : (
+                  <WordByWordLine
+                    as="h1"
+                    ariaLabel={headline}
+                    text={headline}
+                    wordDelayMs={HEADLINE_WORD_DELAY_MS}
+                    wordOpacityDurationClassName={HERO_FADE_DURATION_CLASS}
+                    className="text-2xl font-semibold leading-8 tracking-tight text-[#121212]"
+                    onComplete={onHeadlineComplete}
+                    startWhen={heroArtReady}
+                  />
+                )}
+                {belowHeadline != null ? (
+                  <div
+                    className={`transition-opacity ${HERO_FADE_DURATION_CLASS} ease-out ${
+                      showSubline ? "opacity-100" : "opacity-0"
+                    }`}
+                    aria-hidden={!showSubline}
+                  >
+                    {belowHeadline}
+                  </div>
+                ) : null}
+                {subline.length > 0 ? (
+                  <p
+                    className={`text-sm font-normal leading-[20px] text-[#4b4b4b] transition-opacity ${HERO_FADE_DURATION_CLASS} ease-out ${
+                      showSubline ? "opacity-100" : "opacity-0"
+                    }`}
+                    aria-hidden={!showSubline}
+                  >
+                    {subline}
+                  </p>
+                ) : null}
+              </div>
+              {(infoBox != null || sublineLine2) ? (
+                <div
+                  className={`mt-6 flex items-center gap-3 rounded-2xl border border-[#E8E8E8] bg-white px-3 py-3 text-left transition-opacity ${HERO_FADE_DURATION_CLASS} ease-out ${
+                    showSubline ? "opacity-100" : "opacity-0"
+                  }`}
+                  aria-hidden={!showSubline}
+                >
+                  <span className="relative h-5 w-5 shrink-0">
+                    <Image
+                      src={infoIcon}
+                      alt=""
+                      fill
+                      className="object-contain"
+                      unoptimized
+                      sizes="20px"
+                    />
+                  </span>
+                  <div className="min-w-0 text-xs leading-[18px] text-[#121212]">
+                    {infoBox?.title ? (
+                      <p className="font-medium text-[#121212]">{infoBox.title}</p>
+                    ) : null}
+                    <p className={infoBox?.title ? "mt-1 text-[#121212]" : undefined}>
+                      {infoBox?.body ?? sublineLine2}
+                    </p>
+                  </div>
+                </div>
+              ) : null}
             </div>
 
             {heroSummaryCard ? (
@@ -305,9 +396,14 @@ export function KycBookingProcessingScreen({
               ) : null}
               <button
                 type="button"
-                className={`primary-cta w-full transition-opacity ${HERO_FADE_DURATION_CLASS} ease-out focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#121212]/30 focus-visible:ring-offset-2 ${
-                  ctaWarningLine ? "mt-4 " : ""
-                }${ctaRevealClass}`}
+                className={cn(
+                  primaryOrDemoNavCtaClass(nextCtaLabel),
+                  "w-full transition-opacity",
+                  HERO_FADE_DURATION_CLASS,
+                  "ease-out focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#121212]/30 focus-visible:ring-offset-2",
+                  ctaWarningLine && "mt-4",
+                  ctaRevealClass,
+                )}
                 tabIndex={showCta ? 0 : -1}
                 onClick={() =>
                   onPrimaryCtaClick ? onPrimaryCtaClick() : router.push(nextHref)
@@ -331,7 +427,11 @@ export function KycBookingProcessingScreen({
         </div>
       </div>
 
-      <ManageBookingBottomSheet open={manageBookingOpen} onClose={() => setManageBookingOpen(false)} />
+      <ManageBookingBottomSheet
+        open={manageBookingOpen}
+        onClose={() => setManageBookingOpen(false)}
+        showVehicleIdentification={showManageBookingVehicleIdentification}
+      />
       <WhatsNextTimelineBottomSheet
         open={whatsNextSheetOpen}
         onClose={() => setWhatsNextSheetOpen(false)}

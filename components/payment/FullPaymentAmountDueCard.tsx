@@ -11,7 +11,7 @@ import {
 export type FullPaymentAmountDueCardProps = {
   /**
    * `breakdown` — car + insurance rows (confirmation screen).
-   * `car_only` — single new-car row (pay-full-payment hero).
+   * `car_only` — single new-car row (remaining full-payment hero).
    */
   variant?: "breakdown" | "car_only";
   /** Total due now; defaults depend on `variant`. */

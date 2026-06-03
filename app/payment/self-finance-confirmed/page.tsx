@@ -1,14 +1,8 @@
 import { SelfFinanceConfirmedScreen } from "@/components/payment/SelfFinanceConfirmedScreen";
-import { FadePageTransition } from "@/components/ui/page-transition";
 
 /**
- * Self finance — payment option confirmed. Fade entry (no slide-from-bottom) so the hero Lottie
- * stays visually stable; in-screen sequence is handled inside the screen component.
+ * Self finance — payment option confirmed. Same celebration shell as car allocation confirmed.
  */
 export default function SelfFinanceConfirmedPage() {
-  return (
-    <FadePageTransition>
-      <SelfFinanceConfirmedScreen />
-    </FadePageTransition>
-  );
+  return <SelfFinanceConfirmedScreen />;
 }

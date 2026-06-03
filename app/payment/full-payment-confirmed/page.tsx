@@ -1,14 +1,16 @@
+"use client";
+
+import { Suspense } from "react";
+
 import { FullPaymentConfirmedScreen } from "@/components/payment/FullPaymentConfirmedScreen";
-import { FadePageTransition } from "@/components/ui/page-transition";
 
 /**
- * Full payment — payment option confirmed. Fade entry (no slide-from-bottom) so the hero Lottie
- * stays visually stable; in-screen sequence is handled inside the screen component.
+ * Full payment — action step after payment-option confirmation (same pattern as ACKO finance action).
  */
 export default function FullPaymentConfirmedPage() {
   return (
-    <FadePageTransition>
+    <Suspense fallback={null}>
       <FullPaymentConfirmedScreen />
-    </FadePageTransition>
+    </Suspense>
   );
 }

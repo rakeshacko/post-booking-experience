@@ -26,7 +26,7 @@ const KYC_SUBLINE =
   "Your booking is waiting to be processed. Keep your PAN and Aadhaar ready. Once verified, we start processing right away.";
 
 const KYC_INFO_BOX =
-  "Your documents are encrypted and used only for verification. Safe and secure.";
+  "Your documents are stored securely and shared only with Hyundai to process your booking.";
 
 const DEADLINE_LINE = "Complete by 24 Apr, 3:00 PM to avoid cancellation";
 
@@ -189,7 +189,7 @@ export function KycPendingScreen() {
                 </p>
               </div>
               <div
-                className={`mt-6 flex items-center gap-2 rounded-2xl border border-[#E8E8E8] bg-white px-3 py-3 text-left transition-opacity ${HERO_FADE_DURATION_CLASS} ease-out ${
+                className={`mt-6 flex items-center gap-3 rounded-2xl border border-[#E8E8E8] bg-white px-3 py-3 text-left transition-opacity ${HERO_FADE_DURATION_CLASS} ease-out ${
                   showSubline ? "opacity-100" : "opacity-0"
                 }`}
                 aria-hidden={!showSubline}

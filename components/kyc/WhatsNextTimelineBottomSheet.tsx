@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
 import { BottomSheetCloseIcon } from "@/components/ui/BottomSheetCloseIcon";
+import { BottomSheetPortal } from "@/components/ui/BottomSheetPortal";
 import {
   BOTTOM_SHEET_MAX_HEIGHT_CLASS,
   BOTTOM_SHEET_SCROLL_BODY_CLASS,
@@ -76,7 +77,8 @@ export function WhatsNextTimelineBottomSheet({
   if (!mounted) return null;
 
   return (
-    <div className="fixed inset-0 z-[100]">
+    <BottomSheetPortal>
+      <div className="fixed inset-0 z-[100]">
       <button
         type="button"
         className={`absolute inset-0 bg-black/90 transition-opacity duration-[280ms] ease-out motion-reduce:opacity-100 motion-reduce:transition-none ${
@@ -115,5 +117,6 @@ export function WhatsNextTimelineBottomSheet({
         </div>
       </div>
     </div>
+    </BottomSheetPortal>
   );
 }

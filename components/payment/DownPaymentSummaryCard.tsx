@@ -2,7 +2,7 @@
 
 export type DownPaymentSummaryCardProps = {
   /** When `full_payment`, row labels match the full-payment journey. */
-  variant?: "down_payment" | "full_payment";
+  variant?: "down_payment" | "full_payment" | "booking_payment";
   /** Total down payment commitment (e.g. ₹3,63,780). */
   downPaymentTotalInr: number;
   /** Already paid across instalments so far (e.g. ₹1,00,000). */
@@ -30,10 +30,25 @@ export function DownPaymentSummaryCard({
   remainingAmountInr,
 }: DownPaymentSummaryCardProps) {
   const totalLabel =
-    variant === "full_payment" ? "Amount for your new car" : "Down payment amount";
-  const paidLabel = variant === "full_payment" ? "Paid so far" : "Amount paid";
+    variant === "full_payment"
+      ? "Amount for your new car"
+      : variant === "booking_payment"
+        ? "ACKO Drive price"
+        : "Car down payment";
+  const paidLabel =
+    variant === "full_payment"
+      ? "Paid so far"
+      : variant === "booking_payment"
+        ? "Booking amount paid"
+        : "Amount paid";
+  const remainingLabel =
+    variant === "booking_payment" ? "Amount to pay" : "Remaining amount";
   const ariaLabel =
-    variant === "full_payment" ? "Full payment summary" : "Down payment summary";
+    variant === "full_payment"
+      ? "Full payment summary"
+      : variant === "booking_payment"
+        ? "Payment summary"
+        : "Down payment summary";
 
   return (
     <section
@@ -62,7 +77,7 @@ export function DownPaymentSummaryCard({
 
         <div className="flex items-center justify-between gap-3">
           <dt className="text-sm font-normal leading-5 text-[#121212]">
-            Remaining amount
+            {remainingLabel}
           </dt>
           <dd className="text-sm font-semibold leading-5 text-[#121212]">
             {formatInr(remainingAmountInr)}

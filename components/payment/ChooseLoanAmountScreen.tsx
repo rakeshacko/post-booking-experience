@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from "react";
 
 import { GetHelpPillButton } from "@/components/kyc/GetHelpPillButton";
+import { BOOKING_CONFIRMED_ASSETS } from "@/components/kyc/kyc-booking-confirmed-assets";
 import { KycTopNavHeader } from "@/components/kyc/KycTopNavHeader";
 import {
   BANK_SHEET_OPTIONS,
@@ -12,50 +13,30 @@ import {
 } from "@/components/payment/payment-choose-assets";
 import {
   DEFAULT_TENURE_MONTHS,
-  MIN_DOWN_PAYMENT_INR,
+  FULL_PAYMENT_INSURANCE_INR,
+  MIN_LOAN_INR,
   ON_ROAD_PRICE_INR,
   SLIDER_STEP,
 } from "@/components/payment/loan-amount-demo-constants";
+import { ChooseLoanPaymentSummaryCard } from "@/components/payment/ChooseLoanPaymentSummaryCard";
 import { LoanSubmitConfirmBottomSheet } from "@/components/payment/LoanSubmitConfirmBottomSheet";
+import {
+  estimateMonthlyEmiInr,
+  formatInrAmountDigits,
+  parseAnnualRateFromLabel,
+  parseInrAmountInput,
+} from "@/lib/loan-emi";
 
 /** Stagger: nav + CTA immediate; then title → card → warning (`payment-success-stagger` in globals). */
 const STAGGER_TITLE_MS = 90;
-const STAGGER_CARD_MS = 300;
-const STAGGER_WARNING_MS = 540;
+const STAGGER_SUBTEXT_MS = 120;
+const STAGGER_AMOUNT_ROW_MS = 220;
+const STAGGER_SLIDER_MS = 320;
+const STAGGER_SUMMARY_CARD_MS = 440;
+const STAGGER_PAYMENT_SUMMARY_MS = 560;
 
-/** Matches `Warning.svg` shape; stroke #D16900 (quote timer / Figma yellow band). */
-function DownPaymentNoticeIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width={24}
-      height={24}
-      viewBox="0 0 20 20"
-      fill="none"
-      aria-hidden
-    >
-      <path
-        d="M2.5 10C2.5 6.46316 2.5 4.69474 3.59737 3.59737C4.69474 2.5 6.46316 2.5 10 2.5C13.5368 2.5 15.3053 2.5 16.4026 3.59737C17.5 4.69474 17.5 6.46316 17.5 10C17.5 13.5368 17.5 15.3053 16.4026 16.4026C15.3053 17.5 13.5368 17.5 10 17.5C6.46316 17.5 4.69474 17.5 3.59737 16.4026C2.5 15.3053 2.5 13.5368 2.5 10Z"
-        stroke="#D16900"
-        strokeWidth={1.25}
-      />
-      <path
-        d="M10 10.5843V6.05273"
-        stroke="#D16900"
-        strokeWidth={1.25}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M10 13.3246V12.5352"
-        stroke="#D16900"
-        strokeWidth={1.25}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
+/** Car down payment due date — aligned with enter-sanctioned screen (Figma 2331:10371). */
+const CAR_DOWN_PAYMENT_DUE_LABEL = "24 Apr 2026";
 
 function formatInr(amount: number) {
   return new Intl.NumberFormat("en-IN", {
@@ -81,14 +62,17 @@ function resolveBank(bankId: string | null) {
   return BANK_SHEET_OPTIONS[0];
 }
 
-function clampDownPayment(value: number) {
+/** Default loan when down payment would be ₹3L — keeps prior demo behaviour. */
+const DEFAULT_LOAN_INR = ON_ROAD_PRICE_INR - 300_000;
+
+function clampLoanAmount(value: number) {
   const stepped = Math.round(value / SLIDER_STEP) * SLIDER_STEP;
-  return Math.min(ON_ROAD_PRICE_INR, Math.max(MIN_DOWN_PAYMENT_INR, stepped));
+  return Math.min(ON_ROAD_PRICE_INR, Math.max(MIN_LOAN_INR, stepped));
 }
 
 /**
  * Choose loan amount vs down payment after loan sanction (Figma 2111:7963).
- * Single down-payment slider; loan = on-road − down; sticky CTA.
+ * Single loan-amount slider; down payment = on-road − loan; sticky CTA.
  */
 export function ChooseLoanAmountScreen() {
   const router = useRouter();
@@ -97,16 +81,57 @@ export function ChooseLoanAmountScreen() {
 
   const bank = useMemo(() => resolveBank(bankId), [bankId]);
 
-  const [downPayment, setDownPayment] = useState(() =>
-    clampDownPayment(300_000),
+  const [loanAmount, setLoanAmount] = useState(() => clampLoanAmount(DEFAULT_LOAN_INR));
+  const [loanAmountInput, setLoanAmountInput] = useState(() =>
+    formatInrAmountDigits(clampLoanAmount(DEFAULT_LOAN_INR)),
   );
   const [confirmSheetOpen, setConfirmSheetOpen] = useState(false);
 
-  const loanAmount = Math.max(0, ON_ROAD_PRICE_INR - downPayment);
-
-  const onDownRangeChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setDownPayment(clampDownPayment(Number(e.target.value)));
+  const applyLoanAmount = useCallback((amount: number) => {
+    const clamped = clampLoanAmount(amount);
+    setLoanAmount(clamped);
+    setLoanAmountInput(formatInrAmountDigits(clamped));
   }, []);
+
+  const downPayment = Math.max(0, ON_ROAD_PRICE_INR - loanAmount);
+  const carDownPaymentPortionInr = Math.max(0, downPayment - FULL_PAYMENT_INSURANCE_INR);
+
+  const annualRate = useMemo(() => parseAnnualRateFromLabel(bank.rate), [bank.rate]);
+
+  const estimatedEmi = useMemo(
+    () => estimateMonthlyEmiInr(loanAmount, DEFAULT_TENURE_MONTHS, annualRate),
+    [annualRate, loanAmount],
+  );
+
+  const onLoanRangeChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      applyLoanAmount(Number(e.target.value));
+    },
+    [applyLoanAmount],
+  );
+
+  const onLoanAmountInputChange = useCallback((raw: string) => {
+    const digits = raw.replace(/\D/g, "");
+    if (digits.length === 0) {
+      setLoanAmountInput("");
+      return;
+    }
+    const parsed = parseInrAmountInput(raw);
+    const capped = Math.min(ON_ROAD_PRICE_INR, parsed);
+    setLoanAmountInput(formatInrAmountDigits(capped));
+    if (capped >= MIN_LOAN_INR) {
+      setLoanAmount(clampLoanAmount(capped));
+    }
+  }, []);
+
+  const onLoanAmountBlur = useCallback(() => {
+    const parsed = parseInrAmountInput(loanAmountInput);
+    if (loanAmountInput === "" || parsed < MIN_LOAN_INR) {
+      applyLoanAmount(parsed > 0 ? parsed : DEFAULT_LOAN_INR);
+      return;
+    }
+    applyLoanAmount(parsed);
+  }, [applyLoanAmount, loanAmountInput]);
 
   const navigateToPayment = useCallback(() => {
     const q = new URLSearchParams();
@@ -126,13 +151,13 @@ export function ChooseLoanAmountScreen() {
     router.prefetch("/payment");
   }, [router]);
 
-  const sliderSpan = ON_ROAD_PRICE_INR - MIN_DOWN_PAYMENT_INR;
+  const sliderSpan = ON_ROAD_PRICE_INR - MIN_LOAN_INR;
   const fillPct =
-    sliderSpan > 0 ? ((downPayment - MIN_DOWN_PAYMENT_INR) / sliderSpan) * 100 : 0;
+    sliderSpan > 0 ? ((loanAmount - MIN_LOAN_INR) / sliderSpan) * 100 : 0;
 
   return (
     <div className="min-h-dvh bg-white font-sans">
-      <KycTopNavHeader transparent endSlot={<GetHelpPillButton />} />
+      <KycTopNavHeader endSlot={<GetHelpPillButton />} />
 
       <main className="mx-auto w-full max-w-[640px] px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-[8px]">
         <h1
@@ -142,109 +167,190 @@ export function ChooseLoanAmountScreen() {
           Choose your loan amount
         </h1>
 
-        <section
-          className="payment-success-stagger mx-auto mt-6 w-full overflow-hidden rounded-2xl border border-[#e8e8e8] bg-white"
-          style={{ animationDelay: `${STAGGER_CARD_MS}ms` }}
-          aria-label="Loan and down payment"
+        <p
+          className="payment-success-stagger mt-2 flex flex-wrap items-center gap-1.5"
+          style={{ animationDelay: `${STAGGER_SUBTEXT_MS}ms` }}
         >
-          <div className="border-b border-[#e8e8e8] bg-[#f5f5f5] px-[15px] py-3">
-            <div className="flex items-start justify-between gap-3">
-              <p className="text-xs leading-[18px] text-[#4b4b4b]">Banking partner</p>
-              <div className="flex shrink-0 items-center gap-2">
-                <span className="relative h-5 w-5 shrink-0">
-                  <Image
-                    src={bank.logoSrc}
-                    alt=""
-                    fill
-                    className="object-contain"
-                    unoptimized
-                    sizes="20px"
-                  />
-                </span>
-                <p className="text-xs font-medium leading-[18px] text-[#121212]">{bank.name}</p>
-              </div>
+          <span className="relative h-5 w-5 shrink-0 overflow-hidden rounded-sm bg-white">
+            <Image
+              src={bank.logoSrc}
+              alt=""
+              width={20}
+              height={20}
+              className="object-contain"
+              unoptimized
+              sizes="20px"
+            />
+          </span>
+          <span className="text-xs font-normal leading-[18px] text-[#121212]">{bank.name}</span>
+          <span className="relative h-4 w-4 shrink-0" aria-hidden>
+            <Image
+              src={BOOKING_CONFIRMED_ASSETS.dotSeparator}
+              alt=""
+              width={16}
+              height={16}
+              className="object-contain"
+              unoptimized
+              sizes="16px"
+            />
+          </span>
+          <span className="text-xs font-normal leading-[18px] text-[#121212]">{bank.rate.replace(/\.$/, "")}</span>
+          <span className="relative h-4 w-4 shrink-0" aria-hidden>
+            <Image
+              src={BOOKING_CONFIRMED_ASSETS.dotSeparator}
+              alt=""
+              width={16}
+              height={16}
+              className="object-contain"
+              unoptimized
+              sizes="16px"
+            />
+          </span>
+          <span className="text-xs font-normal leading-[18px] text-[#121212]">
+            {DEFAULT_TENURE_MONTHS} months
+          </span>
+        </p>
+
+        <div
+          className="payment-success-stagger mt-8 flex items-center gap-4"
+          style={{ animationDelay: `${STAGGER_AMOUNT_ROW_MS}ms` }}
+        >
+          <div className="flex h-12 min-h-12 w-[174px] max-w-full shrink-0 items-center rounded-lg border border-[#e8e8e8] bg-white px-4">
+            <label htmlFor="choose-loan-amount-input" className="sr-only">
+              Loan amount in rupees
+            </label>
+            <span
+              className="shrink-0 text-base font-medium leading-6 text-[#040222]"
+              aria-hidden
+            >
+              ₹{loanAmountInput.length > 0 ? "\u00a0" : ""}
+            </span>
+            <input
+              id="choose-loan-amount-input"
+              type="text"
+              inputMode="numeric"
+              autoComplete="off"
+              value={loanAmountInput}
+              onChange={(e) => onLoanAmountInputChange(e.target.value)}
+              onBlur={onLoanAmountBlur}
+              className="min-w-0 flex-1 border-0 bg-transparent p-0 text-base font-medium leading-6 text-[#040222] outline-none focus:ring-0 tabular-nums"
+            />
+          </div>
+          <div className="flex h-12 min-h-12 min-w-0 flex-1 items-center rounded-lg bg-[#f5f5f5] px-4">
+            <span className="min-w-0 truncate text-sm font-normal leading-5 text-[#040222]">
+              EMI: {formatInr(estimatedEmi)}
+            </span>
+          </div>
+        </div>
+
+        <div
+          className="payment-success-stagger mt-8"
+          style={{ animationDelay: `${STAGGER_SLIDER_MS}ms` }}
+        >
+          <label className="block" htmlFor="loan-amount-range">
+            <input
+              id="loan-amount-range"
+              type="range"
+              className="choose-loan-down-range h-2 w-full cursor-pointer rounded-full"
+              min={MIN_LOAN_INR}
+              max={ON_ROAD_PRICE_INR}
+              step={SLIDER_STEP}
+              value={loanAmount}
+              onChange={onLoanRangeChange}
+              style={{
+                background: `linear-gradient(to right, #121212 0%, #121212 ${fillPct}%, #e7e7e7 ${fillPct}%, #e7e7e7 100%)`,
+              }}
+            />
+            <div className="mt-2 flex justify-between text-xs leading-[18px] text-[#4b4b4b]">
+              <span>{formatInrLakhLabel(MIN_LOAN_INR)}</span>
+              <span className="text-right">{formatInrLakhLabel(ON_ROAD_PRICE_INR)}</span>
             </div>
-            <div className="mt-3 flex items-center justify-between gap-3">
-              <p className="text-xs leading-[18px] text-[#4b4b4b]">Interest rate</p>
-              <p className="text-right text-xs font-medium leading-[18px] text-[#121212]">{bank.rate}</p>
+          </label>
+        </div>
+
+        <section
+          className="payment-success-stagger mt-8 overflow-hidden rounded-2xl border border-[#e3f0e5] bg-gradient-to-b from-white to-[#e7ffee]"
+          style={{ animationDelay: `${STAGGER_SUMMARY_CARD_MS}ms` }}
+          aria-label="Down payment amount and split"
+        >
+          <div className="flex gap-3 px-[15px] pb-3 pt-[15px]">
+            <div
+              className="relative flex size-12 shrink-0 items-center justify-center rounded-lg bg-[#e4f6e7]"
+              aria-hidden
+            >
+              <Image
+                src={PAYMENT_CHOOSE_ASSETS.paymentSummary}
+                alt=""
+                width={24}
+                height={24}
+                className="object-contain"
+                unoptimized
+              />
             </div>
-            <div className="mt-2 flex items-center justify-between gap-3">
-              <p className="text-xs leading-[18px] text-[#4b4b4b]">Tenure</p>
-              <p className="text-right text-xs font-medium leading-[18px] text-[#121212]">
-                {DEFAULT_TENURE_MONTHS} months
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-normal leading-[18px] text-[#121212]">Down payment amount</p>
+              <p className="mt-0.5 text-[18px] font-medium leading-7 tracking-[-0.1px] text-[#121212]">
+                {formatInr(downPayment)}
               </p>
             </div>
           </div>
 
-          <div className="px-[15px] pb-0 pt-5">
-            <p className="text-base font-medium leading-6 text-[#121212]">Select your down payment amount</p>
+          <hr className="border-0 border-t border-[#d5e5d8]" />
 
-            <div className="mt-4 flex h-10 w-[109px] max-w-full items-center rounded-lg border border-[#e8e8e8] bg-white px-[11px]">
-              <span className="text-base font-semibold leading-[22px] text-[#121212]">
-                {formatInr(downPayment)}
-              </span>
-            </div>
-
-            <div className="mt-6">
-              <label className="block" htmlFor="down-payment-range">
-                <input
-                  id="down-payment-range"
-                  type="range"
-                  className="choose-loan-down-range h-2 w-full cursor-pointer rounded-full"
-                  min={MIN_DOWN_PAYMENT_INR}
-                  max={ON_ROAD_PRICE_INR}
-                  step={SLIDER_STEP}
-                  value={downPayment}
-                  onChange={onDownRangeChange}
-                  style={{
-                    background: `linear-gradient(to right, #121212 0%, #121212 ${fillPct}%, #e7e7e7 ${fillPct}%, #e7e7e7 100%)`,
-                  }}
-                />
-                <div className="mt-2 flex justify-between text-xs leading-[18px] text-[#4b4b4b]">
-                  <span>{formatInrLakhLabel(MIN_DOWN_PAYMENT_INR)}</span>
-                  <span className="text-right">{formatInrLakhLabel(ON_ROAD_PRICE_INR)}</span>
-                </div>
-              </label>
-            </div>
-          </div>
-
-          <div className="mt-6 border-t border-[#e3f0e5] bg-gradient-to-b from-white to-[#e7ffee]">
-            <div className="flex gap-4 px-[15px] pb-3 pt-4">
-              <div
-                className="relative flex size-12 shrink-0 items-center justify-center rounded-lg bg-[#e4f6e7]"
-                aria-hidden
-              >
-                <Image
-                  src={PAYMENT_CHOOSE_ASSETS.bank}
-                  alt=""
-                  width={24}
-                  height={24}
-                  className="object-contain"
-                  unoptimized
-                />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs leading-[18px] text-[#121212]">Your loan amount</p>
-                <p className="mt-1 text-lg font-semibold leading-6 text-[#121212]">{formatInr(loanAmount)}</p>
-              </div>
-            </div>
-            <div className="flex h-8 items-center justify-between bg-[#e4f5e9] px-4 text-xs leading-[18px] text-[#121212]">
-              <span className="font-normal">Your on-road price</span>
-              <span className="font-medium">{formatInr(ON_ROAD_PRICE_INR)}</span>
-            </div>
+          <div className="px-[15px] pb-4 pt-3">
+            <p className="text-xs font-normal leading-[18px] text-[#4b4b4b]">
+              Your down payment is split into two parts
+            </p>
+            <ul className="mt-3 space-y-3">
+              <li className="flex gap-1">
+                <span className="relative mt-0.5 h-4 w-4 shrink-0" aria-hidden>
+                  <Image
+                    src={BOOKING_CONFIRMED_ASSETS.dotSeparator}
+                    alt=""
+                    width={16}
+                    height={16}
+                    className="object-contain"
+                    unoptimized
+                    sizes="16px"
+                  />
+                </span>
+                <p className="min-w-0 text-xs leading-[18px] text-[#4b4b4b]">
+                  <span className="font-medium text-[#121212]">{formatInr(carDownPaymentPortionInr)} car down payment.</span>{" "}
+                  Pay by {CAR_DOWN_PAYMENT_DUE_LABEL} to keep booking active
+                </p>
+              </li>
+              <li className="flex gap-1">
+                <span className="relative mt-0.5 h-4 w-4 shrink-0" aria-hidden>
+                  <Image
+                    src={BOOKING_CONFIRMED_ASSETS.dotSeparator}
+                    alt=""
+                    width={16}
+                    height={16}
+                    className="object-contain"
+                    unoptimized
+                    sizes="16px"
+                  />
+                </span>
+                <p className="min-w-0 text-xs leading-[18px] text-[#4b4b4b]">
+                  <span className="font-medium text-[#121212]">{formatInr(FULL_PAYMENT_INSURANCE_INR)} insurance amount.</span>{" "}
+                  Pay after your loan is disbursed
+                </p>
+              </li>
+            </ul>
           </div>
         </section>
 
         <div
-          className="payment-success-stagger mx-auto mt-6 flex w-full items-center gap-3 rounded-2xl border border-[#ffe380] bg-[#fff7e5] p-3"
-          style={{ animationDelay: `${STAGGER_WARNING_MS}ms` }}
-          role="status"
+          className="payment-success-stagger mt-8"
+          style={{ animationDelay: `${STAGGER_PAYMENT_SUMMARY_MS}ms` }}
         >
-          <DownPaymentNoticeIcon className="h-6 w-6 shrink-0" />
-          <p className="min-w-0 flex-1 text-xs leading-[18px] text-[#d16900]">
-            Pay your down payment by <span className="font-semibold">30 Apr</span> to keep your booking. You can pay
-            your down payment in one full or in parts.
-          </p>
+          <h2 className="text-base font-medium leading-6 text-[#121212]">Payment summary</h2>
+          <div className="mt-4">
+            <ChooseLoanPaymentSummaryCard
+              loanAmountInr={loanAmount}
+              downPaymentAmountInr={downPayment}
+            />
+          </div>
         </div>
       </main>
 

@@ -73,7 +73,7 @@ function TimelineStepIcon({ status }: { status: TimelineStepStatus }) {
         ? KYC_ASSETS.timelineInProgress
         : KYC_ASSETS.timelineNext;
   const label =
-    status === "done" ? "Done" : status === "in_progress" ? "In progress" : "Next";
+    status === "done" ? "Done" : status === "in_progress" ? "In progress" : "Up next";
 
   return (
     <span className="relative flex h-6 w-6 shrink-0 items-center justify-center" title={label}>
@@ -90,7 +90,7 @@ function TimelinePaymentSubStepIcon({ status }: { status: TimelineStepStatus }) 
         ? KYC_ASSETS.timelineInProgress
         : KYC_ASSETS.timelineNext;
   const label =
-    status === "done" ? "Done" : status === "in_progress" ? "In progress" : "Next";
+    status === "done" ? "Done" : status === "in_progress" ? "In progress" : "Up next";
 
   return (
     <span
@@ -108,7 +108,8 @@ function timelinePaymentSubStepTitleClassName(status: TimelineStepStatus) {
 }
 
 /**
- * Vertical connectors: green through completed / up to the `in_progress` step, grey for the rest.
+ * Vertical connectors: green through completed steps up to `in_progress`; grey for the rest.
+ * When every step is still “up next”, the full rail stays grey.
  * Spans the center of the first icon to the center of the last.
  * Row height depends on copy (wrapping), so we measure after layout.
  * [Figma 2052:7630](https://www.figma.com/design/nW5SWmJdxxsCEDlqBN7C0L/Post-booking-experience?node-id=2052-7630)
@@ -152,13 +153,21 @@ export function WhatsNextTimeline({
     const y = [mid(i1), mid(i2), mid(i3)] as const;
 
     const statuses: TimelineStepStatus[] = [firstStepStatus, secondStepStatus, thirdStepStatus];
-    let splitIdx = statuses.findIndex((s) => s === "in_progress");
-    if (splitIdx < 0) {
-      if (statuses.every((s) => s === "done")) {
-        splitIdx = 2;
-      } else {
-        splitIdx = 1;
+    const inProgressIdx = statuses.findIndex((s) => s === "in_progress");
+
+    let splitIdx: number;
+    if (inProgressIdx >= 0) {
+      splitIdx = inProgressIdx;
+    } else if (statuses.every((s) => s === "done")) {
+      splitIdx = 2;
+    } else {
+      let lastDoneIdx = -1;
+      for (let i = 0; i < statuses.length; i++) {
+        if (statuses[i] === "done") lastDoneIdx = i;
+        else break;
       }
+      // No done / in-progress steps yet — keep the full rail grey (e.g. all “up next”).
+      splitIdx = lastDoneIdx >= 0 ? lastDoneIdx : 0;
     }
 
     setConnectorGreen({ top: y[0], height: Math.max(0, y[splitIdx] - y[0]) });

@@ -95,7 +95,7 @@ export function EnterSanctionedLoanAmountScreen() {
 
   return (
     <div className="flex min-h-dvh flex-col bg-white font-sans">
-      <KycTopNavHeader transparent endSlot={<GetHelpPillButton />} />
+      <KycTopNavHeader endSlot={<GetHelpPillButton />} />
 
       <main className="mx-auto flex min-h-0 w-full max-w-[640px] flex-1 flex-col px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-2">
         <h1

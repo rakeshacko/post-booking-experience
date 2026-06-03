@@ -57,7 +57,7 @@ export function buildFullPaymentCheckoutHref(
 }
 
 /**
- * Builds `/payment/pay-full-payment?…` — action screen after a partial full-payment instalment.
+ * Builds `/payment/full-payment-confirmed?…` — action screen after a partial full-payment instalment.
  */
 export function buildPayFullPaymentHref(
   remainingInr: number,
@@ -74,13 +74,15 @@ export function buildPayFullPaymentHref(
   if (orig != null && orig > 0 && orig !== rem) {
     q.set("original_down_payment", String(orig));
   }
-  return `/payment/pay-full-payment?${q.toString()}`;
+  return `/payment/full-payment-confirmed?${q.toString()}`;
 }
 
 /** Post–payment setup hero (`/payment/down-payment-insurance-setup`). */
 export function buildInsuranceSetupHref(
   bank: string | null,
   loanAmount?: string | null,
+  /** Full down payment received — preserved for manage-booking payment summary. */
+  originalDownPaymentInr?: number | null,
 ): string {
   const q = new URLSearchParams();
   if (bank === FULL_PAYMENT_BANK_ID) {
@@ -89,6 +91,14 @@ export function buildInsuranceSetupHref(
     q.set("bank", bank);
   }
   if (loanAmount) q.set("loan_amount", loanAmount);
+  if (
+    originalDownPaymentInr != null &&
+    Number.isFinite(originalDownPaymentInr) &&
+    originalDownPaymentInr > 0
+  ) {
+    q.set("original_down_payment", String(Math.round(originalDownPaymentInr)));
+    q.set("down_payment", "0");
+  }
   const qs = q.toString();
   return qs ? `/payment/down-payment-insurance-setup?${qs}` : "/payment/down-payment-insurance-setup";
 }

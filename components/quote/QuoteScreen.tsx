@@ -12,6 +12,7 @@ import {
   writeExperienceFlow,
   type ExperienceFlow,
 } from "@/lib/experience-flow";
+import { resetKycVerificationFailureCount } from "@/lib/kyc-verification-attempts";
 import { QUOTE_ASSETS } from "./quote-assets";
 
 function MenuIconButton({ onClick }: { onClick: () => void }) {
@@ -57,6 +58,7 @@ export function QuoteScreen() {
   const handleFlowChange = useCallback(
     (flow: ExperienceFlow) => {
       writeExperienceFlow(flow);
+      resetKycVerificationFailureCount();
       setActiveFlow(flow);
       const entryPath = getExperienceFlowDefinition(flow).entryPath;
       router.replace(entryPath);

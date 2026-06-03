@@ -11,6 +11,8 @@ export const KYC_ASSETS = {
   kycHero: asset("KYC.svg"),
   /** Booking processing hero — `/kyc/processing` illustration (filename spelling per design export). */
   bookingProcessingHero: asset("booking proceesing.svg"),
+  /** Car allocation in progress — `/car-allocation/pending`. */
+  carAllocationHero: asset("Car allocation.svg"),
   /** Loan flow hero — processing, down payment, delivery prep (not sanctioned). */
   loanProcessingHero: asset("loan processing.svg"),
   /** RTO registration prep hero — `/payment/car-delivery-rto-prep`. */

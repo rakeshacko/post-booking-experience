@@ -9,7 +9,7 @@ export type ExperienceFlowDefinition = {
   description: string;
   /** Entry route when this flow is selected. */
   entryPath: string;
-  /** Phase 1 — only Express is selectable. */
+  /** Shown in quote flow menu when true. */
   available: boolean;
 };
 
@@ -17,23 +17,23 @@ export const EXPERIENCE_FLOWS: readonly ExperienceFlowDefinition[] = [
   {
     id: "express",
     label: "Express delivery",
-    description: "Current build — payment, KYC, car allocation, and finance paths",
+    description: "Express timeline — payment, KYC, car allocation, and finance paths",
     entryPath: "/quote",
     available: true,
   },
   {
     id: "standard",
     label: "Standard delivery",
-    description: "Standard delivery timeline and journey",
+    description: "Standard timeline — same routes as express; flow-specific copy via readExperienceFlow()",
     entryPath: "/quote",
-    available: false,
+    available: true,
   },
   {
     id: "kyc_failed",
-    label: "KYC failed",
-    description: "Branch when identity verification does not pass",
+    label: "Verification failed",
+    description: "Same journey until verification in progress, then verification fails",
     entryPath: "/quote",
-    available: false,
+    available: true,
   },
 ] as const;
 

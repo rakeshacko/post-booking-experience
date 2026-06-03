@@ -1,14 +1,29 @@
-import { Suspense } from "react";
+"use client";
 
-import { LoanDocumentUploadScreen } from "@/components/payment/LoanDocumentUploadScreen";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect } from "react";
+
+import { bankForQueryParam, loanApplicationDocumentsPath } from "@/components/payment/acko-drive-finance-bank";
+
+function LegacyLoanDocumentsUploadRedirect() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const bank = bankForQueryParam(searchParams.get("bank"));
+    router.replace(loanApplicationDocumentsPath(bank.id));
+  }, [router, searchParams]);
+
+  return null;
+}
 
 /**
- * ACKO Drive finance — loan document upload (duplicated from KYC upload; preview only).
+ * Legacy route — redirects into the loan application wizard (documents step).
  */
 export default function LoanDocumentsUploadPage() {
   return (
     <Suspense fallback={null}>
-      <LoanDocumentUploadScreen />
+      <LegacyLoanDocumentsUploadRedirect />
     </Suspense>
   );
 }

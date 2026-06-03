@@ -5,7 +5,9 @@ import { useSearchParams } from "next/navigation";
 
 import { KycBookingProcessingScreen } from "@/components/kyc/KycBookingProcessingScreen";
 import { KYC_ASSETS } from "@/components/kyc/kyc-assets";
+import { DownPaymentAmountSummaryCard } from "@/components/payment/DownPaymentAmountSummaryCard";
 import { DownPaymentSummaryCard } from "@/components/payment/DownPaymentSummaryCard";
+import { carDownPaymentFromTotalInr } from "@/components/payment/loan-amount-demo-constants";
 import { LoanProcessingWhatsNext } from "@/components/payment/LoanProcessingWhatsNext";
 
 const HEADLINE_FIRST = "Time to pay your down payment, Sharath!";
@@ -65,6 +67,7 @@ export function PayDownPaymentScreen() {
     nextHref,
     prefetchHref,
     summary,
+    downPaymentAmountInr,
     downPaymentTimelineDescription,
   } = useMemo(() => {
     const d = downPayment != null && downPayment !== "" ? Number(downPayment) : NaN;
@@ -87,7 +90,9 @@ export function PayDownPaymentScreen() {
         : null;
 
     if (hasRemainingFlow) {
-      const received = Math.round(o - d);
+      const carTotalInr = carDownPaymentFromTotalInr(o);
+      const carRemainingInr = carDownPaymentFromTotalInr(d);
+      const carPaidInr = Math.max(0, carTotalInr - carRemainingInr);
       return {
         headline: HEADLINE_REMAINING,
         subline:
@@ -96,10 +101,11 @@ export function PayDownPaymentScreen() {
         nextHref: href,
         prefetchHref: href,
         summary: {
-          downPaymentTotalInr: o,
-          amountPaidInr: received,
-          remainingAmountInr: d,
+          downPaymentTotalInr: carTotalInr,
+          amountPaidInr: carPaidInr,
+          remainingAmountInr: carRemainingInr,
         },
+        downPaymentAmountInr: null,
         downPaymentTimelineDescription: timelinePayLine,
       };
     }
@@ -107,11 +113,13 @@ export function PayDownPaymentScreen() {
     if (Number.isFinite(d) && d > 0) {
       return {
         headline: HEADLINE_FIRST,
-        subline: `Your loan plan is set. Pay ${formatInr(d)} as your down payment to continue — you can pay in full or in instalments.`,
+        subline:
+          "Your loan plan is confirmed. You can pay down payment in one go or split it across multiple instalments.",
         nextCtaLabel: "Pay down payment",
         nextHref: href,
         prefetchHref: href,
         summary: null,
+        downPaymentAmountInr: carDownPaymentFromTotalInr(d),
         downPaymentTimelineDescription: timelinePayLine,
       };
     }
@@ -120,11 +128,12 @@ export function PayDownPaymentScreen() {
     return {
       headline: HEADLINE_FIRST,
       subline:
-        "Your loan plan is set. Complete your down payment to continue — you can pay in full or in instalments.",
+        "Your loan plan is confirmed. You can pay down payment in one go or split it across multiple instalments.",
       nextCtaLabel: "Pay down payment",
       nextHref: fallbackHref,
       prefetchHref: fallbackHref,
       summary: null,
+      downPaymentAmountInr: null,
       downPaymentTimelineDescription: null,
     };
   }, [bank, loanAmount, downPayment, originalDownPaymentParam]);
@@ -156,6 +165,8 @@ export function PayDownPaymentScreen() {
             amountPaidInr={summary.amountPaidInr}
             remainingAmountInr={summary.remainingAmountInr}
           />
+        ) : downPaymentAmountInr != null ? (
+          <DownPaymentAmountSummaryCard downPaymentAmountInr={downPaymentAmountInr} />
         ) : undefined
       }
     />

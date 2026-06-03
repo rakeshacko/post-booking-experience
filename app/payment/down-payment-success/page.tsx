@@ -60,7 +60,7 @@ function DownPaymentSuccessInner() {
               loanAmount,
               originalDownPaymentInr: original,
             })
-          : buildInsuranceSetupHref(bank, loanAmount),
+          : buildInsuranceSetupHref(bank, loanAmount, original),
       };
     }
 
@@ -77,7 +77,7 @@ function DownPaymentSuccessInner() {
                 loanAmount,
                 originalDownPaymentInr: original,
               })
-            : buildInsuranceSetupHref(bank, loanAmount),
+            : buildInsuranceSetupHref(bank, loanAmount, original),
       };
     }
 

@@ -148,7 +148,7 @@ export function ChoosePaymentOptionsScreen() {
 
   const onFullPaymentConfirm = useCallback(() => {
     setFullPaymentConfirmOpen(false);
-    router.push("/payment/full-payment-confirmed");
+    router.push("/payment/full-payment-option-confirmed");
   }, [router]);
 
   const onSelfFinanceConfirm = useCallback(() => {
@@ -165,20 +165,19 @@ export function ChoosePaymentOptionsScreen() {
     choice === "acko_drive"
       ? "See bank options"
       : choice === "self_finance"
-        ? "I'll go with Self finance"
-        : "I'll go with full payment";
+        ? "Continue with Self finance"
+        : "Continue with Full payment";
 
   return (
     <div className="min-h-dvh bg-[#FFFFFF] font-sans">
-      <KycTopNavHeader transparent endSlot={<GetHelpPillButton />} />
+      <KycTopNavHeader endSlot={<GetHelpPillButton />} />
 
       <main className="mx-auto w-full max-w-[640px] px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-[8px]">
         <h1
           className="payment-success-stagger text-2xl font-semibold leading-8 tracking-tight text-[#121212]"
           style={{ animationDelay: `${STAGGER_TITLE_MS}ms` }}
         >
-          <span className="block">You can choose from below</span>
-          <span className="block">payment options</span>
+          Choose how you want to pay
         </h1>
 
         <div className="mt-[20px] flex flex-col gap-4">
@@ -195,9 +194,9 @@ export function ChoosePaymentOptionsScreen() {
             >
               <BulletList
                 items={[
-                  "We handle the entire process for you",
+                  "We handle the entire loan process for you",
                   "Pre-negotiated interest rates",
-                  "Faster approvals with minimal effort",
+                  "Faster approvals with minimal paperwork",
                 ]}
               />
               <PartnerBankMarks />
@@ -220,7 +219,7 @@ export function ChoosePaymentOptionsScreen() {
               <BulletList
                 items={[
                   "Arrange a loan with your preferred bank",
-                  "Complete the process independently",
+                  "Bring your own loan approval letter",
                 ]}
               />
             </OptionCard>
@@ -239,9 +238,12 @@ export function ChoosePaymentOptionsScreen() {
               illustrationSrc={PAYMENT_CHOOSE_ASSETS.fullCash}
               title="Full payment"
             >
-              <p className="text-xs leading-[18px] text-[#4b4b4b]">
-                Pay the entire amount upfront. No loan or EMI involved.
-              </p>
+              <BulletList
+                items={[
+                  "Pay the entire amount upfront",
+                  "No loan, no EMI, no paperwork",
+                ]}
+              />
             </OptionCard>
           </div>
         </div>

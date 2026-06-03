@@ -1,15 +1,19 @@
 "use client";
 
+import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 
+import { bankForQueryParam } from "@/components/payment/acko-drive-finance-bank";
 import { KycBookingProcessingScreen } from "@/components/kyc/KycBookingProcessingScreen";
 import { KYC_ASSETS } from "@/components/kyc/kyc-assets";
+import { DEMO_SANCTIONED_LOAN_MAX_INR } from "@/components/payment/loan-amount-demo-constants";
 import { LoanProcessingWhatsNext } from "@/components/payment/LoanProcessingWhatsNext";
+import { SanctionedAmountSummaryCard } from "@/components/payment/SanctionedAmountSummaryCard";
 
 const LOAN_SANCTIONED_HEADLINE = "Your loan is approved, Sharath!";
 
 const LOAN_SANCTIONED_SUBLINE =
-  "Your loan has been processed successfully. Choose your loan amount on the next screen so we can show your down payment and what happens next.";
+  "Select how much you need and we will calculate your down payment.";
 
 function chooseLoanAmountHref(bank: string | null) {
   return bank
@@ -22,17 +26,29 @@ function chooseLoanAmountHref(bank: string | null) {
  */
 export function LoanSanctionedScreen() {
   const searchParams = useSearchParams();
-  const bank = searchParams.get("bank");
-  const nextHref = chooseLoanAmountHref(bank);
+  const bankId = searchParams.get("bank");
+  const bank = useMemo(() => bankForQueryParam(bankId), [bankId]);
+  const nextHref = chooseLoanAmountHref(bankId);
+
+  const heroSummaryCard = useMemo(
+    () => (
+      <SanctionedAmountSummaryCard
+        sanctionedAmountInr={DEMO_SANCTIONED_LOAN_MAX_INR}
+        bankName={bank.name}
+      />
+    ),
+    [bank.name],
+  );
 
   return (
     <KycBookingProcessingScreen
       headline={LOAN_SANCTIONED_HEADLINE}
       subline={LOAN_SANCTIONED_SUBLINE}
+      heroSummaryCard={heroSummaryCard}
       heroIllustrationSrc={KYC_ASSETS.loanApprovedHero}
       nextHref={nextHref}
       prefetchHref={nextHref}
-      nextCtaLabel="Choose loan amount"
+      nextCtaLabel="Select your loan amount"
       whatsNextCard={<LoanProcessingWhatsNext variant="sanctioned" />}
     />
   );

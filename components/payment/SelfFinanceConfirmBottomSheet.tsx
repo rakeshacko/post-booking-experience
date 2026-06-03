@@ -1,9 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { PAYMENT_CHOOSE_ASSETS } from "@/components/payment/payment-choose-assets";
+import { SelfFinanceHowItWorksCard } from "@/components/payment/SelfFinanceHowItWorksCard";
 import {
   BOTTOM_SHEET_BODY_BEFORE_CTA_CLASS,
   BOTTOM_SHEET_CTA_STRIP_TOP_CLASS,
@@ -11,26 +12,9 @@ import {
 } from "@/components/ui/bottom-sheet-layout";
 import { bottomSheetTitleWidthWithIllustration } from "@/components/ui/bottom-sheet-title-layout";
 import { BottomSheetCloseIcon } from "@/components/ui/BottomSheetCloseIcon";
-import { publicAssetPath } from "@/lib/public-asset-path";
 
 /** Enter/exit slide duration — keep in sync with `BankSelectionBottomSheet` */
 const SHEET_TRANSITION_MS = 280;
-
-const SHEET_ASSETS = {
-  bullet: publicAssetPath("tick.svg"),
-} as const;
-
-const BEFORE_YOU_PROCEED_POINTS: readonly ReactNode[] = [
-  <>You arrange the loan with your bank. We stay out of that conversation.</>,
-  <>We give you the documents your bank needs. You share them at the right time.</>,
-  <>
-    You pay the down payment to us. We hold it and pass it to the dealer when the time comes.
-  </>,
-  <>
-    Once your bank releases the loan, you share a confirmation with us. That&apos;s the last step before
-    your car is delivered.
-  </>,
-];
 
 type SelfFinanceConfirmBottomSheetProps = {
   open: boolean;
@@ -112,7 +96,7 @@ export function SelfFinanceConfirmBottomSheet({
         role="dialog"
         aria-modal="true"
         aria-labelledby="self-finance-things-to-know-title"
-        aria-describedby="self-finance-before-proceed-list"
+        aria-describedby="self-finance-how-it-works"
       >
         <div className="relative flex min-h-0 flex-1 flex-col">
           <button
@@ -141,32 +125,12 @@ export function SelfFinanceConfirmBottomSheet({
               id="self-finance-things-to-know-title"
               className={`mt-[24px] ${bottomSheetTitleWidthWithIllustration} text-left text-[20px] font-semibold leading-[1.35] tracking-[-0.1px] text-[#121212]`}
             >
-              Things to know before you continue!
+              Here is how self finance works
             </h2>
 
-            <ul
-              id="self-finance-before-proceed-list"
-              className="mt-4 w-full list-none space-y-[12px] rounded-2xl bg-[#f5f5f5] p-4"
-            >
-              {BEFORE_YOU_PROCEED_POINTS.map((line, index) => (
-                <li key={index} className="flex gap-2">
-                  <span className="relative mt-0.5 h-5 w-5 shrink-0" aria-hidden>
-                    <Image
-                      src={SHEET_ASSETS.bullet}
-                      alt=""
-                      width={20}
-                      height={20}
-                      className="h-5 w-5 object-contain"
-                      unoptimized
-                      sizes="20px"
-                    />
-                  </span>
-                  <p className="min-w-0 flex-1 text-left text-xs font-normal leading-[18px] text-[#121212]">
-                    {line}
-                  </p>
-                </li>
-              ))}
-            </ul>
+            <div id="self-finance-how-it-works" className="mt-4">
+              <SelfFinanceHowItWorksCard showTitle={false} variant="embedded" />
+            </div>
           </div>
 
           <div

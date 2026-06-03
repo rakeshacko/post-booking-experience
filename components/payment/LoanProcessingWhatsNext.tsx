@@ -17,8 +17,10 @@ export type LoanProcessingWhatsNextVariant =
   | "sanctioned"
   | "down_payment"
   | "down_payment_complete"
-  /** Full payment — pay-full-payment hero; car payment in progress (no loan substeps). */
+  /** Full payment — car payment in progress after partial instalment (no loan substeps). */
   | "full_payment"
+  /** Full payment — post-confirm action before first payment (`/payment/full-payment-confirmed`). */
+  | "full_payment_action"
   /** Full payment — car payment complete; car delivery prep active (no loan substeps). */
   | "full_payment_complete"
   /** Pay insurance premium — loan disbursement / full payment done; premium due under Car delivery. */
@@ -33,7 +35,9 @@ export type LoanProcessingWhatsNextVariant =
   /** Self finance — pay down payment screen; same nested steps as `self_finance_action` with progress through DP. */
   | "self_finance_down_payment"
   /** Self finance — full DP received; margin money slip download step in progress. */
-  | "self_finance_margin_slip";
+  | "self_finance_margin_slip"
+  /** ACKO Drive — loan application action before document upload. */
+  | "acko_drive_action";
 
 export type LoanProcessingWhatsNextProps = {
   /**
@@ -43,6 +47,7 @@ export type LoanProcessingWhatsNextProps = {
    * `delivery_schedule_prep` — pick delivery slot; `self_finance_action` — self-arranged bank loan
    * checklist under Payment; `self_finance_down_payment` — same checklist with DP step in progress;
    * `self_finance_margin_slip` — DP complete; margin slip step active.
+   * `acko_drive_action` — pre-upload action; mirrors `processing` substeps with document upload in progress.
    * Payment rail is complete for all delivery_* variants.
    */
   variant?: LoanProcessingWhatsNextVariant;
@@ -101,6 +106,9 @@ const NESTED_SUBSTEP_ROW_CLASS = "grid grid-cols-[24px_1fr] items-start gap-x-3"
 const PAYMENT_SUBTITLE = "You're financing your car through ACKO Drive.";
 
 const FULL_PAYMENT_SUBTITLE = "You paid in full — no loan or EMI.";
+
+const FULL_PAYMENT_ACTION_PAYMENT_SUBTITLE =
+  "Pay the full ACKO Drive price upfront. No loan or EMI.";
 
 const SELF_FINANCE_ACTION_PAYMENT_SUBTITLE =
   "Follow these steps to arrange financing with your bank.";
@@ -225,6 +233,9 @@ const SELF_FINANCE_MARGIN_SLIP_SUBSTEPS: Substep[] = [
 ];
 
 function paymentSectionSubtitle(variant: LoanProcessingWhatsNextVariant): string {
+  if (variant === "full_payment_action") {
+    return FULL_PAYMENT_ACTION_PAYMENT_SUBTITLE;
+  }
   if (variant === "full_payment" || variant === "full_payment_complete") {
     return FULL_PAYMENT_SUBTITLE;
   }
@@ -277,6 +288,23 @@ const PROCESSING_SUBSTEPS: Substep[] = [
       "The bank will disburse the loan amount to the dealership after your down payment is completed.",
   },
 ];
+
+/** Pre-upload action — mirrors {@link PROCESSING_SUBSTEPS} with document upload in progress. */
+const DOCUMENT_UPLOAD_IN_PROGRESS_STEP: Substep = {
+  status: "in_progress",
+  title: "Document upload",
+  description: "Upload the documents required to start your loan application.",
+};
+
+function ackoDriveActionPaymentSubsteps(): Substep[] {
+  return [
+    DOCUMENT_UPLOAD_IN_PROGRESS_STEP,
+    ...PROCESSING_SUBSTEPS.slice(1).map((step) => ({
+      ...step,
+      status: "next" as const,
+    })),
+  ];
+}
 
 const SANCTIONED_SUBSTEPS: Substep[] = [
   {
@@ -502,10 +530,13 @@ function substepsForVariant(
   if (variant === "self_finance_margin_slip") return SELF_FINANCE_MARGIN_SLIP_SUBSTEPS;
   if (variant === "self_finance_down_payment") return SELF_FINANCE_DOWN_PAYMENT_SUBSTEPS;
   if (variant === "self_finance_action") return SELF_FINANCE_ACTION_PAYMENT_SUBSTEPS;
+  if (variant === "acko_drive_action") return ackoDriveActionPaymentSubsteps();
   if (variant === "sanctioned") return SANCTIONED_SUBSTEPS;
   if (variant === "down_payment") return DOWN_PAYMENT_SUBSTEPS;
   if (variant === "down_payment_complete") return DOWN_PAYMENT_COMPLETE_SUBSTEPS;
-  if (variant === "full_payment" || variant === "full_payment_complete") return [];
+  if (variant === "full_payment" || variant === "full_payment_action" || variant === "full_payment_complete") {
+    return [];
+  }
   if (
     variant === "delivery_insurance_prep" ||
     variant === "delivery_rto_prep" ||
@@ -881,12 +912,15 @@ export function LoanProcessingWhatsNext({
               >
                 Payment
               </p>
-              <p className="mt-1 text-xs leading-[18px] text-[#757575]">{paymentSubtitle}</p>
-              {paymentInProgressDescription ? (
-                <p className="mt-1 text-xs leading-[18px] text-[#757575]">
-                  {paymentInProgressDescription}
-                </p>
-              ) : null}
+              <p className="mt-1 text-xs leading-[18px] text-[#757575]">
+                {paymentSubtitle}
+                {paymentInProgressDescription ? (
+                  <>
+                    {" "}
+                    {paymentInProgressDescription}
+                  </>
+                ) : null}
+              </p>
             </div>
           </div>
         )}

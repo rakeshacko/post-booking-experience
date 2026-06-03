@@ -1,10 +1,12 @@
 "use client";
 
-import { BookingCelebrationSuccessScreen } from "@/components/kyc/BookingCelebrationSuccessScreen";
-import { BUYING_GUIDE_ENTRY_PATH } from "@/lib/buying-guide-urls";
-import { BOOKING_LOCK_AMOUNT_INR } from "@/lib/paymentUrls";
+import { useCallback, useRef } from "react";
 
-const USER_NAME = "Sharath";
+import { BookingCelebrationSuccessScreen } from "@/components/kyc/BookingCelebrationSuccessScreen";
+import { useReducedMotion } from "@/lib/animations/utils";
+import { BUYING_GUIDE_ENTRY_PATH } from "@/lib/buying-guide-urls";
+import { fireBasicCannon } from "@/lib/confetti-basic-cannon";
+import { BOOKING_LOCK_AMOUNT_INR } from "@/lib/paymentUrls";
 
 function formatInr(amount: number) {
   return new Intl.NumberFormat("en-IN", {
@@ -29,10 +31,20 @@ export function KycBookingConfirmedScreen({
   paidAmountInr = BOOKING_LOCK_AMOUNT_INR,
 }: KycBookingConfirmedScreenProps) {
   const isPayment = variant === "payment";
+  const prefersReducedMotion = useReducedMotion();
+  const confettiFiredRef = useRef(false);
+
+  const handleHeadlineReveal = useCallback(() => {
+    if (!isPayment || prefersReducedMotion || confettiFiredRef.current) return;
+    confettiFiredRef.current = true;
+    fireBasicCannon();
+  }, [isPayment, prefersReducedMotion]);
 
   return (
     <BookingCelebrationSuccessScreen
-      headline={isPayment ? "Booking received" : `Your booking is confirmed, ${USER_NAME}!`}
+      headline={
+        isPayment ? "Booking received" : "Your booking is confirmed with Hyundai"
+      }
       belowHeadline={
         isPayment ? (
           <p className="text-base font-normal leading-6 text-[#757575]">
@@ -41,7 +53,9 @@ export function KycBookingConfirmedScreen({
         ) : undefined
       }
       okayPath={isPayment ? BUYING_GUIDE_ENTRY_PATH : "/car-allocation/pending"}
-      ctaLabel={isPayment ? "See what's next and get started" : "Okay"}
+      ctaLabel={isPayment ? "See what's next and get started" : "Continue"}
+      upNextText={isPayment ? "Buying guide" : "Car allocation"}
+      onHeadlineReveal={isPayment ? handleHeadlineReveal : undefined}
     />
   );
 }

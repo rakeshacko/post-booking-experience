@@ -6,11 +6,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
 import loanApprovedIllustration from "@/assets/loan approved.svg";
-import { DEMO_DEFAULT_LOAN_DISBURSEMENT_INR } from "@/components/payment/loan-amount-demo-constants";
+import {
+  DEMO_DEFAULT_LOAN_DISBURSEMENT_INR,
+  DEMO_LOAN_DISBURSEMENT_TRANSACTION_ID,
+} from "@/components/payment/loan-amount-demo-constants";
 import { SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS } from "@/components/ui/success-screen-layout";
 import { buildPayInsurancePremiumHref } from "@/lib/paymentUrls";
 
-const HEADLINE = "Loan disbursed!";
+const HEADLINE = "Loan disbursed, Sharath!";
 const SUBLINE =
   "The bank has sent the full loan amount to the dealer. Your car is now being prepped for delivery.";
 
@@ -70,6 +73,13 @@ export function LoanDisbursementReceivedScreen({
     () => parseLoanAmountInr(searchParams.get("loan_amount")),
     [searchParams],
   );
+
+  const transactionId = useMemo(() => {
+    const fromUrl = searchParams.get("transaction_id")?.trim();
+    return fromUrl && fromUrl.length > 0
+      ? fromUrl
+      : DEMO_LOAN_DISBURSEMENT_TRANSACTION_ID;
+  }, [searchParams]);
 
   const revealHeader = useCallback(() => {
     headerRevealedByHeroRef.current = true;
@@ -152,11 +162,20 @@ export function LoanDisbursementReceivedScreen({
               aria-label="Disbursed amount summary"
             >
               <div className="w-full rounded-xl border border-[#e8e8e8] bg-white px-4 py-3 text-left">
-                <dl className="m-0 flex items-center justify-between gap-3">
-                  <dt className="text-sm font-normal leading-5 text-[#4b4b4b]">Disbursed amount</dt>
-                  <dd className="text-base font-semibold leading-6 text-[#121212]">
-                    {formatInr(disbursedAmountInr)}
-                  </dd>
+                <dl className="m-0 flex flex-col gap-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <dt className="text-sm font-normal leading-5 text-[#4b4b4b]">Disbursed amount</dt>
+                    <dd className="text-right text-sm font-medium leading-5 text-[#121212]">
+                      {formatInr(disbursedAmountInr)}
+                    </dd>
+                  </div>
+                  <hr className="my-0 border-0 border-t border-dashed border-[#e8e8e8]" />
+                  <div className="flex items-center justify-between gap-3">
+                    <dt className="text-sm font-normal leading-5 text-[#4b4b4b]">Transaction ID</dt>
+                    <dd className="break-all text-right text-sm font-medium leading-5 text-[#121212]">
+                      {transactionId}
+                    </dd>
+                  </div>
                 </dl>
               </div>
             </motion.section>

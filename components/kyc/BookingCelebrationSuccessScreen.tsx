@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import Lottie from "lottie-react";
 
+import { BookingCarCardDetails } from "@/components/kyc/BookingCarCardDetails";
 import { BOOKING_CONFIRMED_ASSETS } from "@/components/kyc/kyc-booking-confirmed-assets";
 import {
   CELEBRATION_LOTTIE_TO_HEADLINE_MT,
@@ -21,10 +22,6 @@ const DEFAULT_LOTTIE_FALLBACK_MS = 1600;
 const CAR_REVEAL_DELAY_MS = 180;
 
 const CAR_MODEL = "Creta";
-const CAR_TITLE = "Hyundai Creta";
-const CAR_VARIANT = "1.5 X-Line AT Diesel";
-const CAR_COLOR = "Starry Night";
-const DELIVERY_LINE = "Express delivery by 10 Jun '25";
 
 function usePreloadBookingImages(enabled: boolean) {
   useEffect(() => {
@@ -53,7 +50,7 @@ export type BookingCelebrationSuccessScreenProps = {
   replaceCarCardWith?: ReactNode;
   /** Route for the primary CTA. */
   okayPath: string;
-  /** Primary bottom button label (default **Okay**). */
+  /** Primary bottom button label (default **Continue**). */
   ctaLabel?: string;
   /** Override bundled success animation (default: booking-success). */
   lottieAnimation?: unknown;
@@ -62,10 +59,20 @@ export type BookingCelebrationSuccessScreenProps = {
    * Match ~one loop of the chosen animation (e.g. 90f @ 30fps ≈ 3200).
    */
   lottieFallbackMs?: number;
+  /** Called once when the headline block is revealed (after Lottie). */
+  onHeadlineReveal?: () => void;
+  /**
+   * When set, shows the “Up next” strip above the primary CTA (Figma 1708:6415).
+   * e.g. `"Car allocation"`.
+   */
+  upNextText?: string;
+  /** When both set, shows a divider under express delivery with engine and chassis numbers. */
+  vehicleEngineNo?: string;
+  vehicleChassisNo?: string;
 };
 
 /**
- * Shared success layout: Lottie tick → headline → car summary card → Okay CTA.
+ * Shared success layout: Lottie tick → headline → car summary card → Continue CTA.
  * Used by KYC booking confirmed and ACKO Drive finance confirmation.
  */
 export function BookingCelebrationSuccessScreen({
@@ -73,12 +80,23 @@ export function BookingCelebrationSuccessScreen({
   belowHeadline,
   replaceCarCardWith,
   okayPath,
-  ctaLabel = "Okay",
+  ctaLabel = "Continue",
   lottieAnimation,
   lottieFallbackMs = DEFAULT_LOTTIE_FALLBACK_MS,
+  onHeadlineReveal,
+  upNextText,
+  vehicleEngineNo,
+  vehicleChassisNo,
 }: BookingCelebrationSuccessScreenProps) {
+  const showVehicleIdentification =
+    vehicleEngineNo != null &&
+    vehicleEngineNo.length > 0 &&
+    vehicleChassisNo != null &&
+    vehicleChassisNo.length > 0;
   const router = useRouter();
   const showCarCard = replaceCarCardWith == null;
+  const contentScrollClass =
+    replaceCarCardWith != null ? "overflow-y-auto" : "overflow-hidden";
   usePreloadBookingImages(showCarCard);
 
   const [showHeader, setShowHeader] = useState(false);
@@ -109,19 +127,24 @@ export function BookingCelebrationSuccessScreen({
 
   useEffect(() => {
     if (!showHeader) return;
+    onHeadlineReveal?.();
     const id = window.setTimeout(() => setShowCar(true), CAR_REVEAL_DELAY_MS);
     return () => window.clearTimeout(id);
-  }, [showHeader]);
+  }, [showHeader, onHeadlineReveal]);
 
   return (
-    <div className="relative min-h-dvh overflow-hidden bg-[#fafbfb] font-sans shadow-[0_-4px_8px_-2px_rgba(54,53,76,0.06)]">
+    <div className="relative flex h-dvh flex-col overflow-hidden bg-[#fafbfb] font-sans">
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-[50%] bg-gradient-to-b from-[#e8f8ef]/90 via-[#f4fbf7]/40 to-transparent transition-opacity duration-700"
         aria-hidden
       />
 
-      <div className={`relative flex min-h-dvh flex-col justify-start ${HERO_ICON_TOP_PT} transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)]`}>
-        <div className="mx-auto flex min-h-0 w-full max-w-[640px] flex-1 flex-col overflow-y-auto px-5 pb-44">
+      <div
+        className={`relative flex min-h-0 flex-1 flex-col justify-start overflow-hidden ${HERO_ICON_TOP_PT} transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)]`}
+      >
+        <div
+          className={`mx-auto flex min-h-0 w-full max-w-[640px] flex-1 flex-col px-5 ${contentScrollClass}`}
+        >
           <div className="flex w-full flex-col items-center text-center">
             <div className="relative flex h-[104px] w-[104px] shrink-0 items-center justify-center">
               <Lottie
@@ -157,7 +180,11 @@ export function BookingCelebrationSuccessScreen({
                 className="relative mt-8 w-full self-center overflow-hidden rounded-2xl border border-[#E8E8E8] bg-white shadow-[0_4px_16px_rgba(0,0,0,0.06)]"
                 delay={0.6}
               >
-                <div className="relative h-[244px] w-full overflow-hidden bg-white">
+                <div
+                  className={`relative w-full overflow-hidden bg-white ${
+                    showVehicleIdentification ? "min-h-[318px]" : "h-[244px]"
+                  }`}
+                >
                   <div aria-hidden className="absolute inset-0">
                     <div className="absolute inset-0 overflow-hidden">
                       <Image
@@ -194,39 +221,10 @@ export function BookingCelebrationSuccessScreen({
 
                   <div className="absolute inset-x-2 bottom-2 overflow-hidden rounded-xl border border-white/60 bg-white/90 shadow-sm backdrop-blur-[12px]">
                     <div className="px-3 py-3 text-left">
-                      <p className="text-base font-medium leading-6 text-[#121212]">{CAR_TITLE}</p>
-                      <div className="mt-1 flex flex-wrap items-center gap-[4px] text-xs leading-[18px] text-[#121212]">
-                        <span className="shrink-0">{CAR_VARIANT}</span>
-                        <span
-                          className="inline-flex h-[18px] w-4 shrink-0 items-center justify-center"
-                          aria-hidden
-                        >
-                          <Image
-                            src={BOOKING_CONFIRMED_ASSETS.dotSeparator}
-                            alt=""
-                            width={16}
-                            height={16}
-                            className="block size-4 object-contain"
-                            unoptimized
-                            sizes="16px"
-                          />
-                        </span>
-                        <span className="shrink-0">{CAR_COLOR}</span>
-                      </div>
-                      <div className="mt-2 flex items-center gap-1.5">
-                        <p className="text-xs font-normal leading-[18px] text-[#5920c5]">{DELIVERY_LINE}</p>
-                        <span className="relative h-4 w-4 shrink-0" aria-hidden>
-                          <Image
-                            src={BOOKING_CONFIRMED_ASSETS.expressDelivery}
-                            alt=""
-                            width={16}
-                            height={16}
-                            className="h-4 w-4 object-contain"
-                            unoptimized
-                            sizes="16px"
-                          />
-                        </span>
-                      </div>
+                      <BookingCarCardDetails
+                        engineNo={showVehicleIdentification ? vehicleEngineNo : undefined}
+                        chassisNo={showVehicleIdentification ? vehicleChassisNo : undefined}
+                      />
                     </div>
                   </div>
                 </div>
@@ -244,17 +242,27 @@ export function BookingCelebrationSuccessScreen({
 
       {showCar && (
         <PaymentSuccessStagger
-          className="fixed bottom-0 left-0 right-0 z-10 border-t border-transparent bg-[#FFFFFF] px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-4px_8px_-2px_rgba(54,53,76,0.06)]"
+          className="z-10 shrink-0 bg-white pb-[env(safe-area-inset-bottom)]"
           delay={0.8}
         >
-          <div className="mx-auto w-full max-w-[640px]">
-            <button
-              type="button"
-              className="primary-cta focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#121212]/30 focus-visible:ring-offset-2"
-              onClick={() => router.push(okayPath)}
-            >
-              {ctaLabel}
-            </button>
+          <div className="mx-auto flex w-full max-w-[640px] flex-col">
+            {upNextText != null && upNextText.length > 0 && (
+              <div className="flex h-8 w-full shrink-0 items-center justify-center bg-[#f0f0f6] px-5">
+                <p className="text-center text-xs leading-[18px] text-[#121212]">
+                  <span className="font-medium">Up next:</span>
+                  <span>{` ${upNextText}`}</span>
+                </p>
+              </div>
+            )}
+            <div className="px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3">
+              <button
+                type="button"
+                className="primary-cta focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#121212]/30 focus-visible:ring-offset-2"
+                onClick={() => router.push(okayPath)}
+              >
+                {ctaLabel}
+              </button>
+            </div>
           </div>
         </PaymentSuccessStagger>
       )}

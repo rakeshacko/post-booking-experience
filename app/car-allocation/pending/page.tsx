@@ -1,3 +1,5 @@
+import carAllocationHero from "@/assets/Car allocation.svg";
+
 import { KycBookingProcessingScreen } from "@/components/kyc/KycBookingProcessingScreen";
 
 /**
@@ -6,10 +8,18 @@ import { KycBookingProcessingScreen } from "@/components/kyc/KycBookingProcessin
 export default function CarAllocationPendingPage() {
   return (
     <KycBookingProcessingScreen
-      headline="We're allocating your car, Sharath!"
-      subline="Hang tight — we're matching your selected variant and colour to available stock."
+      headline="A car is being assigned to your booking, Sharath"
+      subline="We are working with Advaith Hyundai to allocate your exact Creta variant and colour. This usually takes 24-48 hours."
+      infoBox={{
+        body: "Once allocated, you will receive your car's engine and chassis number.",
+      }}
       nextHref="/car-allocation/confirmed"
       prefetchHref="/car-allocation/confirmed"
+      whatsNextFirstStepStatus="in_progress"
+      whatsNextFirstStepDescription="Your selected variant and colour are being matched to available stock."
+      heroIllustrationSrc={carAllocationHero}
+      heroIllustrationWidth={280}
+      heroIllustrationHeight={80}
     />
   );
 }

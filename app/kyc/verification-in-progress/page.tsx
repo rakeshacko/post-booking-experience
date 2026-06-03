@@ -1,9 +1,9 @@
-import { KycVerificationInProgressScreen } from "@/components/kyc/KycVerificationInProgressScreen";
+import { KycVerificationInProgressPageClient } from "@/components/kyc/KycVerificationInProgressPageClient";
 
 /**
  * KYC verification in progress — between documents received and booking processing.
- * Layout matches `/kyc` (no page transition wrapper).
+ * Next routes to `/kyc/processing` (Express) or `/kyc/verification-failed` (verification-failed flow).
  */
 export default function KycVerificationInProgressPage() {
-  return <KycVerificationInProgressScreen />;
+  return <KycVerificationInProgressPageClient />;
 }

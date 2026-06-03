@@ -78,7 +78,7 @@ export function KycDocumentsReceivedScreen({
               Documents received
             </h1>
             <p className="max-w-sm text-sm font-normal leading-5 text-[#6b7280]">
-              We are verifying your identity...
+              We are on it.
             </p>
           </div>
         </div>

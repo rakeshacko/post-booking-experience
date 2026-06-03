@@ -5,12 +5,13 @@ import { useMemo } from "react";
 import { KycBookingProcessingScreen } from "@/components/kyc/KycBookingProcessingScreen";
 import { KYC_ASSETS } from "@/components/kyc/kyc-assets";
 import { WhatsNextTimeline } from "@/components/kyc/WhatsNextTimeline";
+import { DownPaymentSummaryCard } from "@/components/payment/DownPaymentSummaryCard";
+import { BOOKING_PAYMENT_SUMMARY_INR } from "@/lib/payment-summary-demo";
 
-const PAYMENT_DEFAULT_HEADLINE =
-  "Its time for payment. How would you like to pay, Sharath?";
+const PAYMENT_DEFAULT_HEADLINE = "How would you like to pay, Sharath?";
 
 const HERO_SUBTEXT =
-  "You can choose from ACKO Drive Finance, Self Finance or Full Cash Payment.";
+  "Choose from ACKO Drive Finance, Self Finance or Full Cash. More details on the next screen.";
 
 const WHATS_NEXT_SUB_PAYMENT = HERO_SUBTEXT;
 
@@ -48,12 +49,21 @@ export function PaymentDefaultScreen() {
     <KycBookingProcessingScreen
       headline={PAYMENT_DEFAULT_HEADLINE}
       subline={HERO_SUBTEXT}
+      heroSummaryCard={
+        <DownPaymentSummaryCard
+          variant="booking_payment"
+          downPaymentTotalInr={BOOKING_PAYMENT_SUMMARY_INR.ackoDrivePriceInr}
+          amountPaidInr={BOOKING_PAYMENT_SUMMARY_INR.bookingAmountPaidInr}
+          remainingAmountInr={BOOKING_PAYMENT_SUMMARY_INR.amountToPayInr}
+        />
+      }
       heroIllustrationSrc={KYC_ASSETS.paymentHero}
       nextHref="/payment/choose"
       prefetchHref="/payment/choose"
       ctaWarningLine={PAYMENT_WARNING_LINE}
-      nextCtaLabel="Choose payment option"
+      nextCtaLabel="Choose how to pay"
       whatsNextCard={whatsNextCard}
+      manageBookingShowVehicleIdentification
     />
   );
 }

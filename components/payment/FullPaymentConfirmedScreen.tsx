@@ -1,127 +1,149 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
-import Lottie from "lottie-react";
+import { useCallback, useMemo } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
-import ackoDriveFinanceSuccessLottie from "@/components/kyc/lottie/acko-drive-finance-success.json";
+import { KycBookingProcessingScreen } from "@/components/kyc/KycBookingProcessingScreen";
+import { KYC_ASSETS } from "@/components/kyc/kyc-assets";
+import { AckoDriveFinanceSuccessLottie } from "@/components/payment/AckoDriveFinanceSuccessLottie";
+import { DownPaymentSummaryCard } from "@/components/payment/DownPaymentSummaryCard";
 import { FullPaymentAmountDueCard } from "@/components/payment/FullPaymentAmountDueCard";
-import { SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS } from "@/components/ui/success-screen-layout";
+import { LoanProcessingWhatsNext } from "@/components/payment/LoanProcessingWhatsNext";
+import {
+  FULL_PAYMENT_CAR_AMOUNT_INR,
+  FULL_PAYMENT_CAR_DUE_LABEL,
+} from "@/components/payment/loan-amount-demo-constants";
+import { buildFullPaymentCheckoutHref } from "@/lib/paymentUrls";
 
-/** After header + subtext, delay before amount card (step 3). */
-const CARD_AFTER_HEADER_MS = 420;
-/** After amount card, delay before bottom CTA (step 4). */
-const CTA_AFTER_CARD_MS = 420;
-/** If Lottie `onComplete` never fires, still reveal copy so the user is not stuck. */
-const HEADER_FALLBACK_MS = 2200;
+const HEADLINE_FIRST = "You're paying in full";
+const HEADLINE_REMAINING = "Finish your car payment";
+
+const SUBLINE_FIRST =
+  "Your payment is split into two parts. Pay the car amount first, insurance comes closer to car registration.";
+
+const SUBLINE_REMAINING =
+  "You can pay in one go or across multiple transactions.";
+
+const CTA_WARNING_LINE = "Complete your full payment by 30 May to keep your booking active";
+
+const FULL_PAYMENT_TIMELINE_DEADLINE = "30 May";
+
+function formatInr(amount: number) {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(Math.max(0, Math.round(amount)));
+}
 
 /**
- * Full payment — payment option confirmed. Sequence: Lottie → header + subtext → amount card → CTA.
+ * Full payment — action step after confirm bottom sheet on `/payment/choose`, and after
+ * partial instalments (URL: `down_payment` + optional `original_down_payment`). Primary CTA
+ * goes to mock checkout (`/payment?bank=full_payment&…`).
  */
 export function FullPaymentConfirmedScreen() {
   const router = useRouter();
-  const headerRevealedByLottieRef = useRef(false);
-  const [showHeader, setShowHeader] = useState(false);
-  const [showAmountCard, setShowAmountCard] = useState(false);
-  const [showFooter, setShowFooter] = useState(false);
+  const searchParams = useSearchParams();
+  const amountDueParam = searchParams.get("down_payment");
+  const originalAmountParam = searchParams.get("original_down_payment");
 
-  const revealHeader = useCallback(() => {
-    headerRevealedByLottieRef.current = true;
-    setShowHeader(true);
-  }, []);
+  const {
+    headline,
+    subline,
+    nextCtaLabel,
+    nextHref,
+    prefetchHref,
+    heroSummaryCard,
+    whatsNextCard,
+    heroIllustrationSrc,
+    heroIllustrationSlot,
+  } = useMemo(() => {
+    const due =
+      amountDueParam != null && amountDueParam !== "" ? Number(amountDueParam) : NaN;
+    const original =
+      originalAmountParam != null && originalAmountParam !== ""
+        ? Number(originalAmountParam)
+        : NaN;
+    const totalDue =
+      Number.isFinite(due) && due > 0 ? Math.round(due) : FULL_PAYMENT_CAR_AMOUNT_INR;
+    const fullCommitment =
+      Number.isFinite(original) && original > 0 ? Math.round(original) : totalDue;
+    const hasRemainingFlow =
+      Number.isFinite(due) && due > 0 && fullCommitment > totalDue;
 
-  const onLottieComplete = useCallback(() => {
-    revealHeader();
-  }, [revealHeader]);
+    const href = buildFullPaymentCheckoutHref(
+      String(totalDue),
+      hasRemainingFlow ? String(fullCommitment) : null,
+    );
 
-  useEffect(() => {
-    const id = window.setTimeout(() => {
-      if (!headerRevealedByLottieRef.current) {
-        revealHeader();
-      }
-    }, HEADER_FALLBACK_MS);
-    return () => window.clearTimeout(id);
-  }, [revealHeader]);
+    const paymentInProgressDescription = hasRemainingFlow
+      ? `Pay ${formatInr(totalDue)} before ${FULL_PAYMENT_TIMELINE_DEADLINE}`
+      : `Pay ${formatInr(FULL_PAYMENT_CAR_AMOUNT_INR)} by ${FULL_PAYMENT_CAR_DUE_LABEL}`;
 
-  useEffect(() => {
-    if (!showHeader) return;
-    const id = window.setTimeout(() => setShowAmountCard(true), CARD_AFTER_HEADER_MS);
-    return () => window.clearTimeout(id);
-  }, [showHeader]);
+    if (hasRemainingFlow) {
+      const received = fullCommitment - totalDue;
+      return {
+        headline: HEADLINE_REMAINING,
+        subline: SUBLINE_REMAINING,
+        nextCtaLabel: "Pay remaining amount",
+        nextHref: href,
+        prefetchHref: href,
+        heroIllustrationSrc: KYC_ASSETS.paymentHero,
+        heroIllustrationSlot: undefined,
+        heroSummaryCard: (
+          <DownPaymentSummaryCard
+            variant="full_payment"
+            downPaymentTotalInr={fullCommitment}
+            amountPaidInr={received}
+            remainingAmountInr={totalDue}
+          />
+        ),
+        whatsNextCard: (
+          <LoanProcessingWhatsNext
+            variant="full_payment"
+            fullPaymentJourney
+            paymentInProgressDescription={paymentInProgressDescription}
+          />
+        ),
+      };
+    }
 
-  useEffect(() => {
-    if (!showAmountCard) return;
-    const id = window.setTimeout(() => setShowFooter(true), CTA_AFTER_CARD_MS);
-    return () => window.clearTimeout(id);
-  }, [showAmountCard]);
+    return {
+      headline: HEADLINE_FIRST,
+      subline: SUBLINE_FIRST,
+      nextCtaLabel: "Pay",
+      nextHref: href,
+      prefetchHref: href,
+      heroIllustrationSrc: undefined,
+      heroIllustrationSlot: <AckoDriveFinanceSuccessLottie />,
+      heroSummaryCard: <FullPaymentAmountDueCard variant="breakdown" />,
+      whatsNextCard: (
+        <LoanProcessingWhatsNext
+          variant="full_payment_action"
+          paymentInProgressDescription={paymentInProgressDescription}
+        />
+      ),
+    };
+  }, [amountDueParam, originalAmountParam]);
 
-  const onContinue = useCallback(() => {
-    router.push("/payment/pay-full-payment");
-  }, [router]);
+  const onPay = useCallback(() => {
+    router.push(nextHref);
+  }, [router, nextHref]);
 
   return (
-    <div className="relative min-h-dvh overflow-hidden bg-[#fafbfb] font-sans shadow-[0_-4px_8px_-2px_rgba(54,53,76,0.06)]">
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-[50%] bg-gradient-to-b from-[#e8f8ef]/90 via-[#f4fbf7]/40 to-transparent transition-opacity duration-700"
-        aria-hidden
-      />
-
-      <div className="relative z-10 flex min-h-dvh w-full flex-col justify-start px-4 pb-[max(5.5rem,env(safe-area-inset-bottom))] pt-[calc(48px+clamp(4rem,14vh,6.5rem))]">
-        <main className="mx-auto flex w-full flex-col items-center overflow-y-auto text-center">
-          <div className="relative flex h-[96px] w-[96px] shrink-0 items-center justify-center">
-            <Lottie
-              animationData={ackoDriveFinanceSuccessLottie}
-              loop={false}
-              className="h-full w-full"
-              aria-label="Success animation"
-              onComplete={onLottieComplete}
-            />
-          </div>
-
-          {showHeader && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-              className={`mt-5 flex w-full flex-col items-center ${SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS}`}
-            >
-              <h1 className="text-center text-2xl font-semibold leading-8 tracking-[-0.1px] text-[#121212]">
-                You&apos;re paying in full
-              </h1>
-              <p className="w-full text-center text-sm font-normal leading-5 text-[#4b4b4b]">
-                Your payment is split into two parts. Pay the car amount first, insurance comes
-                closer to car registration.
-              </p>
-            </motion.div>
-          )}
-
-          {showAmountCard && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-              className="mt-5 w-full"
-            >
-              <FullPaymentAmountDueCard />
-            </motion.div>
-          )}
-        </main>
-      </div>
-
-      {showFooter && (
-        <div className="fixed inset-x-0 bottom-0 z-20 bg-white pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[0_-4px_6px_0_rgba(54,53,76,0.08)]">
-          <div className="mx-auto flex w-full max-w-[640px] items-start justify-center px-5 pt-3">
-            <button
-              type="button"
-              className="primary-cta w-full rounded-lg focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#121212]/30 focus-visible:ring-offset-2"
-              onClick={onContinue}
-            >
-              Continue
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
+    <KycBookingProcessingScreen
+      headline={headline}
+      subline={subline}
+      heroIllustrationSrc={heroIllustrationSrc}
+      heroIllustrationSlot={heroIllustrationSlot}
+      heroSummaryCard={heroSummaryCard}
+      nextHref={nextHref}
+      prefetchHref={prefetchHref}
+      onPrimaryCtaClick={onPay}
+      nextCtaLabel={nextCtaLabel}
+      ctaWarningLine={CTA_WARNING_LINE}
+      whatsNextCard={whatsNextCard}
+      manageBookingShowVehicleIdentification
+    />
   );
 }
