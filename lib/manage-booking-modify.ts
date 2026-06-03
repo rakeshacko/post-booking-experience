@@ -26,10 +26,7 @@ function formatInr(amount: number) {
  * Free fees on the identity funnel through `/kyc/processing` (inclusive).
  * Standard from `/kyc/booking-accepted` through pay-down-payment until DP is on the URL.
  */
-export function resolveModifyBookingFeeTier(
-  pathname: string,
-  _searchParams: URLSearchParams,
-): ModifyBookingFeeTier {
+export function resolveModifyBookingFeeTier(pathname: string): ModifyBookingFeeTier {
   const phase = resolveJourneyPhase(pathname);
   return isIdentityFunnelPhase(phase) ? "free" : "standard";
 }

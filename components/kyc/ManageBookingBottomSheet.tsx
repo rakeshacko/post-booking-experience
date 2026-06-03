@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import arrowRightIcon from "@/assets/Arrow_right.svg";
 import changeSelectionIcon from "@/assets/change selection.svg";
@@ -294,7 +294,7 @@ function shouldHideModifyBooking(
   return false;
 }
 
-export function ManageBookingBottomSheet({
+function ManageBookingBottomSheetInner({
   open,
   onClose,
   showVehicleIdentification = false,
@@ -475,5 +475,14 @@ export function ManageBookingBottomSheet({
       </div>
     </div>
     </BottomSheetPortal>
+  );
+}
+
+/** `useSearchParams` requires a Suspense boundary for static export prerender. */
+export function ManageBookingBottomSheet(props: ManageBookingBottomSheetProps) {
+  return (
+    <Suspense fallback={null}>
+      <ManageBookingBottomSheetInner {...props} />
+    </Suspense>
   );
 }
