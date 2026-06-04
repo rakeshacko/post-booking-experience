@@ -14,6 +14,7 @@ export const JOURNEY_PATHS = {
     processing: "/kyc/processing",
     bookingConfirmed: "/kyc/booking-confirmed",
     bookingAccepted: "/kyc/booking-accepted",
+    modifySelection: "/kyc/modify-selection",
   },
   buyingGuide: {
     entry: "/kyc/buying-guide/1",
@@ -127,5 +128,17 @@ export function isIdentityFunnelPhase(phase: JourneyPhase): boolean {
     phase === "identity_verification" ||
     phase === "kyc_documents" ||
     phase === "booking_processing"
+  );
+}
+
+/** From booking accepted through payment — change selection with fees is available. */
+export function isChangeSelectionAvailablePhase(phase: JourneyPhase): boolean {
+  return (
+    phase === "booking_accepted" ||
+    phase === "booking_celebration" ||
+    phase === "buying_guide" ||
+    phase === "car_allocation" ||
+    phase === "payment" ||
+    phase === "delivery"
   );
 }

@@ -1,9 +1,13 @@
 "use client";
 
-import Image from "next/image";
 import { useCallback, useRef, useState } from "react";
 
-import { DocumentUploadSection } from "@/components/kyc/DocumentUploadSection";
+import {
+  DOCUMENT_UPLOAD_TIPS_TO_SECTIONS_CLASS,
+  DOCUMENT_UPLOAD_TITLE_TO_TIPS_CLASS,
+} from "@/components/kyc/DocumentUploadInfoTipsCard";
+import { DocumentUploadDocumentCards } from "@/components/kyc/DocumentUploadDocumentCards";
+import { DocumentUploadVerifiedBanner } from "@/components/kyc/DocumentUploadVerifiedBanner";
 import { KycUploadSourceBottomSheet } from "@/components/kyc/KycUploadSourceBottomSheet";
 import { KYC_MOCK_UPLOAD_NAMES, type KycUploadSource } from "@/components/kyc/kyc-upload-content";
 import { LoanApplicationPageStagger } from "@/components/payment/loan-application/LoanApplicationPageStagger";
@@ -19,29 +23,16 @@ import type {
   LoanApplicationUploadedFile,
 } from "@/lib/loan-application-documents-state";
 
-import tickIcon from "@/assets/tick.svg";
-
 function nextMockFilename(uploadIndex: number): string {
   return KYC_MOCK_UPLOAD_NAMES[uploadIndex % KYC_MOCK_UPLOAD_NAMES.length];
 }
 
-function toLoanUploadSource(source: KycUploadSource): LoanApplicationDocumentUploadSource {
-  if (source === "digilocker") return "file";
-  return source;
-}
-
-function VerifiedDocumentsBanner() {
-  return (
-    <div className="flex items-center gap-2 rounded-2xl bg-[#ebfbee] px-4 py-2">
-      <span className="relative h-5 w-5 shrink-0">
-        <Image src={tickIcon} alt="" fill className="object-contain" unoptimized sizes="20px" />
-      </span>
-      <p className="text-xs font-normal leading-[18px] text-[#121212]">
-        {LOAN_APPLICATION_DOCUMENTS_VERIFIED_BANNER}
-      </p>
-    </div>
-  );
-}
+const LOAN_UPLOAD_CARD_DEFINITIONS = LOAN_APPLICATION_FINANCIAL_DOCUMENTS.map((doc) => ({
+  kind: doc.kind,
+  title: doc.title,
+  description: doc.description,
+  allowMultiple: true,
+}));
 
 type LoanApplicationDocumentUploadSectionsProps = {
   uploads: LoanApplicationDocumentsState;
@@ -61,26 +52,41 @@ export function LoanApplicationDocumentUploadSections({
     setSourceSheetOpen(true);
   }, []);
 
-  const handleMockUpload = useCallback(
-    (source: KycUploadSource) => {
-      if (activeDocument == null) return;
+  const appendUpload = useCallback(
+    (kind: LoanApplicationDocumentKind, source: LoanApplicationDocumentUploadSource) => {
       const uploadIndex = mockUploadCounterRef.current;
       mockUploadCounterRef.current += 1;
       const newFile: LoanApplicationUploadedFile = {
-        id: `${activeDocument}-${uploadIndex}-${Date.now()}`,
+        id: `${kind}-${source}-${uploadIndex}-${Date.now()}`,
         name: nextMockFilename(uploadIndex),
-        source: toLoanUploadSource(source),
+        source,
       };
       onUploadsChange({
         ...uploads,
-        [activeDocument]: [...uploads[activeDocument], newFile],
+        [kind]: [...uploads[kind], newFile],
       });
     },
-    [activeDocument, onUploadsChange, uploads],
+    [onUploadsChange, uploads],
+  );
+
+  const handleMockUpload = useCallback(
+    (source: KycUploadSource) => {
+      if (activeDocument == null || source === "digilocker") return;
+      appendUpload(activeDocument, source);
+    },
+    [activeDocument, appendUpload],
   );
 
   const handleRemove = useCallback(
-    (kind: LoanApplicationDocumentKind, fileId: string) => {
+    (kind: string, fileId: string) => {
+      if (
+        kind !== "salarySlip" &&
+        kind !== "bankStatement" &&
+        kind !== "addressProof" &&
+        kind !== "form16"
+      ) {
+        return;
+      }
       onUploadsChange({
         ...uploads,
         [kind]: uploads[kind].filter((file) => file.id !== fileId),
@@ -94,26 +100,28 @@ export function LoanApplicationDocumentUploadSections({
   return (
     <>
       <LoanApplicationPageStagger delayMs={LOAN_APPLICATION_STAGGER_MS.documentsInfo}>
-        <VerifiedDocumentsBanner />
+        <div className={DOCUMENT_UPLOAD_TITLE_TO_TIPS_CLASS}>
+          <DocumentUploadVerifiedBanner message={LOAN_APPLICATION_DOCUMENTS_VERIFIED_BANNER} />
+        </div>
       </LoanApplicationPageStagger>
 
-      <div className="mt-6 flex flex-col gap-4">
-        {LOAN_APPLICATION_FINANCIAL_DOCUMENTS.map((doc, index) => (
-          <LoanApplicationPageStagger
-            key={doc.kind}
-            delayMs={cardStaggerBase + index * LOAN_APPLICATION_STAGGER_MS.sectionStep}
-          >
-            <DocumentUploadSection
-              title={doc.title}
-              description={doc.description}
-              allowMultiple
-              files={uploads[doc.kind]}
-              onUploadClick={() => openSourceSheet(doc.kind)}
-              onAddMoreClick={() => openSourceSheet(doc.kind)}
-              onRemove={(fileId) => handleRemove(doc.kind, fileId)}
-            />
-          </LoanApplicationPageStagger>
-        ))}
+      <div className={DOCUMENT_UPLOAD_TIPS_TO_SECTIONS_CLASS}>
+        <DocumentUploadDocumentCards
+          documents={LOAN_UPLOAD_CARD_DEFINITIONS}
+          getFiles={(kind) => uploads[kind as LoanApplicationDocumentKind] ?? []}
+          onUploadClick={(kind) => openSourceSheet(kind as LoanApplicationDocumentKind)}
+          onRemove={handleRemove}
+          wrapCard={(kind, card) => {
+            const index = LOAN_APPLICATION_FINANCIAL_DOCUMENTS.findIndex((d) => d.kind === kind);
+            return (
+              <LoanApplicationPageStagger
+                delayMs={cardStaggerBase + index * LOAN_APPLICATION_STAGGER_MS.sectionStep}
+              >
+                {card}
+              </LoanApplicationPageStagger>
+            );
+          }}
+        />
       </div>
 
       <KycUploadSourceBottomSheet

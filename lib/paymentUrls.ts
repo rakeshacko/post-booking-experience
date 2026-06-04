@@ -1,12 +1,45 @@
 /** Booking lock amount on `/payment` without `down_payment` (read-only checkout). */
 export const BOOKING_LOCK_AMOUNT_INR = 10_000;
 
+/** Query on mock checkout — booking-lock mode with optional custom amount (not loan down payment). */
+export const BOOKING_AMOUNT_QUERY = "booking_amount";
+
+/** Preserved on checkout → success when returning from modify-selection pay. */
+export const MODIFY_SELECTION_RETURN_SOURCE = "modify-selection";
+
+export type BookingLockSuccessOptions = {
+  /** e.g. {@link MODIFY_SELECTION_RETURN_SOURCE} — CTA goes to `/kyc` with updated car. */
+  returnSource?: string;
+};
+
 /** After booking-lock payment — celebration at `/kyc/booking-confirmed`. */
-export function buildBookingLockSuccessHref(paidInr: number): string {
+export function buildBookingLockSuccessHref(
+  paidInr: number,
+  options?: BookingLockSuccessOptions,
+): string {
   const q = new URLSearchParams();
   q.set("source", "payment");
   q.set("paid", String(Math.round(paidInr)));
+  if (options?.returnSource) {
+    q.set("return_source", options.returnSource);
+  }
   return `/kyc/booking-confirmed?${q.toString()}`;
+}
+
+/**
+ * Mock checkout for booking lock — same mode as quote (`/payment`), optional amount for modify-selection delta pay.
+ */
+export function buildBookingLockCheckoutHref(
+  amountInr: number,
+  options?: { returnSource?: string },
+): string {
+  const q = new URLSearchParams();
+  q.set(BOOKING_AMOUNT_QUERY, String(Math.round(amountInr)));
+  if (options?.returnSource) {
+    q.set("return_source", options.returnSource);
+  }
+  const qs = q.toString();
+  return qs ? `/payment?${qs}` : "/payment";
 }
 
 /** Default booking-lock success URL (uses {@link BOOKING_LOCK_AMOUNT_INR}). */

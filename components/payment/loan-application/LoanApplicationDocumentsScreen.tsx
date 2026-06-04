@@ -45,9 +45,7 @@ export function LoanApplicationDocumentsScreen() {
           </h1>
         </LoanApplicationPageStagger>
 
-        <div className="mt-4">
-          <LoanApplicationDocumentUploadSections uploads={uploads} onUploadsChange={setUploads} />
-        </div>
+        <LoanApplicationDocumentUploadSections uploads={uploads} onUploadsChange={setUploads} />
       </main>
 
       <LoanApplicationFixedCta

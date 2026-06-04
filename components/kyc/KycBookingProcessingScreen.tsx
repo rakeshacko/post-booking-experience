@@ -76,6 +76,8 @@ export type KycBookingProcessingScreenProps = {
   sublineLine2?: string;
   /** Optional titled info callout below `subline` (preferred when a heading is needed). */
   infoBox?: { title?: string; body: ReactNode };
+  /** Info callout icon (default: Info.svg). */
+  infoBoxIconSrc?: string | StaticImageData;
   /** Primary “Next” CTA destination. */
   nextHref?: string;
   /** Route to warm in the background (defaults to `nextHref`). */
@@ -124,6 +126,7 @@ export function KycBookingProcessingScreen({
   subline = DEFAULT_PROCESSING_SUBLINE,
   sublineLine2,
   infoBox,
+  infoBoxIconSrc = infoIcon,
   nextHref = DEFAULT_NEXT_HREF,
   prefetchHref = nextHref,
   whatsNextTimelineVariant = "default",
@@ -352,7 +355,7 @@ export function KycBookingProcessingScreen({
                 >
                   <span className="relative h-5 w-5 shrink-0">
                     <Image
-                      src={infoIcon}
+                      src={infoBoxIconSrc}
                       alt=""
                       fill
                       className="object-contain"

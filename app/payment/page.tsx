@@ -8,6 +8,7 @@ import { DefaultPageTransition } from "@/components/ui/page-transition";
 
 import { FULL_PAYMENT_INSURANCE_INR } from "@/components/payment/loan-amount-demo-constants";
 import {
+  BOOKING_AMOUNT_QUERY,
   BOOKING_LOCK_AMOUNT_INR,
   buildBookingLockSuccessHref,
   buildDownPaymentSuccessHref,
@@ -36,6 +37,13 @@ function formatInr(amount: number) {
 
 function parseDownPaymentTotalFromSearchParams(searchParams: URLSearchParams): number {
   const raw = searchParams.get("down_payment");
+  const n = raw != null && raw !== "" ? Number(raw) : NaN;
+  if (Number.isFinite(n) && n > 0) return Math.round(n);
+  return BOOKING_LOCK_AMOUNT_INR;
+}
+
+function parseBookingLockAmountFromSearchParams(searchParams: URLSearchParams): number {
+  const raw = searchParams.get(BOOKING_AMOUNT_QUERY);
   const n = raw != null && raw !== "" ? Number(raw) : NaN;
   if (Number.isFinite(n) && n > 0) return Math.round(n);
   return BOOKING_LOCK_AMOUNT_INR;
@@ -102,7 +110,7 @@ function parseInrInputDigits(value: string): number {
 /**
  * Mock Razorpay-style checkout for demos only — not connected to Razorpay APIs.
  * Pay → loader → dedicated success route (`/kyc/booking-confirmed?source=payment` or `/payment/down-payment-success`).
- * Booking flow: `/payment` (no `down_payment`) — fixed booking lock, read-only.
+ * Booking flow: `/payment` (no `down_payment`) — booking lock, read-only; optional `?booking_amount=` (modify-selection).
  * Down payment flow: `?down_payment=` (e.g. from pay-down-payment) — editable amount / instalments (demo).
  * Insurance premium: `?payment_kind=insurance` — fixed insurance amount (read-only).
  */
@@ -126,6 +134,11 @@ function MockRazorpayPaymentPageContent() {
     const isInsurancePayment =
       searchParams.get("payment_kind") === INSURANCE_PAYMENT_KIND;
     const insuranceDue = FULL_PAYMENT_INSURANCE_INR;
+    const isBookingLockCheckout = !hasDownPaymentParam && !isInsurancePayment;
+    const bookingLockDue = isBookingLockCheckout
+      ? parseBookingLockAmountFromSearchParams(searchParams)
+      : BOOKING_LOCK_AMOUNT_INR;
+    const returnSource = searchParams.get("return_source");
     return {
       totalDue: isInsurancePayment ? insuranceDue : due,
       originalDownPayment: isInsurancePayment ? insuranceDue : originalDownPayment,
@@ -137,6 +150,9 @@ function MockRazorpayPaymentPageContent() {
             : "Down payment · incl. applicable taxes"
           : "Booking lock amount · incl. applicable taxes",
       isDownPaymentFromUrl: hasDownPaymentParam,
+      isBookingLockCheckout,
+      bookingLockDue,
+      returnSource,
       isFullPayment,
       isInsurancePayment,
     };
@@ -147,6 +163,9 @@ function MockRazorpayPaymentPageContent() {
     originalDownPayment,
     checkoutSubtitle,
     isDownPaymentFromUrl,
+    isBookingLockCheckout,
+    bookingLockDue,
+    returnSource,
     isFullPayment,
     isInsurancePayment,
   } = checkoutMeta;
@@ -221,7 +240,9 @@ function MockRazorpayPaymentPageContent() {
   const handlePay = useCallback(() => {
     if (!isDownPaymentFromUrl) {
       setCheckoutError(null);
-      pendingSuccessHref.current = buildBookingLockSuccessHref(BOOKING_LOCK_AMOUNT_INR);
+      pendingSuccessHref.current = buildBookingLockSuccessHref(bookingLockDue, {
+        returnSource: returnSource ?? undefined,
+      });
       if (PROCESSING_MS <= 0) {
         router.push(pendingSuccessHref.current);
         return;
@@ -275,11 +296,13 @@ function MockRazorpayPaymentPageContent() {
     setPhase("processing");
   }, [
     amountInput,
+    bookingLockDue,
     isDownPaymentFromUrl,
     isInsurancePayment,
     originalDownPayment,
     paymentBank,
     remainingDue,
+    returnSource,
     router,
     searchParams,
   ]);
@@ -412,7 +435,7 @@ function MockRazorpayPaymentPageContent() {
               <>
                 <p className="text-center text-xs text-[#6b7280]">Amount payable</p>
                 <p className="mt-1 text-center text-3xl font-semibold tabular-nums tracking-tight text-[#1a1a1a]">
-                  {formatInr(BOOKING_LOCK_AMOUNT_INR)}
+                  {formatInr(isBookingLockCheckout ? bookingLockDue : BOOKING_LOCK_AMOUNT_INR)}
                 </p>
                 <p className="mt-2 text-center text-xs text-[#9ca3af]">{checkoutSubtitle}</p>
               </>
@@ -457,10 +480,12 @@ function MockRazorpayPaymentPageContent() {
             {isInsurancePayment
               ? `Pay ${formatInr(FULL_PAYMENT_INSURANCE_INR)}`
               : isDownPaymentFromUrl &&
-              isPayAmountValid &&
-              Number.isFinite(parsedPayAmount)
+                  isPayAmountValid &&
+                  Number.isFinite(parsedPayAmount)
                 ? `Pay ${formatInr(parsedPayAmount)}`
-                : "Pay"}
+                : isBookingLockCheckout
+                  ? `Pay ${formatInr(bookingLockDue)}`
+                  : "Pay"}
           </button>
         </div>
       </div>

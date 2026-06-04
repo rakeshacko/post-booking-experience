@@ -1,4 +1,5 @@
 import { KycDocumentUploadScreen } from "@/components/kyc/KycDocumentUploadScreen";
+import { ModifyNoChargesGatedPage } from "@/components/kyc/ModifyNoChargesGatedPage";
 import { FadePageTransition } from "@/components/ui/page-transition";
 
 /**
@@ -6,8 +7,10 @@ import { FadePageTransition } from "@/components/ui/page-transition";
  */
 export default function KycUploadPage() {
   return (
-    <FadePageTransition>
-      <KycDocumentUploadScreen />
-    </FadePageTransition>
+    <ModifyNoChargesGatedPage>
+      <FadePageTransition>
+        <KycDocumentUploadScreen />
+      </FadePageTransition>
+    </ModifyNoChargesGatedPage>
   );
 }

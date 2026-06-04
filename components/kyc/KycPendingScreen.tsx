@@ -18,6 +18,7 @@ import {
   HERO_ICON_TOP_PT,
   HERO_ILLUSTRATION_TO_COPY_MT,
 } from "@/components/ui/success-screen-layout";
+import { isModifyNoChargesFlow } from "@/lib/experience-flow";
 import { cn } from "@/lib/utils";
 
 const KYC_HEADLINE = "Verify your identity, Sharath";
@@ -75,6 +76,11 @@ export function KycPendingScreen() {
   const [showCta, setShowCta] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
   const [manageBookingOpen, setManageBookingOpen] = useState(false);
+  const [modifyNoChargesFlow, setModifyNoChargesFlow] = useState(false);
+
+  useEffect(() => {
+    setModifyNoChargesFlow(isModifyNoChargesFlow());
+  }, []);
 
   const scheduleShiviIntro = useCallback(() => {
     window.setTimeout(() => {
@@ -221,9 +227,17 @@ export function KycPendingScreen() {
                   showCta ? "opacity-100" : "pointer-events-none opacity-0"
                 }`}
                 tabIndex={showCta ? 0 : -1}
-                onClick={() => router.push("/kyc/upload")}
+                onClick={() => {
+                  if (modifyNoChargesFlow) {
+                    setManageBookingOpen(true);
+                    return;
+                  }
+                  router.push("/kyc/upload");
+                }}
               >
-                Start verification • Takes 2 minutes
+                {modifyNoChargesFlow
+                  ? "Modify your booking"
+                  : "Start verification • Takes 2 minutes"}
               </button>
             </div>
           </div>

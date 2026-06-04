@@ -1,4 +1,5 @@
 import { BOOKING_LOCK_AMOUNT_INR } from "@/lib/paymentUrls";
+import { isModifyNoChargesFlow } from "@/lib/experience-flow";
 import {
   isIdentityFunnelPhase,
   normalizeAppPathname,
@@ -27,6 +28,9 @@ function formatInr(amount: number) {
  * Standard from `/kyc/booking-accepted` through pay-down-payment until DP is on the URL.
  */
 export function resolveModifyBookingFeeTier(pathname: string): ModifyBookingFeeTier {
+  if (isModifyNoChargesFlow()) {
+    return "free";
+  }
   const phase = resolveJourneyPhase(pathname);
   return isIdentityFunnelPhase(phase) ? "free" : "standard";
 }

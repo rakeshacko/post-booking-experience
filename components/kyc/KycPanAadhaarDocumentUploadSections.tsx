@@ -1,0 +1,129 @@
+"use client";
+
+import type { ReactNode } from "react";
+import { useCallback, useState } from "react";
+
+import {
+  DOCUMENT_UPLOAD_TIPS_TO_SECTIONS_CLASS,
+  DOCUMENT_UPLOAD_TITLE_TO_TIPS_CLASS,
+  DocumentUploadInfoTipsCard,
+} from "@/components/kyc/DocumentUploadInfoTipsCard";
+import { DocumentUploadDocumentCards } from "@/components/kyc/DocumentUploadDocumentCards";
+import { KycUploadSourceBottomSheet } from "@/components/kyc/KycUploadSourceBottomSheet";
+import {
+  KYC_MOCK_UPLOAD_NAMES,
+  KYC_UPLOAD_CARD_DEFINITIONS,
+  KYC_UPLOAD_INFO_TIPS,
+  type KycDocumentKind,
+  type KycUploadSource,
+} from "@/components/kyc/kyc-upload-content";
+import type { KycUploadedFile, KycUploadsState } from "@/lib/kyc-upload-state";
+
+function nextMockFilename(uploadIndex: number): string {
+  return KYC_MOCK_UPLOAD_NAMES[uploadIndex % KYC_MOCK_UPLOAD_NAMES.length];
+}
+
+type KycPanAadhaarDocumentUploadSectionsProps = {
+  uploads: KycUploadsState;
+  onUploadsChange: (next: KycUploadsState) => void;
+  /** Persists mock filename index with parent session state. */
+  mockUploadCounterRef: React.MutableRefObject<number>;
+  wrapTips?: (node: ReactNode) => ReactNode;
+  wrapCard?: (kind: string, card: ReactNode) => ReactNode;
+};
+
+/**
+ * PAN + Aadhaar upload body — tips, DigiLocker fetch above Aadhaar, upload cards, source sheet.
+ * Used by `/kyc/upload` and verification-failed re-upload (same route).
+ */
+export function KycPanAadhaarDocumentUploadSections({
+  uploads,
+  onUploadsChange,
+  mockUploadCounterRef,
+  wrapTips,
+  wrapCard,
+}: KycPanAadhaarDocumentUploadSectionsProps) {
+  const [sourceSheetOpen, setSourceSheetOpen] = useState(false);
+  const [activeDocument, setActiveDocument] = useState<KycDocumentKind | null>(null);
+
+  const openSourceSheet = useCallback((kind: KycDocumentKind) => {
+    setActiveDocument(kind);
+    setSourceSheetOpen(true);
+  }, []);
+
+  const appendMockUpload = useCallback(
+    (kind: KycDocumentKind, source: KycUploadSource) => {
+      const uploadIndex = mockUploadCounterRef.current;
+      mockUploadCounterRef.current += 1;
+
+      const newFile: KycUploadedFile = {
+        id: `${kind}-${source}-${uploadIndex}-${Date.now()}`,
+        name: nextMockFilename(uploadIndex),
+        source,
+      };
+
+      onUploadsChange({
+        ...uploads,
+        [kind]: kind === "pan" ? [newFile] : [...uploads[kind], newFile],
+      });
+    },
+    [mockUploadCounterRef, onUploadsChange, uploads],
+  );
+
+  const handleMockUpload = useCallback(
+    (source: KycUploadSource) => {
+      if (activeDocument == null) return;
+      appendMockUpload(activeDocument, source);
+    },
+    [activeDocument, appendMockUpload],
+  );
+
+  const handleDigilockerFetch = useCallback(
+    (kind: string) => {
+      if (kind === "aadhaar" || kind === "pan") {
+        appendMockUpload(kind, "digilocker");
+      }
+    },
+    [appendMockUpload],
+  );
+
+  const handleRemove = useCallback(
+    (kind: string, fileId: string) => {
+      if (kind !== "aadhaar" && kind !== "pan") return;
+      onUploadsChange({
+        ...uploads,
+        [kind]: uploads[kind].filter((file) => file.id !== fileId),
+      });
+    },
+    [onUploadsChange, uploads],
+  );
+
+  const tipsBlock = (
+    <div className={DOCUMENT_UPLOAD_TITLE_TO_TIPS_CLASS}>
+      <DocumentUploadInfoTipsCard tips={KYC_UPLOAD_INFO_TIPS} />
+    </div>
+  );
+
+  return (
+    <>
+      {wrapTips != null ? wrapTips(tipsBlock) : tipsBlock}
+
+      <div className={DOCUMENT_UPLOAD_TIPS_TO_SECTIONS_CLASS}>
+        <DocumentUploadDocumentCards
+          documents={KYC_UPLOAD_CARD_DEFINITIONS}
+          getFiles={(kind) => uploads[kind as KycDocumentKind] ?? []}
+          onUploadClick={(kind) => openSourceSheet(kind as KycDocumentKind)}
+          onRemove={handleRemove}
+          onDigilockerFetch={handleDigilockerFetch}
+          wrapCard={wrapCard}
+        />
+      </div>
+
+      <KycUploadSourceBottomSheet
+        open={sourceSheetOpen}
+        onClose={() => setSourceSheetOpen(false)}
+        onSelect={handleMockUpload}
+      />
+    </>
+  );
+}

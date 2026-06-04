@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image, { type StaticImageData } from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import Lottie from "lottie-react";
@@ -48,6 +48,10 @@ export type BookingCelebrationSuccessScreenProps = {
    * When set, replaces the default car summary card (e.g. ACKO Drive “What’s next” payment steps).
    */
   replaceCarCardWith?: ReactNode;
+  /**
+   * With no custom card yet, omit the default booked-car card (modify-selection snapshot loading).
+   */
+  holdCarCardUntilCustom?: boolean;
   /** Route for the primary CTA. */
   okayPath: string;
   /** Primary bottom button label (default **Continue**). */
@@ -79,6 +83,7 @@ export function BookingCelebrationSuccessScreen({
   headline,
   belowHeadline,
   replaceCarCardWith,
+  holdCarCardUntilCustom = false,
   okayPath,
   ctaLabel = "Continue",
   lottieAnimation,
@@ -94,10 +99,12 @@ export function BookingCelebrationSuccessScreen({
     vehicleChassisNo != null &&
     vehicleChassisNo.length > 0;
   const router = useRouter();
-  const showCarCard = replaceCarCardWith == null;
+  const showDefaultCarCard = replaceCarCardWith == null && !holdCarCardUntilCustom;
+  const showCustomCarCard = replaceCarCardWith != null;
+  const showCarSection = showDefaultCarCard || showCustomCarCard;
   const contentScrollClass =
-    replaceCarCardWith != null ? "overflow-y-auto" : "overflow-hidden";
-  usePreloadBookingImages(showCarCard);
+    showCustomCarCard ? "overflow-y-auto" : "overflow-hidden";
+  usePreloadBookingImages(showDefaultCarCard);
 
   const [showHeader, setShowHeader] = useState(false);
   const [showCar, setShowCar] = useState(false);
@@ -175,7 +182,8 @@ export function BookingCelebrationSuccessScreen({
           </div>
 
           {showCar &&
-            (showCarCard ? (
+            showCarSection &&
+            (showDefaultCarCard ? (
               <PaymentSuccessStagger
                 className="relative mt-8 w-full self-center overflow-hidden rounded-2xl border border-[#E8E8E8] bg-white shadow-[0_4px_16px_rgba(0,0,0,0.06)]"
                 delay={0.6}

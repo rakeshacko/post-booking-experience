@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/bottom-sheet-layout";
 import { bottomSheetTitleWidthWithIllustration } from "@/components/ui/bottom-sheet-title-layout";
 import { BottomSheetCloseIcon } from "@/components/ui/BottomSheetCloseIcon";
+import { BottomSheetConfirmBulletList } from "@/components/ui/BottomSheetConfirmBulletList";
 import { BottomSheetPortal } from "@/components/ui/BottomSheetPortal";
 import { FULL_PAYMENT_INSURANCE_INR } from "@/components/payment/loan-amount-demo-constants";
 import { publicAssetPath } from "@/lib/public-asset-path";
@@ -20,7 +21,6 @@ const SHEET_TRANSITION_MS = 280;
 /** Illustration + list marker from `public/assets` (`doc search.svg` + `tick.svg`). */
 const SHEET_ASSETS = {
   hero: publicAssetPath("doc search.svg"),
-  bullet: publicAssetPath("tick.svg"),
 } as const;
 
 function formatInr(amount: number) {
@@ -164,29 +164,10 @@ export function LoanSubmitConfirmBottomSheet({
               Things to know before you continue!
             </h2>
 
-            <ul
+            <BottomSheetConfirmBulletList
               id="loan-before-proceed-list"
-              className="mt-4 w-full list-none space-y-[12px] rounded-2xl bg-[#f5f5f5] p-4"
-            >
-              {BEFORE_YOU_CONTINUE_POINTS.map((line, index) => (
-                <li key={index} className="flex gap-2">
-                  <span className="relative mt-0.5 h-5 w-5 shrink-0" aria-hidden>
-                    <Image
-                      src={SHEET_ASSETS.bullet}
-                      alt=""
-                      width={20}
-                      height={20}
-                      className="h-5 w-5 object-contain"
-                      unoptimized
-                      sizes="20px"
-                    />
-                  </span>
-                  <p className="min-w-0 flex-1 text-left text-xs font-normal leading-[18px] text-[#121212]">
-                    {line}
-                  </p>
-                </li>
-              ))}
-            </ul>
+              points={BEFORE_YOU_CONTINUE_POINTS}
+            />
           </div>
 
           <div

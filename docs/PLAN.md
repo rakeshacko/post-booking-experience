@@ -15,7 +15,7 @@ Living document: update this file when flows, routes, or UI behavior change.
 
 ---
 
-## Experience flows (Express / Standard / Verification failed)
+## Experience flows (Express / Standard / Verification failed / Modify no charges / Modify with charges)
 
 Switch on **`/quote`** via the top-left menu (`QuoteFlowMenuSheet`). Active flow is stored in **`sessionStorage`** (`post-booking-experience-flow`) via `readExperienceFlow()` in `lib/experience-flow.ts`.
 
@@ -24,12 +24,16 @@ Switch on **`/quote`** via the top-left menu (`QuoteFlowMenuSheet`). Active flow
 | **Express delivery** | Yes | Default — full route map below |
 | **Standard delivery** | Yes | **Same routes as express** until a screen branches on `readExperienceFlow() === "standard"` |
 | **Verification failed** | Yes | Same as express until KYC verification in progress → `lib/kyc-verification-outcome.ts` |
+| **Change selection without any charges** | Yes | Express path through **`/kyc` (KYC pending)** only; post–KYC-pending routes redirect to `/kyc`; manage booking fees always free (`lib/manage-booking-modify.ts`); modify-selection routes unchanged |
+| **Change selection with 50% charges** | Yes | **Same routes as express** through **`/kyc/booking-accepted`**; change selection from booking accepted (`isModifyWithChargesFlow()` + `isChangeSelectionAvailablePhase`); ₹5,000 change fee in review-and-pay (`lib/modify-selection-review-pay-content.ts`) |
 
 ### Common vs flow-specific changes
 
 - **Common** — edit shared components/libs with **no** flow guard; applies to Express and Standard.
 - **Standard only** — `isStandardDeliveryFlow()` / helpers in `lib/experience-flow-content.ts` (e.g. car card delivery line + icon).
 - **Express only** — `isExpressDeliveryFlow()` or default branch when not standard.
+- **Modify no charges** — `isModifyNoChargesFlow()` / `lib/experience-flow-journey.ts` (journey cap + always-free modify fees).
+- **Modify with charges** — `isModifyWithChargesFlow()` / `getModifySelectionFlowRedirectTarget` (full express to booking accepted; change fee in booking amount).
 
 ### Journey map (`lib/journey-routes.ts`)
 
@@ -83,11 +87,14 @@ Switch on **`/quote`** via the top-left menu (`QuoteFlowMenuSheet`). Active flow
 | `/payment/booking-success/next` | Legacy redirect → `/kyc/buying-guide/1` |
 | `/kyc/buying-guide/[1-4]` | Buying process onboarding (Figma 2460:7661); step 4 **Continue** → `/kyc` |
 | `/kyc` | KYC pending — Shivi intro bottom sheet on load ([Figma 2479:7600](https://www.figma.com/design/nW5SWmJdxxsCEDlqBN7C0L/Post-booking-experience?node-id=2479-7600)); **Got it** → hero + **Complete KYC Now** |
-| `/kyc/upload` | Document upload — default upload UI ([Figma 2501:8136](https://www.figma.com/design/nW5SWmJdxxsCEDlqBN7C0L/Post-booking-experience?node-id=2501-8136)); **Upload file** opens source bottom sheet ([2502:8777](https://www.figma.com/design/nW5SWmJdxxsCEDlqBN7C0L/Post-booking-experience?node-id=2502-8777)); uploaded state ([2502:8901](https://www.figma.com/design/nW5SWmJdxxsCEDlqBN7C0L/Post-booking-experience?node-id=2502-8901)); **Submit documents** → `/kyc/documents-received` |
+| `/kyc/upload` | PAN/Aadhaar upload via `KycPanAadhaarDocumentUploadSections` + shared `DocumentUploadInfoTipsCard`, `DigilockerFetchButton`, `DocumentUploadDocumentCards` ([Figma 2501:8136](https://www.figma.com/design/nW5SWmJdxxsCEDlqBN7C0L/Post-booking-experience?node-id=2501-8136)); `mt-6` title→tips→cards; DigiLocker fetch above Aadhaar only; no headline subtext; re-upload from verification-failed uses same screen; **Submit documents** → `/kyc/documents-received` |
 | `/kyc/documents-received` | Documents received |
 | `/kyc/verification-in-progress` | KYC verification in progress (between documents received and processing) |
 | `/kyc/processing` | Processing — **Next** → `/kyc/booking-accepted` |
 | `/kyc/booking-accepted` | Booking accepted — **Next** → `/kyc/booking-confirmed` |
+| `/kyc/modify-selection` | **Modify-selection demo flows** (`modify_no_charges`, `modify_with_charges`) — chooser; bottom CTA varies by option (See available colours / variants / Browse cars) |
+| `/kyc/modify-selection/colour` \| `variant` \| `different-car` | Selection steps; each path has `…/confirm` → shared review-and-pay (`ModifySelectionReviewPayScreen`) |
+| `/kyc/modify-selection/*/confirm` | Review selection + pay; edit icons gated by flow (see **Modify selection**) |
 | `/kyc/booking-confirmed` | Booking confirmed — default: **Okay** → `/car-allocation/pending`; `?source=payment`: **See how the buying works** → `/kyc/buying-guide/1` |
 | `/car-allocation/pending` | Car allocation in progress (“matching stock”) |
 | `/car-allocation/confirmed` | Car allocated celebration; **Okay** → `/payment/default` |
@@ -115,7 +122,7 @@ Entry: **`/payment/choose`** (`ChoosePaymentOptionsScreen`).
 | Bank partner | **Confirm banking partner** → **`/payment/acko-drive-finance-confirmed?bank={id}`**. |
 | Confirmed | **`AckoDriveFinanceConfirmedScreen`**: brief success (Lottie + headline + banking partner); auto-advances (~3s) → **`/payment/acko-drive-finance-action?bank={id}`**. |
 | Action | **`AckoDriveFinanceActionScreen`**: `KycBookingProcessingScreen` (two-line headline, banking partner, documents info box, **`LoanProcessingWhatsNext variant="acko_drive_action"`**); **Continue with loan application** → **`/payment/loan-application/loan-details?bank={id}`**. |
-| Loan application wizard | Four milestones (horizontal rail in header): **Loan details** → **Personal details** (personal + address substeps) → **Documents** (KYC-style upload, no DigiLocker) → **References** (2 references). Final CTA opens **`LoanSubmitConfirmBottomSheet`** → **`/payment/loan-processing?bank={id}`**. State: `lib/loan-application-state.ts` (session). Legacy **`/payment/loan-documents-upload`** redirects to documents step. |
+| Loan application wizard | Four milestones: **Loan details** → **Personal details** → **Documents** (shared upload UI: `DocumentUploadDocumentCards`, `mt-6` title spacing; green verified banner; no DigiLocker CTA — same for express and standard delivery) → **References**. Final CTA → **`LoanSubmitConfirmBottomSheet`** → **`/payment/loan-processing?bank={id}`**. Legacy **`/payment/loan-documents-upload`** redirects to documents step. |
 | Processing | **`LoanBookingProcessingScreen`** (`/payment/loan-processing`) with **`LoanProcessingWhatsNext`** default **`processing`** — expandable **Payment** section, measured inner green/grey rail, `text-sm` nested substeps (documents uploaded → loan processing → choose loan amount → down payment → loan disbursement, etc.). |
 | Loan sanctioned | **`LoanSanctionedScreen`** — `SanctionedAmountSummaryCard`; CTA → choose loan amount |
 | Choose loan | **`ChooseLoanAmountScreen`** — slider min **₹1L** (`MIN_LOAN_INR`), max on-road price; down-payment split card (car DP + insurance); **`ChooseLoanPaymentSummaryCard`** |
@@ -136,7 +143,6 @@ Entry: **`/payment/choose`** (`ChoosePaymentOptionsScreen`).
 - `components/payment/FinanceWhatsNextPaymentProcess.tsx`
 - `components/payment/loan-application/*` — wizard shell, milestone rail, step screens
 - `lib/loan-application-urls.ts`, `lib/loan-application-state.ts`
-- `components/payment/LoanDocumentUploadScreen.tsx` (legacy; route redirects)
 - `components/payment/LoanBookingProcessingScreen.tsx`
 - `components/payment/LoanProcessingWhatsNext.tsx`
 - `components/payment/ChooseLoanAmountScreen.tsx`, `ChooseLoanPaymentSummaryCard.tsx`
@@ -223,6 +229,64 @@ When visible, **Change selection** and **Cancel booking** are both shown. Fee co
 `showVehicleIdentification` only affects the car card (engine/chassis rows), not modify actions.
 
 Post-allocation car card is enabled when `manageBookingShowVehicleIdentification` is set or `whatsNextCard != null` / car allocation step `done` on `KycBookingProcessingScreen`.
+
+---
+
+## Modify selection (modify-no-charges / modify-with-charges flows)
+
+**Entry:** manage booking → **Change selection** when `isModifyNoChargesFlow()` (from `/kyc`) or `isModifyWithChargesFlow()` + `isChangeSelectionAvailablePhase` (from booking accepted) → `/kyc/modify-selection` (`ChooseModifyBookingScreen`).
+
+**Booking amount (modify-with-charges):** `bookingAmountToPayInr` = max(0, new booking lock − paid lock) + **`MODIFY_BOOKING_CHANGE_FEE_INR`** (₹5,000); shown as “Booking change fee” on `ModifySelectionReviewBookingAmountCard`.
+
+**Chooser primary CTA** (`lib/modify-selection-content.ts` → `continueCtaLabel`; updates when the selected radio option changes):
+
+| Option | CTA label |
+|--------|-----------|
+| Change colour | See available colours |
+| Change variant | See available variants |
+| Choose a different car | Browse cars |
+
+Tap opens `ModifySelectionConfirmBottomSheet` — content-hug height, `BottomSheetConfirmBulletList`, bottom CTA = `continueCtaLabel` (e.g. **See available colours** / **See available variants** / **Browse cars**). Copy: `confirmHeader` + `confirmPoints[]` per option in `lib/modify-selection-content.ts` (colour: 2 bullets; variant / different car: 3 bullets on price + delivery).
+
+| User choice | Confirm / review route | `ModifySelectionReviewPayScreen` `flow` |
+|-------------|------------------------|----------------------------------------|
+| **Change colour** | `/kyc/modify-selection/colour/confirm` | `colour` |
+| **Change variant** | `/kyc/modify-selection/variant/confirm` | `variant` |
+| **Choose a different car** | `/kyc/modify-selection/different-car/[brand]/[model]/confirm` | `different-car` (+ `brandId`, `modelId`) |
+
+**Shared review UI:** `ModifySelectionReviewPayScreen` + `ModifySelectionReviewSelectionCard` (review-and-pay).
+
+### Review page — which rows are editable
+
+Edit icons appear only for fields the user may change on that entry path. **Delivery** edit is shown only when the selected colour is **express** (`resolved.option.isExpressDelivery` → `showDeliveryEdit`); standard colours show delivery as read-only.
+
+| Entry choice | Make & model (title) | Variant | Colour | Delivery (express only) |
+|--------------|----------------------|---------|--------|-------------------------|
+| **Change colour** | Read-only (default booked car) | Read-only | **Edit** → `/kyc/modify-selection/colour` | **Edit** (bottom sheet) if express |
+| **Change variant** | Read-only | **Edit** → `/kyc/modify-selection/variant` | **Edit** → `/kyc/modify-selection/variant/colour` | **Edit** if express |
+| **Choose a different car** | **Edit** → `/kyc/modify-selection/different-car` | **Edit** → model/variant step for brand+model | **Edit** → colour step for brand+model | **Edit** if express |
+
+**Implementation:** gate callbacks in `ModifySelectionReviewPayScreen` when passing props to `ModifySelectionReviewSelectionCard`:
+
+- `onEditCar` — only when `flow === "different-car"`.
+- `onEditVariant` — only when `flow === "variant"` or `flow === "different-car"`.
+- `onEditColour` — all three flows.
+- `showDeliveryEdit` — all three flows, express colour only.
+
+The card renders an edit control only when the matching callback is non-null (or `showDeliveryEdit` for delivery).
+
+### Pay → booking received
+
+- On **Pay**, write pending snapshot: `writeModifySelectionPendingFromSummary` (`lib/active-booking-snapshot.ts`, key `pbe_modify_selection_pending_payment_v1`).
+- Mock checkout: `buildBookingLockCheckoutHref` with `return_source=modify-selection`.
+- Success: `/kyc/booking-confirmed?source=payment&paid=…&return_source=modify-selection` — `syncModifySelectionBookingSnapshot` commits **pending** checkout before reading completed (avoids stale car on repeat changes); show updated car on `BookingCarSummaryCard` via `activeBookingCardDetails` (title/variant for different-car and variant flows). Same success screen for colour, variant, and different-car.
+
+| After pay (`KycBookingConfirmedScreen`) | Up next strip | Primary CTA | Next route |
+|----------------------------------------|---------------|-------------|------------|
+| **modify_no_charges** | Verify your identity | Continue to verification | `/kyc` |
+| **modify_with_charges** | *(none — identity already done)* | Continue | `/kyc/processing` (processing your booking) |
+
+**Key files:** `components/kyc/ModifySelectionReviewPayScreen.tsx`, `ModifySelectionReviewSelectionCard.tsx`, `KycBookingConfirmedScreen.tsx`, `lib/modify-selection-*-pending.ts`, `lib/active-booking-snapshot.ts`, `lib/paymentUrls.ts`.
 
 ---
 
@@ -320,6 +384,7 @@ These paths are **gitignored** (see root `.gitignore`). They are optional helper
 - [x] Insurance coverage bottom sheet (Figma 2585:68086) from **View coverage details**
 - [x] RTO prep info callout aligned with hero info pattern
 - [x] Manage booking — post-allocation cancel fee ₹5,000; loan plan summary with partial/full DP states
+- [x] Modify selection review — edit icons gated by flow (colour: colour+delivery; variant: variant+colour+delivery; different-car: make/model+variant+colour+delivery; delivery edit express-only)
 - [ ] Pass selected `bankId` / self-finance step state into payment/checkout and APIs
 - [ ] Full a11y pass on sheets
 - [ ] End-to-end journey documented in README (optional)

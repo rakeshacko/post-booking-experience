@@ -7,7 +7,7 @@ import galleryIcon from "@/assets/image.svg";
 
 export const KYC_UPLOAD_HEADLINE = "Upload your PAN and Aadhaar";
 
-export const KYC_UPLOAD_DIGILOCKER_LINE = "We also support DigiLocker";
+export const KYC_UPLOAD_DIGILOCKER_FETCH_LABEL = "Fetch from DigiLocker";
 
 export const KYC_UPLOAD_DIGILOCKER_COLOR = "#643bfc";
 
@@ -49,6 +49,15 @@ export const KYC_DOCUMENTS: KycDocumentDefinition[] = [
     allowMultiple: false,
   },
 ];
+
+/** Card config for shared `DocumentUploadDocumentCards` (DigiLocker CTA above Aadhaar only). */
+export const KYC_UPLOAD_CARD_DEFINITIONS = KYC_DOCUMENTS.map((doc) => ({
+  kind: doc.kind,
+  title: doc.title,
+  description: doc.description,
+  allowMultiple: doc.allowMultiple,
+  showDigilockerFetch: doc.kind === "aadhaar",
+}));
 
 export type KycUploadSourceOption = {
   id: KycUploadSource;

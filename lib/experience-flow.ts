@@ -1,5 +1,10 @@
 /** Product experience variants — not individual screen routes within a journey. */
-export type ExperienceFlow = "express" | "standard" | "kyc_failed";
+export type ExperienceFlow =
+  | "express"
+  | "standard"
+  | "kyc_failed"
+  | "modify_no_charges"
+  | "modify_with_charges";
 
 export const EXPERIENCE_FLOW_STORAGE_KEY = "post-booking-experience-flow";
 
@@ -35,12 +40,34 @@ export const EXPERIENCE_FLOWS: readonly ExperienceFlowDefinition[] = [
     entryPath: "/quote",
     available: true,
   },
+  {
+    id: "modify_no_charges",
+    label: "Change selection without any charges",
+    description:
+      "Express path through KYC pending — manage booking and change selection always free",
+    entryPath: "/quote",
+    available: true,
+  },
+  {
+    id: "modify_with_charges",
+    label: "Change selection with 50% charges",
+    description:
+      "Express path through booking accepted — change selection with ₹5,000 booking change fee",
+    entryPath: "/quote",
+    available: true,
+  },
 ] as const;
 
 export const DEFAULT_EXPERIENCE_FLOW: ExperienceFlow = "express";
 
 export function isExperienceFlow(value: string | null | undefined): value is ExperienceFlow {
-  return value === "express" || value === "standard" || value === "kyc_failed";
+  return (
+    value === "express" ||
+    value === "standard" ||
+    value === "kyc_failed" ||
+    value === "modify_no_charges" ||
+    value === "modify_with_charges"
+  );
 }
 
 export function readExperienceFlow(): ExperienceFlow {
@@ -65,4 +92,19 @@ export function writeExperienceFlow(flow: ExperienceFlow): void {
 export function getExperienceFlowDefinition(flow: ExperienceFlow): ExperienceFlowDefinition {
   const found = EXPERIENCE_FLOWS.find((item) => item.id === flow);
   return found ?? EXPERIENCE_FLOWS[0];
+}
+
+export function isModifyNoChargesFlow(flow?: ExperienceFlow): boolean {
+  const active = flow ?? readExperienceFlow();
+  return active === "modify_no_charges";
+}
+
+export function isModifyWithChargesFlow(flow?: ExperienceFlow): boolean {
+  const active = flow ?? readExperienceFlow();
+  return active === "modify_with_charges";
+}
+
+/** Flows that expose the modify-selection demo routes. */
+export function isModifySelectionDemoFlow(flow?: ExperienceFlow): boolean {
+  return isModifyNoChargesFlow(flow) || isModifyWithChargesFlow(flow);
 }

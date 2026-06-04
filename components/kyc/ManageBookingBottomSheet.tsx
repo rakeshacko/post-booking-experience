@@ -1,19 +1,19 @@
 "use client";
 
 import Image from "next/image";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import arrowRightIcon from "@/assets/Arrow_right.svg";
 import changeSelectionIcon from "@/assets/change selection.svg";
 import cancelBookingIcon from "@/assets/cancel booking.svg";
-import {
-  DEMO_VEHICLE_CHASSIS_NO,
-  DEMO_VEHICLE_ENGINE_NO,
-} from "@/components/kyc/demo-vehicle-identification";
-import { BookingCarCardDetails } from "@/components/kyc/BookingCarCardDetails";
+import { BookingCarSummaryCard } from "@/components/kyc/BookingCarSummaryCard";
 import { DEMO_BOOKING_ID } from "@/components/kyc/booking-car-card-content";
-import { BOOKING_CONFIRMED_ASSETS } from "@/components/kyc/kyc-booking-confirmed-assets";
+import {
+  activeBookingCardDetails,
+  activeBookingCarCutoutSrc,
+  readActiveBookingSnapshot,
+} from "@/lib/active-booking-snapshot";
 import { BottomSheetCloseIcon } from "@/components/ui/BottomSheetCloseIcon";
 import { BottomSheetPortal } from "@/components/ui/BottomSheetPortal";
 import {
@@ -25,116 +25,51 @@ import { ChooseLoanPaymentSummaryCard } from "@/components/payment/ChooseLoanPay
 import { ON_ROAD_PRICE_INR } from "@/components/payment/loan-amount-demo-constants";
 import { PaymentSummaryCard } from "@/components/payment/PaymentSummaryCard";
 import {
+  isModifyNoChargesFlow,
+  isModifyWithChargesFlow,
+} from "@/lib/experience-flow";
+import {
+  isChangeSelectionAvailablePhase,
+  JOURNEY_PATHS,
+  resolveJourneyPhase,
+} from "@/lib/journey-routes";
+import {
   modifyBookingCancelDescription,
   modifyBookingChangeDescription,
   resolveModifyBookingFeeTier,
 } from "@/lib/manage-booking-modify";
 import { FULL_PAYMENT_BANK_ID, INSURANCE_PAYMENT_KIND } from "@/lib/paymentUrls";
+import { cn } from "@/lib/utils";
 
 /** Keeps parity with other bottom sheets in the app */
 const SHEET_TRANSITION_MS = 280;
-
-function ManageBookingCarCardVisualStage({ emphasizeBottomMerge = false }: { emphasizeBottomMerge?: boolean }) {
-  return (
-    <>
-      <div aria-hidden className="absolute inset-0">
-        <div className="absolute inset-0 overflow-hidden">
-          <Image
-            src={BOOKING_CONFIRMED_ASSETS.cardBackdrop}
-            alt=""
-            fill
-            className="object-cover"
-            style={{ objectPosition: "center 28%" }}
-            sizes="(max-width: 640px) 100vw, 320px"
-            unoptimized
-          />
-        </div>
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: emphasizeBottomMerge
-              ? "linear-gradient(180deg, rgba(255,255,255,0) 35%, rgba(255,255,255,0.75) 62%, #ffffff 88%), linear-gradient(180deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 25%)"
-              : "linear-gradient(180deg, rgba(255,255,255,0) 68%, rgba(255,255,255,0.7) 100%), linear-gradient(180deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 25%)",
-          }}
-        />
-        {emphasizeBottomMerge ? (
-          <div
-            className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-[152px]"
-            style={{
-              background:
-                "linear-gradient(to top, #ffffff 0%, #ffffff 42%, rgba(255,255,255,0.92) 58%, rgba(255,255,255,0) 100%)",
-            }}
-            aria-hidden
-          />
-        ) : null}
-      </div>
-
-      <div className="absolute left-1/2 top-[30px] z-[2] h-[85px] w-[150px] -translate-x-1/2 overflow-hidden">
-        <div className="relative mx-auto h-full w-full max-w-[150px]">
-          <Image
-            src={BOOKING_CONFIRMED_ASSETS.carCutout}
-            alt=""
-            fill
-            className="object-contain object-bottom"
-            sizes="150px"
-            unoptimized
-          />
-        </div>
-      </div>
-    </>
-  );
-}
-
-function ManageBookingCarCardDetails({ showVehicleIdentification }: { showVehicleIdentification: boolean }) {
-  return (
-    <BookingCarCardDetails
-      engineNo={showVehicleIdentification ? DEMO_VEHICLE_ENGINE_NO : undefined}
-      chassisNo={showVehicleIdentification ? DEMO_VEHICLE_CHASSIS_NO : undefined}
-      showCopyButtons={showVehicleIdentification}
-    />
-  );
-}
-
-function ManageBookingCarCard({ showVehicleIdentification = false }: { showVehicleIdentification?: boolean }) {
-  const panelClassName =
-    "overflow-hidden rounded-xl border border-white/60 bg-white/90 p-3 shadow-sm backdrop-blur-[12px]";
-
-  if (showVehicleIdentification) {
-    return (
-      <div className="relative w-full shrink-0 overflow-hidden rounded-2xl border border-[#E8E8E8] bg-white">
-        <div className="relative h-[228px] w-full bg-white">
-          <ManageBookingCarCardVisualStage emphasizeBottomMerge />
-        </div>
-        <div className={`relative z-10 mx-2 -mt-24 mb-2 ${panelClassName}`}>
-          <ManageBookingCarCardDetails showVehicleIdentification />
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="relative h-[228px] w-full shrink-0 overflow-hidden rounded-2xl border border-[#E8E8E8] bg-white">
-      <ManageBookingCarCardVisualStage emphasizeBottomMerge={false} />
-      <div className={`absolute inset-x-2 bottom-2 ${panelClassName}`}>
-        <ManageBookingCarCardDetails showVehicleIdentification={false} />
-      </div>
-    </div>
-  );
-}
 
 type ModifyBookingActionRowProps = {
   iconSrc: string;
   title: string;
   description: string;
   onClick?: () => void;
+  disabled?: boolean;
 };
 
-function ModifyBookingActionRow({ iconSrc, title, description, onClick }: ModifyBookingActionRowProps) {
+function ModifyBookingActionRow({
+  iconSrc,
+  title,
+  description,
+  onClick,
+  disabled = false,
+}: ModifyBookingActionRowProps) {
   return (
     <button
       type="button"
-      onClick={onClick}
-      className="flex w-full items-start gap-4 px-[15px] py-[15px] text-left transition-colors hover:bg-[#fafafa] active:bg-[#f5f5f5]"
+      disabled={disabled}
+      onClick={disabled ? undefined : onClick}
+      className={cn(
+        "flex w-full items-start gap-4 px-[15px] py-[15px] text-left transition-colors",
+        disabled
+          ? "cursor-not-allowed opacity-60"
+          : "hover:bg-[#fafafa] active:bg-[#f5f5f5]",
+      )}
     >
       <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[#f5f5f5]">
         <span className="relative h-6 w-6 shrink-0">
@@ -299,6 +234,7 @@ function ManageBookingBottomSheetInner({
   onClose,
   showVehicleIdentification = false,
 }: ManageBookingBottomSheetProps) {
+  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const confirmedLoanPlan = useMemo(
@@ -325,14 +261,39 @@ function ManageBookingBottomSheetInner({
     [modifyFeeTier],
   );
 
+  const changeSelectionEnabled = useMemo(() => {
+    if (isModifyNoChargesFlow()) return true;
+    if (isModifyWithChargesFlow()) {
+      return isChangeSelectionAvailablePhase(resolveJourneyPhase(pathname));
+    }
+    return false;
+  }, [pathname]);
+
   const cancelBookingDescription = useMemo(
     () => modifyBookingCancelDescription(modifyFeeTier),
     [modifyFeeTier],
   );
 
+  const onChangeSelection = useCallback(() => {
+    onClose();
+    router.push(JOURNEY_PATHS.kyc.modifySelection);
+  }, [onClose, router]);
+
   const [mounted, setMounted] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
+  const [activeBooking, setActiveBooking] = useState<ReturnType<
+    typeof readActiveBookingSnapshot
+  >>(null);
   const exitTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    setActiveBooking(readActiveBookingSnapshot());
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    setActiveBooking(readActiveBookingSnapshot());
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -423,7 +384,15 @@ function ManageBookingBottomSheetInner({
           className={`${BOTTOM_SHEET_SCROLL_BODY_CLASS} px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-2`}
         >
           <div className="flex flex-col gap-8">
-          <ManageBookingCarCard showVehicleIdentification={showVehicleIdentification} />
+          <BookingCarSummaryCard
+            showVehicleIdentification={showVehicleIdentification}
+            cardDetails={
+              activeBooking != null ? activeBookingCardDetails(activeBooking) : undefined
+            }
+            carCutoutSrc={
+              activeBooking != null ? activeBookingCarCutoutSrc(activeBooking) : undefined
+            }
+          />
 
           <section aria-labelledby="manage-booking-payment-heading">
             <h3
@@ -460,6 +429,7 @@ function ManageBookingBottomSheetInner({
                   iconSrc={changeSelectionIcon}
                   title="Change selection"
                   description={changeSelectionDescription}
+                  onClick={changeSelectionEnabled ? onChangeSelection : undefined}
                 />
                 <hr className="border-0 border-t border-dashed border-[#e8e8e8]" />
                 <ModifyBookingActionRow

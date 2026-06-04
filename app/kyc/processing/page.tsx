@@ -1,4 +1,5 @@
 import { KycBookingProcessingScreen } from "@/components/kyc/KycBookingProcessingScreen";
+import { ModifyNoChargesGatedPage } from "@/components/kyc/ModifyNoChargesGatedPage";
 import { FadePageTransition } from "@/components/ui/page-transition";
 import { JOURNEY_PATHS } from "@/lib/journey-routes";
 
@@ -7,11 +8,13 @@ import { JOURNEY_PATHS } from "@/lib/journey-routes";
  */
 export default function KycProcessingPage() {
   return (
-    <FadePageTransition>
-      <KycBookingProcessingScreen
-        nextHref={JOURNEY_PATHS.kyc.bookingAccepted}
-        prefetchHref={JOURNEY_PATHS.kyc.bookingAccepted}
-      />
-    </FadePageTransition>
+    <ModifyNoChargesGatedPage>
+      <FadePageTransition>
+        <KycBookingProcessingScreen
+          nextHref={JOURNEY_PATHS.kyc.bookingAccepted}
+          prefetchHref={JOURNEY_PATHS.kyc.bookingAccepted}
+        />
+      </FadePageTransition>
+    </ModifyNoChargesGatedPage>
   );
 }

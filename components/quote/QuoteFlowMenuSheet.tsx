@@ -68,7 +68,7 @@ export type QuoteFlowMenuSheetProps = {
 };
 
 /**
- * Switch between product experience flows (Express / Standard / Verification failed).
+ * Switch between product experience flows (Express / Standard / Verification failed / Modify flows).
  */
 export function QuoteFlowMenuSheet({
   open,

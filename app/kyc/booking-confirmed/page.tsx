@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 
 import { KycBookingConfirmedPageClient } from "@/components/kyc/KycBookingConfirmedPageClient";
+import { ModifyNoChargesGatedPage } from "@/components/kyc/ModifyNoChargesGatedPage";
 import { CelebrationPageTransition } from "@/components/ui/page-transition";
 
 /**
@@ -9,10 +10,12 @@ import { CelebrationPageTransition } from "@/components/ui/page-transition";
  */
 export default function KycBookingConfirmedPage() {
   return (
-    <CelebrationPageTransition>
-      <Suspense fallback={null}>
-        <KycBookingConfirmedPageClient />
-      </Suspense>
-    </CelebrationPageTransition>
+    <ModifyNoChargesGatedPage>
+      <CelebrationPageTransition>
+        <Suspense fallback={null}>
+          <KycBookingConfirmedPageClient />
+        </Suspense>
+      </CelebrationPageTransition>
+    </ModifyNoChargesGatedPage>
   );
 }

@@ -13,6 +13,7 @@ import {
   getBookingDeliveryIconSrc,
   getBookingDeliveryLine,
   getBookingDeliveryTextClass,
+  splitBookingDeliveryLine,
 } from "@/lib/experience-flow-content";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +22,15 @@ export type BookingCarCardDetailsProps = {
   engineNo?: string;
   chassisNo?: string;
   showCopyButtons?: boolean;
+  /** Override paint name (e.g. modify-selection colour confirm). */
+  carColor?: string;
+  /** Override variant label (e.g. modify-selection variant confirm). */
+  carVariant?: string;
+  /** Override model title (e.g. different-car modify-selection). */
+  carTitle?: string;
+  deliveryLine?: string;
+  deliveryTextClass?: string;
+  deliveryIconSrc?: string;
 };
 
 /**
@@ -31,18 +41,31 @@ export function BookingCarCardDetails({
   engineNo,
   chassisNo,
   showCopyButtons = false,
+  carColor,
+  carVariant,
+  carTitle,
+  deliveryLine,
+  deliveryTextClass,
+  deliveryIconSrc,
 }: BookingCarCardDetailsProps) {
   const showVehicleIdentification =
     engineNo != null &&
     engineNo.length > 0 &&
     chassisNo != null &&
     chassisNo.length > 0;
+  const titleLabel = carTitle ?? BOOKING_CAR_TITLE;
+  const variantLabel = carVariant ?? BOOKING_CAR_VARIANT;
+  const colorLabel = carColor ?? BOOKING_CAR_COLOR;
+  const resolvedDeliveryLine = deliveryLine ?? getBookingDeliveryLine();
+  const resolvedDeliveryTextClass = deliveryTextClass ?? getBookingDeliveryTextClass();
+  const resolvedDeliveryIconSrc = deliveryIconSrc ?? getBookingDeliveryIconSrc();
+  const deliveryParts = splitBookingDeliveryLine(resolvedDeliveryLine);
 
   return (
     <>
-      <p className="text-base font-medium leading-6 text-[#121212]">{BOOKING_CAR_TITLE}</p>
-      <div className="mt-1 flex flex-wrap items-center gap-2 text-xs leading-[18px] text-[#121212]">
-        <span className="shrink-0">{BOOKING_CAR_VARIANT}</span>
+      <p className="text-sm font-medium leading-6 text-[#121212]">{titleLabel}</p>
+      <div className="mt-1 flex flex-wrap items-center gap-1 text-xs leading-[18px] text-[#121212]">
+        <span className="shrink-0">{variantLabel}</span>
         <span
           className="inline-flex h-[18px] w-4 shrink-0 items-center justify-center"
           aria-hidden
@@ -57,20 +80,22 @@ export function BookingCarCardDetails({
             sizes="16px"
           />
         </span>
-        <span className="shrink-0">{BOOKING_CAR_COLOR}</span>
+        <span className="shrink-0">{colorLabel}</span>
       </div>
       <div className="mt-2 flex items-center gap-1">
-        <p
-          className={cn(
-            "text-xs font-normal leading-[18px]",
-            getBookingDeliveryTextClass(),
+        <p className={cn("text-xs font-normal leading-[18px]", resolvedDeliveryTextClass)}>
+          {deliveryParts ? (
+            <>
+              {deliveryParts.prefix}
+              <span>{deliveryParts.date}</span>
+            </>
+          ) : (
+            resolvedDeliveryLine
           )}
-        >
-          {getBookingDeliveryLine()}
         </p>
         <span className="relative h-4 w-4 shrink-0" aria-hidden>
           <Image
-            src={getBookingDeliveryIconSrc()}
+            src={resolvedDeliveryIconSrc}
             alt=""
             width={16}
             height={16}

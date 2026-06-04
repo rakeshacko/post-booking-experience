@@ -3,6 +3,7 @@
 import { Suspense } from "react";
 
 import { KycVerificationFailedPageClient } from "@/components/kyc/KycVerificationFailedPageClient";
+import { ModifyNoChargesGatedPage } from "@/components/kyc/ModifyNoChargesGatedPage";
 
 /**
  * Verification failed — unhappy path after `/kyc/verification-in-progress`
@@ -11,8 +12,10 @@ import { KycVerificationFailedPageClient } from "@/components/kyc/KycVerificatio
  */
 export default function KycVerificationFailedPage() {
   return (
-    <Suspense fallback={null}>
-      <KycVerificationFailedPageClient />
-    </Suspense>
+    <ModifyNoChargesGatedPage>
+      <Suspense fallback={null}>
+        <KycVerificationFailedPageClient />
+      </Suspense>
+    </ModifyNoChargesGatedPage>
   );
 }
