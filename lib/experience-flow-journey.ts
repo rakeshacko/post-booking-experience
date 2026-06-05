@@ -1,7 +1,9 @@
 import {
+  isCancelNoChargesFlow,
   isModifyNoChargesFlow,
   isModifySelectionDemoFlow,
   isModifyWithChargesFlow,
+  readExperienceFlow,
   type ExperienceFlow,
 } from "@/lib/experience-flow";
 import {
@@ -43,10 +45,34 @@ const MODIFY_NO_CHARGES_BLOCKED_PATHS = new Set<string>([
   JOURNEY_PATHS.carAllocation.confirmed,
 ]);
 
+/** Paths beyond verification in progress that redirect in the cancel-no-charges demo flow. */
+const CANCEL_NO_CHARGES_BLOCKED_PATHS = new Set<string>([
+  JOURNEY_PATHS.kyc.verificationFailed,
+  JOURNEY_PATHS.kyc.processing,
+  JOURNEY_PATHS.kyc.bookingAccepted,
+  JOURNEY_PATHS.kyc.bookingConfirmed,
+  JOURNEY_PATHS.carAllocation.pending,
+  JOURNEY_PATHS.carAllocation.confirmed,
+]);
+
+const CANCEL_NO_CHARGES_ALLOWED_KYC_PATHS = new Set<string>([
+  JOURNEY_PATHS.kyc.hub,
+  JOURNEY_PATHS.kyc.upload,
+  JOURNEY_PATHS.kyc.documentsReceived,
+  JOURNEY_PATHS.kyc.verificationInProgress,
+]);
+
 function isModifySelectionPath(path: string): boolean {
   return (
     path === JOURNEY_PATHS.kyc.modifySelection ||
     path.startsWith(`${JOURNEY_PATHS.kyc.modifySelection}/`)
+  );
+}
+
+function isCancelBookingPath(path: string): boolean {
+  return (
+    path === JOURNEY_PATHS.kyc.cancelBooking ||
+    path.startsWith(`${JOURNEY_PATHS.kyc.cancelBooking}/`)
   );
 }
 
@@ -66,6 +92,29 @@ export function isModifyNoChargesFlowPathAllowed(
   }
 
   if (MODIFY_NO_CHARGES_BLOCKED_PATHS.has(path)) {
+    return false;
+  }
+
+  if (path.startsWith("/car-allocation/") || /^\/kyc\/car-allocation-/.test(path)) {
+    return false;
+  }
+
+  return true;
+}
+
+/** Whether the path is reachable in the cancel-no-charges demo (quote → verification in progress + cancel routes). */
+export function isCancelNoChargesFlowPathAllowed(pathname: string): boolean {
+  const path = normalizeAppPathname(pathname);
+
+  if (CANCEL_NO_CHARGES_ALLOWED_KYC_PATHS.has(path) || isCancelBookingPath(path)) {
+    return true;
+  }
+
+  if (isModifySelectionPath(path)) {
+    return false;
+  }
+
+  if (CANCEL_NO_CHARGES_BLOCKED_PATHS.has(path)) {
     return false;
   }
 
@@ -107,6 +156,59 @@ export function getModifyNoChargesRedirectTarget(
 }
 
 /**
+ * When the cancel-no-charges flow is active, post–verification-in-progress URLs redirect
+ * to `/kyc/verification-in-progress`. Returns `null` when no redirect is needed.
+ */
+export function getCancelNoChargesRedirectTarget(
+  pathname: string,
+  flow?: ExperienceFlow,
+): string | null {
+  if (!isCancelNoChargesFlow(flow)) {
+    return null;
+  }
+
+  if (isCancelNoChargesFlowPathAllowed(pathname)) {
+    return null;
+  }
+
+  const path = normalizeAppPathname(pathname);
+
+  if (isModifySelectionPath(path)) {
+    return JOURNEY_PATHS.kyc.verificationInProgress;
+  }
+
+  if (
+    path.startsWith("/kyc/") ||
+    path.startsWith("/car-allocation/") ||
+    /^\/kyc\/car-allocation-/.test(path)
+  ) {
+    return JOURNEY_PATHS.kyc.verificationInProgress;
+  }
+
+  return null;
+}
+
+/**
+ * Unified journey guard for modify-no-charges and cancel-no-charges demo flows.
+ * Returns `null` when no redirect is needed.
+ */
+export function getExperienceFlowJourneyRedirectTarget(
+  pathname: string,
+  flow?: ExperienceFlow,
+  context?: ModifyNoChargesJourneyContext,
+): string | null {
+  const active = flow ?? readExperienceFlow();
+
+  const modifyTarget = getModifyNoChargesRedirectTarget(pathname, active, context);
+  if (modifyTarget) return modifyTarget;
+
+  const cancelTarget = getCancelNoChargesRedirectTarget(pathname, active);
+  if (cancelTarget) return cancelTarget;
+
+  return null;
+}
+
+/**
  * When not in a modify-selection demo flow, `/kyc/modify-selection/*` redirects to `/kyc`.
  * Modify-with-charges: only from booking accepted onward (else → booking accepted).
  * Returns `null` when no redirect is needed.
@@ -129,6 +231,26 @@ export function getModifySelectionFlowRedirectTarget(
     if (!isChangeSelectionAvailablePhase(phase)) {
       return JOURNEY_PATHS.kyc.bookingAccepted;
     }
+  }
+
+  return null;
+}
+
+/**
+ * Cancel-booking routes are only reachable in the cancel-no-charges demo flow.
+ * Returns `null` when no redirect is needed.
+ */
+export function getCancelBookingFlowRedirectTarget(
+  pathname: string,
+  flow?: ExperienceFlow,
+): string | null {
+  const path = normalizeAppPathname(pathname);
+  if (!isCancelBookingPath(path)) {
+    return null;
+  }
+
+  if (!isCancelNoChargesFlow(flow)) {
+    return JOURNEY_PATHS.kyc.hub;
   }
 
   return null;

@@ -15,7 +15,7 @@ Living document: update this file when flows, routes, or UI behavior change.
 
 ---
 
-## Experience flows (Express / Standard / Verification failed / Modify no charges / Modify with charges)
+## Experience flows (Express / Standard / Verification failed / Modify no charges / Modify with charges / Cancel no charges)
 
 Switch on **`/quote`** via the top-left menu (`QuoteFlowMenuSheet`). Active flow is stored in **`sessionStorage`** (`post-booking-experience-flow`) via `readExperienceFlow()` in `lib/experience-flow.ts`.
 
@@ -26,6 +26,7 @@ Switch on **`/quote`** via the top-left menu (`QuoteFlowMenuSheet`). Active flow
 | **Verification failed** | Yes | Same as express until KYC verification in progress → `lib/kyc-verification-outcome.ts` |
 | **Change selection without any charges** | Yes | Express path through **`/kyc` (KYC pending)** only; post–KYC-pending routes redirect to `/kyc`; manage booking fees always free (`lib/manage-booking-modify.ts`); modify-selection routes unchanged |
 | **Change selection with 50% charges** | Yes | **Same routes as express** through **`/kyc/booking-accepted`**; change selection from booking accepted (`isModifyWithChargesFlow()` + `isChangeSelectionAvailablePhase`); ₹5,000 change fee in review-and-pay (`lib/modify-selection-review-pay-content.ts`) |
+| **Cancellation with no charges** | Yes | Express path through **`/kyc/verification-in-progress`** (inclusive); post–verification-in-progress routes redirect to `/kyc/verification-in-progress`; manage booking fees always free; **Cancel booking** → confirm full page → reason bottom sheet → success; **Change selection** shown but not clickable (normal styling, no `disabled`) |
 
 ### Common vs flow-specific changes
 
@@ -34,6 +35,7 @@ Switch on **`/quote`** via the top-left menu (`QuoteFlowMenuSheet`). Active flow
 - **Express only** — `isExpressDeliveryFlow()` or default branch when not standard.
 - **Modify no charges** — `isModifyNoChargesFlow()` / `lib/experience-flow-journey.ts` (journey cap + always-free modify fees).
 - **Modify with charges** — `isModifyWithChargesFlow()` / `getModifySelectionFlowRedirectTarget` (full express to booking accepted; change fee in booking amount).
+- **Cancel no charges** — `isCancelNoChargesFlow()` / `lib/experience-flow-journey.ts` (journey cap through verification in progress + cancel-booking routes); `lib/cancel-booking-content.ts`, `lib/cancel-booking-success-content.ts`, `lib/cancel-booking-stagger.ts`.
 
 ### Journey map (`lib/journey-routes.ts`)
 
@@ -89,7 +91,9 @@ Switch on **`/quote`** via the top-left menu (`QuoteFlowMenuSheet`). Active flow
 | `/kyc` | KYC pending — Shivi intro bottom sheet on load ([Figma 2479:7600](https://www.figma.com/design/nW5SWmJdxxsCEDlqBN7C0L/Post-booking-experience?node-id=2479-7600)); **Got it** → hero + **Complete KYC Now** |
 | `/kyc/upload` | PAN/Aadhaar upload via `KycPanAadhaarDocumentUploadSections` + shared `DocumentUploadInfoTipsCard`, `DigilockerFetchButton`, `DocumentUploadDocumentCards` ([Figma 2501:8136](https://www.figma.com/design/nW5SWmJdxxsCEDlqBN7C0L/Post-booking-experience?node-id=2501-8136)); `mt-6` title→tips→cards; DigiLocker fetch above Aadhaar only; no headline subtext; re-upload from verification-failed uses same screen; **Submit documents** → `/kyc/documents-received` |
 | `/kyc/documents-received` | Documents received |
-| `/kyc/verification-in-progress` | KYC verification in progress (between documents received and processing) |
+| `/kyc/verification-in-progress` | KYC verification in progress (between documents received and processing); demo **Next** hidden in **cancel_no_charges** flow |
+| `/kyc/cancel-booking` | **Cancel-no-charges demo flow only** — Figma 2709:17395 (`CancelBookingConfirmScreen`); staggered page load; car card + refund breakdown + outline CTAs; **Yes, cancel my booking** → reason bottom sheet (Figma 2711:21013) |
+| `/kyc/cancel-booking/success` | **Cancel-no-charges demo flow only** — celebration success layout + fixed bottom **Done** CTA; full booking amount refund copy; **Done** → `/quote` |
 | `/kyc/processing` | Processing — **Next** → `/kyc/booking-accepted` |
 | `/kyc/booking-accepted` | Booking accepted — **Next** → `/kyc/booking-confirmed` |
 | `/kyc/modify-selection` | **Modify-selection demo flows** (`modify_no_charges`, `modify_with_charges`) — chooser; bottom CTA varies by option (See available colours / variants / Browse cars) |
@@ -226,6 +230,17 @@ When visible, **Change selection** and **Cancel booking** are both shown. Fee co
 | **Free** | Identity funnel only: **`/kyc`** (Verify your identity) through **`/kyc/processing`** — hub, upload, documents received, verification in progress / failed, processing | No change fee | No cancellation fee |
 | **Standard** | From **`/kyc/booking-accepted`** through **`/payment/pay-down-payment`** (and other post-accepted routes: buying guide, booking celebration, car allocation, payment choice) until down payment is paid (ACKO Drive, self finance, full payment — no DP instalment on URL) | Change fee **₹5,000** | Cancellation fee **₹5,000** (50% of **₹10,000** booking lock — amount shown, not %) |
 
+`resolveModifyBookingFeeTier()` returns **`free`** when `isModifyNoChargesFlow()` **or** `isCancelNoChargesFlow()`.
+
+#### Flow-specific modify booking behaviour
+
+| Flow | Change selection | Cancel booking |
+|------|------------------|----------------|
+| **cancel_no_charges** | Row visible with normal styling; **no `onClick`** and **no `disabled`** (not clickable, does not look greyed out) | Enabled → `/kyc/cancel-booking` |
+| **modify_no_charges** | Enabled → `/kyc/modify-selection` | Row shown; no navigation wired (demo) |
+| **modify_with_charges** | Enabled from booking accepted when `isChangeSelectionAvailablePhase` | Row shown; fee copy per tier |
+| **express / standard / kyc_failed** | Disabled when not in modify demo flows | Row shown; fee copy per tier |
+
 `showVehicleIdentification` only affects the car card (engine/chassis rows), not modify actions.
 
 Post-allocation car card is enabled when `manageBookingShowVehicleIdentification` is set or `whatsNextCard != null` / car allocation step `done` on `KycBookingProcessingScreen`.
@@ -287,6 +302,84 @@ The card renders an edit control only when the matching callback is non-null (or
 | **modify_with_charges** | *(none — identity already done)* | Continue | `/kyc/processing` (processing your booking) |
 
 **Key files:** `components/kyc/ModifySelectionReviewPayScreen.tsx`, `ModifySelectionReviewSelectionCard.tsx`, `KycBookingConfirmedScreen.tsx`, `lib/modify-selection-*-pending.ts`, `lib/active-booking-snapshot.ts`, `lib/paymentUrls.ts`.
+
+---
+
+## Cancel booking (cancel-no-charges flow)
+
+**Flow id:** `cancel_no_charges` — selectable on **`/quote`** via `QuoteFlowMenuSheet` (`lib/experience-flow.ts`).
+
+### Journey cap
+
+Unlike **modify_no_charges** (stops at **`/kyc` hub**), this flow allows the full identity funnel through **verification in progress**:
+
+| Allowed | Blocked (redirect → `/kyc/verification-in-progress`) |
+|---------|------------------------------------------------------|
+| `/quote`, payment routes, `/kyc`, `/kyc/upload`, `/kyc/documents-received`, `/kyc/verification-in-progress` | `/kyc/processing`, `/kyc/booking-accepted`, `/kyc/booking-confirmed`, car allocation, payment post-KYC, etc. |
+| `/kyc/cancel-booking`, `/kyc/cancel-booking/success` | `/kyc/modify-selection/*` (redirect away — change selection not part of this demo) |
+
+Guards: `getCancelNoChargesRedirectTarget()` + `getCancelBookingFlowRedirectTarget()` in `lib/experience-flow-journey.ts`; KYC post-hub pages use unified `getExperienceFlowJourneyRedirectTarget()` via `ModifyNoChargesGatedPage`. **`getModifyNoChargesRedirectTarget` unchanged** for `modify_no_charges`.
+
+On **`/kyc/verification-in-progress`**, demo **Next** is hidden when `isCancelNoChargesFlow()`.
+
+### Entry
+
+**Manage booking** → **Cancel booking** when `isCancelNoChargesFlow()` → **`/kyc/cancel-booking`**.
+
+### Cancel confirmation (full page — Figma 2709:17395)
+
+**Component:** `CancelBookingConfirmScreen`  
+**Copy:** `lib/cancel-booking-content.ts`  
+**Stagger:** `lib/cancel-booking-stagger.ts` (`.payment-success-stagger` sequence)  
+**Subcomponents:** `CancelBookingCarCard`, `CancelBookingRefundSummaryCard`
+
+| Element | Copy / behaviour |
+|---------|------------------|
+| Overline | Are you sure you want to cancel? — `#D16900` |
+| Headline | You have come a long way to get your {model} |
+| Car card | Compact horizontal card — title, variant, colour, delivery line + icon (clock for standard, bolt for express) |
+| Modify prompt | Not happy with your selection? |
+| Modify CTA | **Modify my booking** — `demo-nav-cta`, visible but not clickable in this flow |
+| Cancel prompt | Still want to cancel? |
+| Refund card | Booking amount ₹10,000 · Cancellation fee 0 · Refund amount ₹10,000 + “You'll get your refund in 5-7 business days” |
+| Confirm CTA | **Yes, cancel my booking** — `demo-nav-cta` → opens reason bottom sheet |
+| Back | `KycTopNavHeader` (`transparent`) chevron → `router.back()`; solid **`bg-white`** on scroll |
+
+**Layout:** Gradient section (`from-white to-[#f5f5f5]`) wraps overline + headline + car card with **20px** padding below card (`pb-5`); white section starts **24px** below (`pt-8`). **16px** between refund card and confirm CTA (`mt-4`). **32px** page bottom padding below confirm CTA.
+
+Car details: `readActiveBookingSnapshot()` or defaults from `booking-car-card-content.ts` + `getBookingDeliveryLine()`. Refund amount: `BOOKING_LOCK_AMOUNT_INR` (`lib/paymentUrls.ts`).
+
+### Cancel reason bottom sheet (Figma 2711:21013)
+
+**Component:** `CancelBookingReasonBottomSheet`  
+Opened from **Yes, cancel my booking** on the confirm page.
+
+| Element | Copy / behaviour |
+|---------|------------------|
+| Title | Before you go, tell us what went wrong? |
+| Options | Checkbox-style rows (toggle select/deselect); **no default selection** |
+| Reasons | Found a better deal elsewhere · Changed my mind about the car · Financial reasons · Delivery timeline is too long · Unhappy with the process · Other |
+| Primary CTA | **Cancel my booking** — `primary-cta`; disabled until a reason is selected → `/kyc/cancel-booking/success` |
+
+### Cancel success (celebration layout — not action hero)
+
+**Component:** `CancelBookingSuccessScreen`  
+**Copy:** `lib/cancel-booking-success-content.ts`  
+**Layout:** Centered success content + **fixed bottom** CTA strip (same family as `SelfFinanceConfirmedScreen` — not `min-h-[90dvh]` action hero).
+
+| Element | Copy |
+|---------|------|
+| Hero | `assets/Booking cancelled.svg` |
+| Headline | Your booking has been cancelled (word-by-word reveal) |
+| Subline | No cancellation fee applied |
+| Info box | Your full booking amount of ₹10,000 will be refunded to your account in 5-7 business days. |
+| CTA | **Done** (fixed footer) → `/quote` |
+
+### Route guards
+
+- `/kyc/cancel-booking` and `/kyc/cancel-booking/success` redirect to `/kyc` when flow ≠ `cancel_no_charges` (`CancelBookingFlowGuard`).
+
+**Key files:** `lib/experience-flow.ts`, `lib/experience-flow-journey.ts`, `lib/manage-booking-modify.ts`, `lib/cancel-booking-content.ts`, `lib/cancel-booking-success-content.ts`, `lib/cancel-booking-stagger.ts`, `components/kyc/CancelBookingConfirmScreen.tsx`, `components/kyc/CancelBookingCarCard.tsx`, `components/kyc/CancelBookingRefundSummaryCard.tsx`, `components/kyc/CancelBookingReasonBottomSheet.tsx`, `components/kyc/CancelBookingSuccessScreen.tsx`, `components/kyc/CancelBookingFlowGuard.tsx`, `components/kyc/ManageBookingBottomSheet.tsx`, `app/kyc/cancel-booking/page.tsx`, `app/kyc/cancel-booking/success/page.tsx`.
 
 ---
 
@@ -385,6 +478,9 @@ These paths are **gitignored** (see root `.gitignore`). They are optional helper
 - [x] RTO prep info callout aligned with hero info pattern
 - [x] Manage booking — post-allocation cancel fee ₹5,000; loan plan summary with partial/full DP states
 - [x] Modify selection review — edit icons gated by flow (colour: colour+delivery; variant: variant+colour+delivery; different-car: make/model+variant+colour+delivery; delivery edit express-only)
+- [x] Cancel no charges flow — selectable on quote; journey through verification in progress
+- [x] Cancel no charges — manage booking: cancel enabled; change selection visible but not clickable
+- [x] Cancel confirmation full page (Figma 2709:17395) + reason bottom sheet (Figma 2711:21013) + celebration success page; route guards; full booking amount refund (₹10,000, no fee)
 - [ ] Pass selected `bankId` / self-finance step state into payment/checkout and APIs
 - [ ] Full a11y pass on sheets
 - [ ] End-to-end journey documented in README (optional)

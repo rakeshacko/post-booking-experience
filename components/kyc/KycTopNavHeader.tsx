@@ -70,7 +70,7 @@ export function KycTopNavHeader({
         transparent
           ? cn(
               "z-20 transition-[background-color] duration-200 ease-out",
-              solidOnScroll ? "bg-white/50" : "bg-transparent"
+              solidOnScroll ? "bg-white" : "bg-transparent"
             )
           : "z-10 bg-[#FFFFFF]",
         className

@@ -6,7 +6,7 @@ export type KycVerificationFailureReason =
   | "address_mismatch";
 
 export const KYC_VERIFICATION_FAILED_CTA_WARNING =
-  "1 attempt left. Finish by 24 Apr, 3:00 PM or your booking will be cancelled and your payment refunded.";
+  "1 attempt left. Complete by 24 Apr, 3:00 PM to keep your booking.";
 
 export type KycVerificationFailedCopy = {
   /** Short label for the on-screen reason switcher. */

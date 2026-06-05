@@ -11,17 +11,16 @@ import {
 import { DocumentUploadDocumentCards } from "@/components/kyc/DocumentUploadDocumentCards";
 import { KycUploadSourceBottomSheet } from "@/components/kyc/KycUploadSourceBottomSheet";
 import {
-  KYC_MOCK_UPLOAD_NAMES,
   KYC_UPLOAD_CARD_DEFINITIONS,
   KYC_UPLOAD_INFO_TIPS,
   type KycDocumentKind,
   type KycUploadSource,
 } from "@/components/kyc/kyc-upload-content";
-import type { KycUploadedFile, KycUploadsState } from "@/lib/kyc-upload-state";
-
-function nextMockFilename(uploadIndex: number): string {
-  return KYC_MOCK_UPLOAD_NAMES[uploadIndex % KYC_MOCK_UPLOAD_NAMES.length];
-}
+import {
+  appendKycDigilockerPanAadhaarUploads,
+  appendKycMockUpload,
+} from "@/lib/kyc-mock-upload";
+import type { KycUploadsState } from "@/lib/kyc-upload-state";
 
 type KycPanAadhaarDocumentUploadSectionsProps = {
   uploads: KycUploadsState;
@@ -51,40 +50,24 @@ export function KycPanAadhaarDocumentUploadSections({
     setSourceSheetOpen(true);
   }, []);
 
-  const appendMockUpload = useCallback(
-    (kind: KycDocumentKind, source: KycUploadSource) => {
-      const uploadIndex = mockUploadCounterRef.current;
-      mockUploadCounterRef.current += 1;
-
-      const newFile: KycUploadedFile = {
-        id: `${kind}-${source}-${uploadIndex}-${Date.now()}`,
-        name: nextMockFilename(uploadIndex),
-        source,
-      };
-
-      onUploadsChange({
-        ...uploads,
-        [kind]: kind === "pan" ? [newFile] : [...uploads[kind], newFile],
-      });
-    },
-    [mockUploadCounterRef, onUploadsChange, uploads],
-  );
+  const handleDigilockerFetchAll = useCallback(() => {
+    onUploadsChange(
+      appendKycDigilockerPanAadhaarUploads(uploads, mockUploadCounterRef),
+    );
+  }, [mockUploadCounterRef, onUploadsChange, uploads]);
 
   const handleMockUpload = useCallback(
     (source: KycUploadSource) => {
-      if (activeDocument == null) return;
-      appendMockUpload(activeDocument, source);
-    },
-    [activeDocument, appendMockUpload],
-  );
-
-  const handleDigilockerFetch = useCallback(
-    (kind: string) => {
-      if (kind === "aadhaar" || kind === "pan") {
-        appendMockUpload(kind, "digilocker");
+      if (source === "digilocker") {
+        handleDigilockerFetchAll();
+        return;
       }
+      if (activeDocument == null) return;
+      onUploadsChange(
+        appendKycMockUpload(uploads, activeDocument, source, mockUploadCounterRef),
+      );
     },
-    [appendMockUpload],
+    [activeDocument, handleDigilockerFetchAll, mockUploadCounterRef, onUploadsChange, uploads],
   );
 
   const handleRemove = useCallback(
@@ -114,7 +97,7 @@ export function KycPanAadhaarDocumentUploadSections({
           getFiles={(kind) => uploads[kind as KycDocumentKind] ?? []}
           onUploadClick={(kind) => openSourceSheet(kind as KycDocumentKind)}
           onRemove={handleRemove}
-          onDigilockerFetch={handleDigilockerFetch}
+          onDigilockerFetchAll={handleDigilockerFetchAll}
           wrapCard={wrapCard}
         />
       </div>

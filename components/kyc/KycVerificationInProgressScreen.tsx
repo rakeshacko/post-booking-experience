@@ -53,6 +53,8 @@ function MenuOptionsButton({ onClick }: { onClick: () => void }) {
 type KycVerificationInProgressScreenProps = {
   /** Primary CTA destination (defaults to booking processing). */
   nextHref?: string;
+  /** Hide demo Next CTA (e.g. cancel-no-charges journey endpoint). */
+  hideDemoCta?: boolean;
 };
 
 /**
@@ -60,6 +62,7 @@ type KycVerificationInProgressScreenProps = {
  */
 export function KycVerificationInProgressScreen({
   nextHref = "/kyc/processing",
+  hideDemoCta = false,
 }: KycVerificationInProgressScreenProps) {
   const router = useRouter();
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -175,26 +178,28 @@ export function KycVerificationInProgressScreen({
               </div>
             </div>
 
-            <div className="mt-auto w-full pt-8">
-              <button
-                type="button"
-                className={cn(
-                  "demo-nav-cta transition-opacity",
-                  HERO_FADE_DURATION_CLASS,
-                  "ease-out focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#121212]/30 focus-visible:ring-offset-2",
-                  showCta ? "opacity-100" : "pointer-events-none opacity-0",
-                )}
-                tabIndex={showCta ? 0 : -1}
-                onClick={() => {
-                  if (nextHref === KYC_VERIFICATION_FAILED_HREF) {
-                    recordKycVerificationFailure();
-                  }
-                  router.push(nextHref);
-                }}
-              >
-                {DEMO_NAV_CTA_LABEL}
-              </button>
-            </div>
+            {hideDemoCta ? null : (
+              <div className="mt-auto w-full pt-8">
+                <button
+                  type="button"
+                  className={cn(
+                    "demo-nav-cta transition-opacity",
+                    HERO_FADE_DURATION_CLASS,
+                    "ease-out focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#121212]/30 focus-visible:ring-offset-2",
+                    showCta ? "opacity-100" : "pointer-events-none opacity-0",
+                  )}
+                  tabIndex={showCta ? 0 : -1}
+                  onClick={() => {
+                    if (nextHref === KYC_VERIFICATION_FAILED_HREF) {
+                      recordKycVerificationFailure();
+                    }
+                    router.push(nextHref);
+                  }}
+                >
+                  {DEMO_NAV_CTA_LABEL}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

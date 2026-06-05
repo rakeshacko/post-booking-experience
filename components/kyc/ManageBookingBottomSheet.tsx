@@ -25,6 +25,7 @@ import { ChooseLoanPaymentSummaryCard } from "@/components/payment/ChooseLoanPay
 import { ON_ROAD_PRICE_INR } from "@/components/payment/loan-amount-demo-constants";
 import { PaymentSummaryCard } from "@/components/payment/PaymentSummaryCard";
 import {
+  isCancelNoChargesFlow,
   isModifyNoChargesFlow,
   isModifyWithChargesFlow,
 } from "@/lib/experience-flow";
@@ -262,12 +263,20 @@ function ManageBookingBottomSheetInner({
   );
 
   const changeSelectionEnabled = useMemo(() => {
+    if (isCancelNoChargesFlow()) return false;
     if (isModifyNoChargesFlow()) return true;
     if (isModifyWithChargesFlow()) {
       return isChangeSelectionAvailablePhase(resolveJourneyPhase(pathname));
     }
     return false;
   }, [pathname]);
+
+  const changeSelectionClickable = useMemo(() => {
+    if (isCancelNoChargesFlow()) return false;
+    return changeSelectionEnabled;
+  }, [changeSelectionEnabled]);
+
+  const cancelBookingEnabled = useMemo(() => isCancelNoChargesFlow(), []);
 
   const cancelBookingDescription = useMemo(
     () => modifyBookingCancelDescription(modifyFeeTier),
@@ -277,6 +286,11 @@ function ManageBookingBottomSheetInner({
   const onChangeSelection = useCallback(() => {
     onClose();
     router.push(JOURNEY_PATHS.kyc.modifySelection);
+  }, [onClose, router]);
+
+  const onCancelBooking = useCallback(() => {
+    onClose();
+    router.push(JOURNEY_PATHS.kyc.cancelBooking);
   }, [onClose, router]);
 
   const [mounted, setMounted] = useState(false);
@@ -429,13 +443,14 @@ function ManageBookingBottomSheetInner({
                   iconSrc={changeSelectionIcon}
                   title="Change selection"
                   description={changeSelectionDescription}
-                  onClick={changeSelectionEnabled ? onChangeSelection : undefined}
+                  onClick={changeSelectionClickable ? onChangeSelection : undefined}
                 />
                 <hr className="border-0 border-t border-dashed border-[#e8e8e8]" />
                 <ModifyBookingActionRow
                   iconSrc={cancelBookingIcon}
                   title="Cancel booking"
                   description={cancelBookingDescription}
+                  onClick={cancelBookingEnabled ? onCancelBooking : undefined}
                 />
               </div>
             </section>

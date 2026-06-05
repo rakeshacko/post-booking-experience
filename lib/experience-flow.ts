@@ -4,7 +4,8 @@ export type ExperienceFlow =
   | "standard"
   | "kyc_failed"
   | "modify_no_charges"
-  | "modify_with_charges";
+  | "modify_with_charges"
+  | "cancel_no_charges";
 
 export const EXPERIENCE_FLOW_STORAGE_KEY = "post-booking-experience-flow";
 
@@ -56,6 +57,14 @@ export const EXPERIENCE_FLOWS: readonly ExperienceFlowDefinition[] = [
     entryPath: "/quote",
     available: true,
   },
+  {
+    id: "cancel_no_charges",
+    label: "Cancellation with no charges",
+    description:
+      "Express path through verification in progress — cancel booking with full refund, no fee",
+    entryPath: "/quote",
+    available: true,
+  },
 ] as const;
 
 export const DEFAULT_EXPERIENCE_FLOW: ExperienceFlow = "express";
@@ -66,7 +75,8 @@ export function isExperienceFlow(value: string | null | undefined): value is Exp
     value === "standard" ||
     value === "kyc_failed" ||
     value === "modify_no_charges" ||
-    value === "modify_with_charges"
+    value === "modify_with_charges" ||
+    value === "cancel_no_charges"
   );
 }
 
@@ -102,6 +112,11 @@ export function isModifyNoChargesFlow(flow?: ExperienceFlow): boolean {
 export function isModifyWithChargesFlow(flow?: ExperienceFlow): boolean {
   const active = flow ?? readExperienceFlow();
   return active === "modify_with_charges";
+}
+
+export function isCancelNoChargesFlow(flow?: ExperienceFlow): boolean {
+  const active = flow ?? readExperienceFlow();
+  return active === "cancel_no_charges";
 }
 
 /** Flows that expose the modify-selection demo routes. */

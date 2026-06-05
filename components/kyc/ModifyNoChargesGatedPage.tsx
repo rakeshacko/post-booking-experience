@@ -4,7 +4,7 @@ import { Suspense, useEffect } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import {
-  getModifyNoChargesRedirectTarget,
+  getExperienceFlowJourneyRedirectTarget,
   type ModifyNoChargesJourneyContext,
 } from "@/lib/experience-flow-journey";
 
@@ -22,7 +22,7 @@ function ModifyNoChargesGatedPageInner({ children }: ModifyNoChargesGatedPagePro
       returnSource: searchParams.get("return_source"),
       bookingConfirmedSource: searchParams.get("source"),
     };
-    const target = getModifyNoChargesRedirectTarget(pathname, undefined, context);
+    const target = getExperienceFlowJourneyRedirectTarget(pathname, undefined, context);
     if (target) {
       router.replace(target);
     }
@@ -32,7 +32,8 @@ function ModifyNoChargesGatedPageInner({ children }: ModifyNoChargesGatedPagePro
 }
 
 /**
- * Redirects to `/kyc` when the modify-no-charges demo flow hits a post–KYC-pending route.
+ * Redirects when modify-no-charges or cancel-no-charges demo flows hit disallowed routes.
+ * Modify-no-charges → `/kyc`; cancel-no-charges → `/kyc/verification-in-progress`.
  * Allows `/kyc/booking-confirmed?source=payment&return_source=modify-selection` after modify-selection pay.
  */
 export function ModifyNoChargesGatedPage({ children }: ModifyNoChargesGatedPageProps) {

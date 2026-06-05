@@ -19,6 +19,8 @@ type DocumentUploadDocumentCardsProps = {
   onUploadClick: (kind: string) => void;
   onRemove: (kind: string, fileId: string) => void;
   onDigilockerFetch?: (kind: string) => void;
+  /** Demo: fetch all documents (e.g. PAN + Aadhaar) instead of the section kind only. */
+  onDigilockerFetchAll?: () => void;
   /** Optional wrapper for stagger animations (e.g. PaymentSuccessStagger). */
   wrapCard?: (kind: string, card: ReactNode) => ReactNode;
 };
@@ -32,6 +34,7 @@ export function DocumentUploadDocumentCards({
   onUploadClick,
   onRemove,
   onDigilockerFetch,
+  onDigilockerFetchAll,
   wrapCard,
 }: DocumentUploadDocumentCardsProps) {
   return (
@@ -39,8 +42,14 @@ export function DocumentUploadDocumentCards({
       {documents.map((doc) => {
         const card = (
           <>
-            {doc.showDigilockerFetch && onDigilockerFetch != null ? (
-              <DigilockerFetchButton onClick={() => onDigilockerFetch(doc.kind)} />
+            {doc.showDigilockerFetch && (onDigilockerFetchAll != null || onDigilockerFetch != null) ? (
+              <DigilockerFetchButton
+                onClick={() =>
+                  onDigilockerFetchAll != null
+                    ? onDigilockerFetchAll()
+                    : onDigilockerFetch!(doc.kind)
+                }
+              />
             ) : null}
             <DocumentUploadSection
               title={doc.title}

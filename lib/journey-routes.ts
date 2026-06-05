@@ -15,6 +15,7 @@ export const JOURNEY_PATHS = {
     bookingConfirmed: "/kyc/booking-confirmed",
     bookingAccepted: "/kyc/booking-accepted",
     modifySelection: "/kyc/modify-selection",
+    cancelBooking: "/kyc/cancel-booking",
   },
   buyingGuide: {
     entry: "/kyc/buying-guide/1",
