@@ -56,8 +56,8 @@ export function ModifySelectionVariantCard({
   const deliveryParts = splitBookingDeliveryLine(option.deliveryLine);
 
   const cardClassName = cn(
-    "flex w-full flex-col rounded-xl border p-4 text-left transition-colors",
-    selected ? "border-[#121212] bg-[#f5f5f5]" : "border-[#e8e8e8] bg-white",
+    "flex w-full flex-col rounded-xl border p-4 text-left transition-colors card-elevated",
+    selected ? "border-[#121212] bg-[#f5f5f5]" : "border-transparent bg-white",
   );
 
   const cardBody = (

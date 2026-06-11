@@ -25,8 +25,8 @@ export function ModifySelectionCarBrandCard({
       onClick={onSelect}
       aria-pressed={selected}
       className={cn(
-        "flex h-[88px] w-full flex-col items-center overflow-hidden rounded-xl border bg-white px-2 pb-2 pt-[7px] text-center transition-colors",
-        selected ? "border-[#121212]" : "border-[#e8e8e8]",
+        "flex h-[88px] w-full flex-col items-center overflow-hidden rounded-xl border bg-white px-2 pb-2 pt-[7px] text-center transition-colors card-elevated",
+        selected ? "border-[#121212]" : "border-transparent",
       )}
     >
       <div className="flex h-12 w-[82px] shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[#f5f5f5]">

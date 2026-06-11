@@ -35,11 +35,19 @@ import {
   resolveJourneyPhase,
 } from "@/lib/journey-routes";
 import {
+  readPostLockChangesUsed,
+  writeChangeEntryStage,
+} from "@/lib/change-policy";
+import {
   modifyBookingCancelDescription,
   modifyBookingChangeDescription,
   resolveModifyBookingFeeTier,
 } from "@/lib/manage-booking-modify";
-import { FULL_PAYMENT_BANK_ID, INSURANCE_PAYMENT_KIND } from "@/lib/paymentUrls";
+import {
+  BOOKING_LOCK_AMOUNT_INR,
+  FULL_PAYMENT_BANK_ID,
+  INSURANCE_PAYMENT_KIND,
+} from "@/lib/paymentUrls";
 import { cn } from "@/lib/utils";
 
 /** Keeps parity with other bottom sheets in the app */
@@ -217,24 +225,26 @@ function parseFullPaymentPlan(searchParams: URLSearchParams) {
   };
 }
 
-/** ACKO Drive + self finance: partial or full down payment. Full payment: any instalment paid. */
-function shouldHideModifyBooking(
-  confirmedLoanPlan: ReturnType<typeof parseConfirmedLoanPlan>,
-  fullPaymentPlan: ReturnType<typeof parseFullPaymentPlan>,
-): boolean {
-  if (confirmedLoanPlan != null) {
-    if (confirmedLoanPlan.downPaymentFullyPaid) return true;
-    if ((confirmedLoanPlan.downPaymentPaidInr ?? 0) > 0) return true;
-  }
-  if ((fullPaymentPlan?.paymentPaidInr ?? 0) > 0) return true;
-  return false;
-}
+export type ManageBookingSectionsProps = {
+  onClose: () => void;
+  showVehicleIdentification?: boolean;
+  /** `overlay` — cards sit on the page surface (elevation); `sheet` — hairline borders on white. */
+  surface?: "sheet" | "overlay";
+  /** Extra section rendered between the payment summary and “Make a change” (e.g. receipts). */
+  beforeChange?: React.ReactNode;
+};
 
-function ManageBookingBottomSheetInner({
-  open,
+/**
+ * The manage-booking content (car card, payment summary, make-a-change) with
+ * all its policy logic — shared by the bottom sheet and the concierge zoom
+ * overlay. Requires a Suspense boundary (`useSearchParams`).
+ */
+export function ManageBookingSections({
   onClose,
   showVehicleIdentification = false,
-}: ManageBookingBottomSheetProps) {
+  surface = "sheet",
+  beforeChange,
+}: ManageBookingSectionsProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -247,20 +257,23 @@ function ManageBookingBottomSheetInner({
     [searchParams],
   );
 
-  const hideModifyBooking = useMemo(
-    () => shouldHideModifyBooking(confirmedLoanPlan, fullPaymentPlan),
-    [confirmedLoanPlan, fullPaymentPlan],
-  );
-
   const modifyFeeTier = useMemo(
     () => resolveModifyBookingFeeTier(pathname),
     [pathname],
   );
 
-  const changeSelectionDescription = useMemo(
-    () => modifyBookingChangeDescription(modifyFeeTier),
-    [modifyFeeTier],
-  );
+  /** Post-lock changes already used (policy §1.9 — exactly one allowed). */
+  const [changesUsed, setChangesUsed] = useState(0);
+  useEffect(() => {
+    setChangesUsed(readPostLockChangesUsed());
+  }, []);
+
+  const changeSelectionDescription = useMemo(() => {
+    if (modifyFeeTier === "free") return modifyBookingChangeDescription(modifyFeeTier);
+    return changesUsed >= 1
+      ? "Change used — another means cancel & rebook"
+      : "One change — ₹5,000 plus any price difference";
+  }, [modifyFeeTier, changesUsed]);
 
   const changeSelectionEnabled = useMemo(() => {
     if (isCancelNoChargesFlow()) return false;
@@ -268,7 +281,8 @@ function ManageBookingBottomSheetInner({
     if (isModifyWithChargesFlow()) {
       return isChangeSelectionAvailablePhase(resolveJourneyPhase(pathname));
     }
-    return false;
+    // Express/standard — policy grants one post-lock change to every booking.
+    return true;
   }, [pathname]);
 
   const changeSelectionClickable = useMemo(() => {
@@ -276,38 +290,124 @@ function ManageBookingBottomSheetInner({
     return changeSelectionEnabled;
   }, [changeSelectionEnabled]);
 
-  const cancelBookingEnabled = useMemo(() => isCancelNoChargesFlow(), []);
-
   const cancelBookingDescription = useMemo(
     () => modifyBookingCancelDescription(modifyFeeTier),
     [modifyFeeTier],
   );
 
+  /** Policy §7 — cancellation is the customer's right at every stage; 50% of total paid post-confirmation. */
+  const totalPaidInr = useMemo(() => {
+    const dpPaid = Math.max(0, confirmedLoanPlan?.downPaymentPaidInr ?? 0);
+    const fullPaid = Math.max(0, fullPaymentPlan?.paymentPaidInr ?? 0);
+    return BOOKING_LOCK_AMOUNT_INR + dpPaid + fullPaid;
+  }, [confirmedLoanPlan, fullPaymentPlan]);
+
   const onChangeSelection = useCallback(() => {
     onClose();
+    const stage = modifyFeeTier === "free" ? "pre" : "post";
+    // Second post-lock change = cancellation + rebook (policy §1.9).
+    if (stage === "post" && readPostLockChangesUsed() >= 1) {
+      router.push(
+        `${JOURNEY_PATHS.kyc.cancelBooking}?paid=${totalPaidInr}&stage=post&reason=second-change`,
+      );
+      return;
+    }
+    writeChangeEntryStage(stage);
     router.push(JOURNEY_PATHS.kyc.modifySelection);
-  }, [onClose, router]);
+  }, [onClose, router, modifyFeeTier, totalPaidInr]);
 
   const onCancelBooking = useCallback(() => {
     onClose();
-    router.push(JOURNEY_PATHS.kyc.cancelBooking);
-  }, [onClose, router]);
+    const stage = modifyFeeTier === "free" ? "pre" : "post";
+    router.push(`${JOURNEY_PATHS.kyc.cancelBooking}?paid=${totalPaidInr}&stage=${stage}`);
+  }, [onClose, router, modifyFeeTier, totalPaidInr]);
 
-  const [mounted, setMounted] = useState(false);
-  const [animateIn, setAnimateIn] = useState(false);
   const [activeBooking, setActiveBooking] = useState<ReturnType<
     typeof readActiveBookingSnapshot
   >>(null);
-  const exitTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     setActiveBooking(readActiveBookingSnapshot());
   }, []);
 
-  useEffect(() => {
-    if (!open) return;
-    setActiveBooking(readActiveBookingSnapshot());
-  }, [open]);
+  return (
+    <div className="flex flex-col gap-8">
+      <BookingCarSummaryCard
+        showVehicleIdentification={showVehicleIdentification}
+        cardDetails={
+          activeBooking != null ? activeBookingCardDetails(activeBooking) : undefined
+        }
+        carCutoutSrc={
+          activeBooking != null ? activeBookingCarCutoutSrc(activeBooking) : undefined
+        }
+      />
+
+      <section aria-labelledby="manage-booking-payment-heading">
+        <h3
+          id="manage-booking-payment-heading"
+          className="mb-4 text-base font-medium leading-6 text-[#121212]"
+        >
+          Payment summary
+        </h3>
+        {confirmedLoanPlan ? (
+          <ChooseLoanPaymentSummaryCard
+            loanAmountInr={confirmedLoanPlan.loanAmountInr}
+            downPaymentAmountInr={confirmedLoanPlan.downPaymentAmountInr}
+            downPaymentPaidInr={confirmedLoanPlan.downPaymentPaidInr}
+            downPaymentFullyPaid={confirmedLoanPlan.downPaymentFullyPaid}
+          />
+        ) : (
+          <PaymentSummaryCard
+            paymentPaidInr={fullPaymentPlan?.paymentPaidInr}
+            amountRemainingInr={fullPaymentPlan?.amountRemainingInr}
+          />
+        )}
+      </section>
+
+      {beforeChange}
+
+      {/* Always rendered — cancellation is available at every stage (policy §7). */}
+      <section aria-labelledby="manage-booking-modify-heading">
+        <h3
+          id="manage-booking-modify-heading"
+          className="mb-4 text-base font-medium leading-6 text-[#121212]"
+        >
+          Make a change
+        </h3>
+        <div
+          className={cn(
+            "overflow-hidden rounded-2xl bg-white",
+            surface === "overlay" ? "card-elevated" : "border border-[#e8e8e8]",
+          )}
+        >
+          <ModifyBookingActionRow
+            iconSrc={changeSelectionIcon}
+            title="Change selection"
+            description={changeSelectionDescription}
+            onClick={changeSelectionClickable ? onChangeSelection : undefined}
+          />
+          <hr className="border-0 border-t border-dashed border-[#e8e8e8]" />
+          <ModifyBookingActionRow
+            iconSrc={cancelBookingIcon}
+            title="Cancel my purchase"
+            description={cancelBookingDescription}
+            onClick={onCancelBooking}
+          />
+        </div>
+      </section>
+    </div>
+  );
+}
+
+/** ACKO Drive + self finance: partial or full down payment. Full payment: any instalment paid. */
+function ManageBookingBottomSheetInner({
+  open,
+  onClose,
+  showVehicleIdentification = false,
+}: ManageBookingBottomSheetProps) {
+  const [mounted, setMounted] = useState(false);
+  const [animateIn, setAnimateIn] = useState(false);
+  const exitTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -378,10 +478,10 @@ function ManageBookingBottomSheetInner({
               id="manage-booking-sheet-title"
               className="text-left text-[20px] font-semibold leading-7 tracking-[-0.1px] text-[#121212]"
             >
-              Your booking
+              Your car
             </h2>
             <p className="mt-1 text-sm font-normal leading-5 text-[#4b4b4b]">
-              Booking ID: {DEMO_BOOKING_ID}
+              Reference ID: {DEMO_BOOKING_ID}
             </p>
           </div>
           <button
@@ -397,65 +497,10 @@ function ManageBookingBottomSheetInner({
         <div
           className={`${BOTTOM_SHEET_SCROLL_BODY_CLASS} px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-2`}
         >
-          <div className="flex flex-col gap-8">
-          <BookingCarSummaryCard
+          <ManageBookingSections
+            onClose={onClose}
             showVehicleIdentification={showVehicleIdentification}
-            cardDetails={
-              activeBooking != null ? activeBookingCardDetails(activeBooking) : undefined
-            }
-            carCutoutSrc={
-              activeBooking != null ? activeBookingCarCutoutSrc(activeBooking) : undefined
-            }
           />
-
-          <section aria-labelledby="manage-booking-payment-heading">
-            <h3
-              id="manage-booking-payment-heading"
-              className="mb-4 text-base font-medium leading-6 text-[#121212]"
-            >
-              Payment summary
-            </h3>
-            {confirmedLoanPlan ? (
-              <ChooseLoanPaymentSummaryCard
-                loanAmountInr={confirmedLoanPlan.loanAmountInr}
-                downPaymentAmountInr={confirmedLoanPlan.downPaymentAmountInr}
-                downPaymentPaidInr={confirmedLoanPlan.downPaymentPaidInr}
-                downPaymentFullyPaid={confirmedLoanPlan.downPaymentFullyPaid}
-              />
-            ) : (
-              <PaymentSummaryCard
-                paymentPaidInr={fullPaymentPlan?.paymentPaidInr}
-                amountRemainingInr={fullPaymentPlan?.amountRemainingInr}
-              />
-            )}
-          </section>
-
-          {!hideModifyBooking ? (
-            <section aria-labelledby="manage-booking-modify-heading">
-              <h3
-                id="manage-booking-modify-heading"
-                className="mb-4 text-base font-medium leading-6 text-[#121212]"
-              >
-                Modify booking
-              </h3>
-              <div className="overflow-hidden rounded-2xl border border-[#e8e8e8] bg-white">
-                <ModifyBookingActionRow
-                  iconSrc={changeSelectionIcon}
-                  title="Change selection"
-                  description={changeSelectionDescription}
-                  onClick={changeSelectionClickable ? onChangeSelection : undefined}
-                />
-                <hr className="border-0 border-t border-dashed border-[#e8e8e8]" />
-                <ModifyBookingActionRow
-                  iconSrc={cancelBookingIcon}
-                  title="Cancel booking"
-                  description={cancelBookingDescription}
-                  onClick={cancelBookingEnabled ? onCancelBooking : undefined}
-                />
-              </div>
-            </section>
-          ) : null}
-          </div>
         </div>
       </div>
     </div>

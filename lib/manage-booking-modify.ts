@@ -37,12 +37,12 @@ export function resolveModifyBookingFeeTier(pathname: string): ModifyBookingFeeT
 
 export function modifyBookingCancelDescription(tier: ModifyBookingFeeTier): string {
   return tier === "free"
-    ? "No cancellation fee"
-    : `Cancellation fee of ${formatInr(MODIFY_BOOKING_CANCEL_FEE_INR)} is applicable`;
+    ? "Free — everything you've paid comes back"
+    : "50% of everything you've paid is retained";
 }
 
 export function modifyBookingChangeDescription(tier: ModifyBookingFeeTier): string {
   return tier === "free"
     ? "No change fee"
-    : `A booking change fee of ${formatInr(MODIFY_BOOKING_CHANGE_FEE_INR)} is applicable.`;
+    : `A change fee of ${formatInr(MODIFY_BOOKING_CHANGE_FEE_INR)} is applicable.`;
 }

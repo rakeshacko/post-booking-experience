@@ -48,14 +48,14 @@ export function ModifySelectionColourCard({
     : BOOKING_STANDARD_DELIVERY_TEXT_CLASS;
 
   const cardClassName = cn(
-    "flex w-full gap-3 rounded-xl border p-[15px] text-left transition-colors",
-    selected ? "border-[#121212] bg-[#f5f5f5]" : "border-[#e8e8e8] bg-white",
+    "flex w-full gap-3 rounded-xl border p-[15px] text-left transition-colors card-elevated",
+    selected ? "border-[#121212] bg-[#f5f5f5]" : "border-transparent bg-white",
   );
 
   const cardBody = (
     <>
       <div
-        className="size-12 shrink-0 overflow-hidden rounded-lg border border-[#e8e8e8] bg-white"
+        className="size-12 shrink-0 overflow-hidden rounded-lg bg-white card-elevated"
         aria-hidden
       >
         <div className="size-full" style={{ background: option.swatchBackground }} />

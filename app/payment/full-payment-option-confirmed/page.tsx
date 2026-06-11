@@ -1,17 +1,18 @@
-import { Suspense } from "react";
+"use client";
 
-import { FullPaymentOptionConfirmedScreen } from "@/components/payment/FullPaymentOptionConfirmedScreen";
-import { CelebrationPageTransition } from "@/components/ui/page-transition";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 /**
- * Full payment — success celebration after confirm sheet; auto-advances to action screen.
+ * Legacy — interstitial removed; the choose screen hands off straight to the
+ * full payment action turn.
  */
 export default function FullPaymentOptionConfirmedPage() {
-  return (
-    <Suspense fallback={<div className="min-h-dvh bg-white" aria-hidden />}>
-      <CelebrationPageTransition>
-        <FullPaymentOptionConfirmedScreen />
-      </CelebrationPageTransition>
-    </Suspense>
-  );
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace("/payment/full-payment-confirmed");
+  }, [router]);
+
+  return null;
 }

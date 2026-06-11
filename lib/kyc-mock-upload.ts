@@ -19,7 +19,10 @@ function createMockFile(
 
   return {
     id: `${kind}-${source}-${uploadIndex}-${Date.now()}`,
-    name: nextMockFilename(uploadIndex),
+    name:
+      source === "digilocker"
+        ? `${kind === "aadhaar" ? "Aadhaar" : "PAN"} · DigiLocker.pdf`
+        : nextMockFilename(uploadIndex),
     source,
   };
 }

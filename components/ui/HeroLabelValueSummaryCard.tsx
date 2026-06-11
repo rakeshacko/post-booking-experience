@@ -19,7 +19,7 @@ export function HeroLabelValueSummaryCard({
 }: HeroLabelValueSummaryCardProps) {
   return (
     <section
-      className="w-full rounded-2xl border border-[#E8E8E8] bg-white px-3 py-3 text-left"
+      className="w-full rounded-2xl bg-white card-elevated px-3 py-3 text-left"
       aria-label={ariaLabel}
     >
       <dl className="m-0 flex items-center justify-between gap-3">

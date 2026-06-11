@@ -100,7 +100,7 @@ export function KycVerificationInProgressScreen({
   }, [router, nextHref]);
 
   return (
-    <div className="flex min-h-dvh flex-col bg-white font-sans">
+    <div className="flex min-h-dvh flex-col bg-[#f1f0f5] font-sans">
       <div className="mx-auto flex w-full max-w-[640px] flex-1 flex-col">
         <div
           className={`kyc-pending-hero-card relative isolate mx-auto flex min-h-0 w-full flex-1 flex-col ${HERO_MIN_HEIGHT}`}
@@ -159,7 +159,7 @@ export function KycVerificationInProgressScreen({
                 </p>
               </div>
               <div
-                className={`mt-6 flex items-center gap-3 rounded-2xl border border-[#E8E8E8] bg-white px-3 py-3 text-left transition-opacity ${HERO_FADE_DURATION_CLASS} ease-out ${
+                className={`mt-6 flex items-center gap-3 rounded-2xl bg-white card-elevated px-3 py-3 text-left transition-opacity ${HERO_FADE_DURATION_CLASS} ease-out ${
                   showSubline ? "opacity-100" : "opacity-0"
                 }`}
                 aria-hidden={!showSubline}

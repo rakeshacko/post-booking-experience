@@ -13,16 +13,36 @@ export const DEFAULT_TENURE_MONTHS = 60;
 /** Insurance portion of full / down payment — Figma 2331:10371 (aligned with enter-sanctioned screen). */
 export const FULL_PAYMENT_INSURANCE_INR = 37_000;
 
-/** Car portion when paying full on-road price upfront (on-road total minus insurance). */
-export const FULL_PAYMENT_CAR_AMOUNT_INR = ON_ROAD_PRICE_INR - FULL_PAYMENT_INSURANCE_INR;
+/** Price-lock amount already paid at the start of the journey. */
+export const BOOKING_AMOUNT_PAID_INR = 10_000;
 
-/** Car down payment due now — total down payment minus insurance (payable after disbursement). */
-export function carDownPaymentFromTotalInr(totalDownPaymentInr: number): number {
-  return Math.max(0, Math.round(totalDownPaymentInr) - FULL_PAYMENT_INSURANCE_INR);
+/**
+ * THE PRICE IDENTITY (business rule):
+ * price lock + bank disbursement + insurance + down payment = promised price.
+ * The bank's disbursement is the bank's decision — never a slider; the down
+ * payment is DERIVED from this identity, not chosen.
+ */
+export function cashDownPaymentDueInr(disbursementInr: number): number {
+  return Math.max(
+    0,
+    ON_ROAD_PRICE_INR -
+      BOOKING_AMOUNT_PAID_INR -
+      FULL_PAYMENT_INSURANCE_INR -
+      Math.round(disbursementInr),
+  );
 }
 
-/** Demo default loan disbursement when `loan_amount` is not on the URL (choose-loan default DP ₹3L). */
-export const DEMO_DEFAULT_LOAN_DISBURSEMENT_INR = ON_ROAD_PRICE_INR - 300_000;
+/** Demo: what the partner bank sanctions and disburses straight to the dealer. */
+export const BANK_DISBURSEMENT_INR = 10_76_780;
+
+/** Demo: the derived down payment for the ACKO-arranged loan (₹2,50,000). */
+export const ACKO_LOAN_DOWN_PAYMENT_INR = cashDownPaymentDueInr(BANK_DISBURSEMENT_INR);
+
+/** Cash due on full payment — the identity with no bank in it. */
+export const FULL_PAYMENT_CAR_AMOUNT_INR = cashDownPaymentDueInr(0);
+
+/** Demo default loan disbursement when `loan_amount` is not on the URL. */
+export const DEMO_DEFAULT_LOAN_DISBURSEMENT_INR = BANK_DISBURSEMENT_INR;
 
 /** Demo transaction id on loan-disbursement-received (Figma). */
 export const DEMO_LOAN_DISBURSEMENT_TRANSACTION_ID = "TXN9845210763";

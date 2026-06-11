@@ -7,7 +7,7 @@ import { AckoDriveFinanceActionScreen } from "@/components/payment/AckoDriveFina
  */
 export default function AckoDriveFinanceActionPage() {
   return (
-    <Suspense fallback={<div className="min-h-dvh bg-[#fafbfb]" aria-hidden />}>
+    <Suspense fallback={<div className="min-h-dvh bg-[#f1f0f5]" aria-hidden />}>
       <AckoDriveFinanceActionScreen />
     </Suspense>
   );

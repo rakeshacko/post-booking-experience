@@ -46,7 +46,7 @@ export function PaymentSummaryCard({
     showPaymentPaidRow;
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-[#e8e8e8]">
+    <div className="overflow-hidden rounded-2xl bg-white card-elevated">
       <div className="bg-white px-4 pb-4 pt-4">
         <button
           type="button"
@@ -89,7 +89,7 @@ export function PaymentSummaryCard({
         <hr className="my-4 border-0 border-t border-dashed border-[#e8e8e8]" />
 
         <div className="flex items-center justify-between gap-2">
-          <span className="text-sm leading-5 text-[#121212]">Booking amount paid</span>
+          <span className="text-sm leading-5 text-[#121212]">Paid so far</span>
           <span className="text-sm font-medium leading-5 text-[#121212]">
             {PAYMENT_SUMMARY.bookingAmountPaid}
           </span>

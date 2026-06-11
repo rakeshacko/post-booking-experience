@@ -20,6 +20,7 @@ import { ManageBookingBottomSheet } from "@/components/kyc/ManageBookingBottomSh
 import { VerificationFailureReasonSwitcher } from "@/components/kyc/VerificationFailureReasonSwitcher";
 import { WordByWordLine } from "@/components/payment/WordByWordLine";
 import { AuroraLightLayer } from "@/components/ui/aurora-light-layer";
+import { ShimmerInfoCard } from "@/components/ui/ShimmerInfoCard";
 import {
   HERO_ACTION_HEADLINE_SUBLINE_GAP_CLASS,
   HERO_ILLUSTRATION_TO_COPY_MT,
@@ -117,7 +118,7 @@ export function KycVerificationFailedScreen() {
   }, [router]);
 
   return (
-    <div className="flex min-h-dvh flex-col bg-white font-sans">
+    <div className="flex min-h-dvh flex-col bg-[#f1f0f5] font-sans">
       <div className="mx-auto flex w-full max-w-[640px] flex-1 flex-col">
         <div
           className={`kyc-pending-hero-card relative isolate mx-auto flex min-h-0 w-full flex-1 flex-col ${HERO_MIN_HEIGHT}`}
@@ -178,7 +179,7 @@ export function KycVerificationFailedScreen() {
               </div>
               {copy.infoBoxBoldPrefix != null || copy.infoBox != null ? (
                 <div
-                  className={`mt-6 flex items-center gap-3 rounded-2xl border border-[#E8E8E8] bg-white px-3 py-3 text-left transition-opacity ${HERO_FADE_DURATION_CLASS} ease-out ${
+                  className={`mt-6 flex items-center gap-3 rounded-2xl bg-white card-elevated px-3 py-3 text-left transition-opacity ${HERO_FADE_DURATION_CLASS} ease-out ${
                     showSubline ? "opacity-100" : "opacity-0"
                   }`}
                   aria-hidden={!showSubline}
@@ -207,14 +208,16 @@ export function KycVerificationFailedScreen() {
             </div>
 
             <div className="mt-auto w-full pt-8">
-              <p
-                className={`text-center text-xs font-medium leading-[18px] text-[#d16900] transition-opacity ${HERO_FADE_DURATION_CLASS} ease-out ${
+              <div
+                className={`transition-opacity ${HERO_FADE_DURATION_CLASS} ease-out ${
                   showWarning ? "opacity-100" : "opacity-0"
                 }`}
                 aria-hidden={!showWarning}
               >
-                {KYC_VERIFICATION_FAILED_CTA_WARNING}
-              </p>
+                <ShimmerInfoCard icon="alert">
+                  {KYC_VERIFICATION_FAILED_CTA_WARNING}
+                </ShimmerInfoCard>
+              </div>
               <button
                 type="button"
                 className={`primary-cta mt-4 transition-opacity ${HERO_FADE_DURATION_CLASS} ease-out focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#121212]/30 focus-visible:ring-offset-2 ${

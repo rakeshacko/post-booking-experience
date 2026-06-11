@@ -12,6 +12,7 @@ import {
   writeExperienceFlow,
   type ExperienceFlow,
 } from "@/lib/experience-flow";
+import { resetChangePolicy } from "@/lib/change-policy";
 import { resetKycVerificationFailureCount } from "@/lib/kyc-verification-attempts";
 import { QUOTE_ASSETS } from "./quote-assets";
 
@@ -59,6 +60,7 @@ export function QuoteScreen() {
     (flow: ExperienceFlow) => {
       writeExperienceFlow(flow);
       resetKycVerificationFailureCount();
+      resetChangePolicy();
       setActiveFlow(flow);
       const entryPath = getExperienceFlowDefinition(flow).entryPath;
       router.replace(entryPath);
@@ -67,7 +69,7 @@ export function QuoteScreen() {
   );
 
   return (
-    <div className="relative min-h-dvh bg-[var(--color-surface-elevated)] pb-[140px]">
+    <div className="relative min-h-dvh bg-[#f1f0f5] pb-[140px]">
       {/* Floating flow menu — sits above header / content */}
       <div className="pointer-events-none absolute inset-x-0 top-0 z-30 mx-auto max-w-[640px] px-5 pt-4">
         <div className="pointer-events-auto">
@@ -116,7 +118,7 @@ export function QuoteScreen() {
 
       <div className="relative z-[2] mx-auto w-full max-w-[640px] -mt-16 px-5">
         {/* Price hero card */}
-        <section className="overflow-hidden rounded-xl border border-[var(--quote-border-light)] bg-white shadow-sm tabular-nums">
+        <section className="overflow-hidden rounded-xl bg-white card-elevated tabular-nums">
           <div className="px-3 pb-2 pt-5 text-center">
             <p className="text-sm leading-5 text-[var(--quote-text-body)]">
               Your ACKO Drive price for Bengaluru
@@ -155,7 +157,7 @@ export function QuoteScreen() {
         </h2>
         <button
           type="button"
-          className="flex w-full cursor-pointer items-center gap-5 rounded-xl border border-[var(--quote-border-light)] bg-white px-3 py-4 text-left transition-colors hover:bg-[#fafafa] active:bg-[#f5f5f5]"
+          className="flex w-full cursor-pointer items-center gap-5 rounded-xl bg-white card-elevated px-3 py-4 text-left transition-colors hover:bg-[#fafafa] active:bg-[#f5f5f5]"
         >
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium text-[#121212]">3 year</p>
@@ -193,7 +195,7 @@ export function QuoteScreen() {
         <h2 className="mb-3 mt-10 text-base font-semibold leading-[22px] text-[#121212]">
           Price quote
         </h2>
-        <div className="overflow-hidden rounded-xl border border-[var(--quote-border-light)] bg-white tabular-nums">
+        <div className="overflow-hidden rounded-xl bg-white card-elevated tabular-nums">
           <div className="flex items-start justify-between gap-2 px-3 py-4">
             <span className="text-sm text-[#121212]">Ex-Showroom Price</span>
             <span className="shrink-0 text-sm font-medium text-[#121212]">
@@ -371,29 +373,33 @@ export function QuoteScreen() {
           </div>
         </div>
 
-        {/* Cancellation policy */}
+        {/* Cancellation policy — mirrors the booking policy: confirmation is the lock point */}
         <h2 className="mb-3 mt-10 text-base font-semibold leading-[22px] text-[#121212]">
           Cancellation policy
         </h2>
         <div className="overflow-hidden rounded-xl border border-[var(--quote-border-light)]">
           <div className="flex border-b border-[var(--quote-border-light)]">
             <div className="w-[128px] shrink-0 border-r border-[var(--quote-border-light)] bg-[var(--quote-nested-bg)] p-4 text-sm text-[#121212]">
-              Before
-              <br />
-              car allocation
+              Before your car is confirmed
             </div>
-            <div className="flex flex-1 items-center p-4 text-sm font-medium text-[#121212]">
-              No cancellation fee
+            <div className="flex flex-1 items-center p-4 text-sm font-medium text-[var(--quote-green)]">
+              Free — every rupee comes back
+            </div>
+          </div>
+          <div className="flex border-b border-[var(--quote-border-light)]">
+            <div className="w-[128px] shrink-0 border-r border-[var(--quote-border-light)] bg-[var(--quote-nested-bg)] p-4 text-sm text-[#121212]">
+              After your car is confirmed
+            </div>
+            <div className="flex flex-1 items-center p-4 text-sm font-medium text-[var(--quote-red)]">
+              50% of whatever you&apos;ve paid is retained
             </div>
           </div>
           <div className="flex">
             <div className="w-[128px] shrink-0 border-r border-[var(--quote-border-light)] bg-[var(--quote-nested-bg)] p-4 text-sm text-[#121212]">
-              After
-              <br />
-              car allocation
+              If we can&apos;t deliver
             </div>
-            <div className="flex flex-1 items-center p-4 text-sm font-medium text-[var(--quote-red)]">
-              ₹3000 cancellation fee
+            <div className="flex flex-1 items-center p-4 text-sm font-medium text-[var(--quote-green)]">
+              100% refund — our failure is never your cost
             </div>
           </div>
         </div>
@@ -414,9 +420,13 @@ export function QuoteScreen() {
             unoptimized
           />
           <div className="min-w-0 text-xs leading-[18px]">
-            <p className="font-medium text-[#121212]">What is car allocation?</p>
+            <p className="font-medium text-[#121212]">
+              When does &ldquo;confirmed&rdquo; happen?
+            </p>
             <p className="mt-1 text-[var(--quote-text-body)]">
-              Assigning a specific car to customer selection during the waiting period
+              After your paperwork clears and we lock your exact car with a dealer — you&apos;ll
+              be told clearly before that happens. Until then you can walk away free, and even
+              after, you can change colour or model once for ₹5,000 instead of cancelling.
             </p>
           </div>
         </div>
@@ -436,26 +446,6 @@ export function QuoteScreen() {
           </svg>
         </button>
 
-        {/* Disclaimer */}
-        <section
-          className="mt-8 rounded-xl px-1 py-6"
-          style={{ background: "var(--quote-disclaimer-bg)" }}
-        >
-          <h3 className="text-base font-semibold leading-[22px] text-[#121212]">
-            Things you should know before proccessing
-          </h3>
-          <p className="mt-3 text-sm leading-5 text-[var(--quote-text-body)]">
-            The above deal holds true in the case of the customer purchasing all the components
-            together as per ACKO Drive&apos;s policies. In the event of a customer not taking
-            all the components of the deal as mention...{" "}
-            <button
-              type="button"
-              className="cursor-pointer font-medium text-[var(--quote-link)] underline-offset-2 transition-opacity hover:opacity-80 hover:underline active:opacity-100"
-            >
-              Read more
-            </button>
-          </p>
-        </section>
       </div>
 
       {/* Sticky footer */}

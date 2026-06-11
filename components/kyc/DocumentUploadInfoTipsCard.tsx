@@ -14,7 +14,7 @@ type DocumentUploadInfoTipsCardProps = {
 
 export function DocumentUploadInfoTipsCard({ tips }: DocumentUploadInfoTipsCardProps) {
   return (
-    <div className="rounded-2xl bg-[#f5f5f5] px-4 py-4">
+    <div className="rounded-2xl bg-[#f5f5f5] px-4 py-3.5">
       <ul className="flex flex-col gap-2">
         {tips.map((tip) => (
           <li key={tip} className="flex items-start gap-2 text-left">

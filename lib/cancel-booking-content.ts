@@ -29,9 +29,9 @@ export const CANCEL_BOOKING_STILL_CANCEL_PROMPT = "Still want to cancel?";
 export const CANCEL_BOOKING_CONFIRM_CTA = "Yes, cancel my booking";
 
 export const CANCEL_BOOKING_REASON_SHEET_TITLE =
-  "Before you go, tell us what went wrong?";
+  "Before you go — tell me what went wrong?";
 
-export const CANCEL_BOOKING_REASON_SHEET_CTA = "Cancel my booking";
+export const CANCEL_BOOKING_REASON_SHEET_CTA = "Yes, cancel it";
 
 export type CancelBookingReasonId =
   | "better_deal"

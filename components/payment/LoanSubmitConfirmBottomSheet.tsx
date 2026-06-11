@@ -42,8 +42,8 @@ const BEFORE_YOU_CONTINUE_POINTS: readonly ReactNode[] = [
   </>,
   <>
     The insurance amount of{" "}
-    <span className="font-semibold">{formatInr(FULL_PAYMENT_INSURANCE_INR)}</span> is payable after
-    your loan is disbursed
+    <span className="font-semibold">{formatInr(FULL_PAYMENT_INSURANCE_INR)}</span> is due just
+    before delivery, for RTO registration
   </>,
   <>
     The bank will disburse the loan amount to the dealer after down payment is completed

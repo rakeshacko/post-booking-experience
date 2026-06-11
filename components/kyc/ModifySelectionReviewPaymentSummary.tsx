@@ -76,7 +76,7 @@ export function ModifySelectionReviewPaymentSummary({
         Price summary
       </h2>
 
-      <div className="mt-3 overflow-hidden rounded-2xl border border-[#e8e8e8] bg-white">
+      <div className="mt-3 overflow-hidden rounded-2xl bg-white card-elevated">
         <div className="px-4 py-4">
         <div className="flex items-center justify-between gap-2">
           <span className="text-sm leading-5 text-[#121212]">Ex-showroom price</span>

@@ -34,7 +34,7 @@ export function CancelBookingCarCard({ details }: CancelBookingCarCardProps) {
   const deliveryParts = splitBookingDeliveryLine(details.deliveryLine);
 
   return (
-    <div className="flex h-[110px] w-full items-center gap-3 overflow-hidden rounded-2xl border border-[#e8e8e8] bg-white px-3">
+    <div className="flex h-[110px] w-full items-center gap-3 overflow-hidden rounded-2xl bg-white card-elevated px-3">
       <div className="relative h-12 w-[84px] shrink-0 overflow-hidden">
         <Image
           src={carCutoutSrc}

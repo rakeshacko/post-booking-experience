@@ -65,12 +65,12 @@ export function CancelBookingConfirmScreen() {
   );
 
   return (
-    <div className="relative min-h-dvh bg-white font-sans">
+    <div className="relative min-h-dvh bg-[#f1f0f5] font-sans">
       <div className="relative z-10 mx-auto flex w-full max-w-[640px] flex-1 flex-col">
         <KycTopNavHeader onBack={onGoBack} transparent />
 
         <main className="flex min-h-0 flex-1 flex-col pb-[max(2rem,env(safe-area-inset-bottom))]">
-          <section className="bg-gradient-to-b from-white to-[#f5f5f5] px-5 pt-2 pb-5">
+          <section className="px-5 pt-2 pb-5">
             <p
               className="payment-success-stagger text-base font-medium leading-6 text-[#D16900]"
               style={{ animationDelay: `${STAGGER_OVERLINE_MS}ms` }}

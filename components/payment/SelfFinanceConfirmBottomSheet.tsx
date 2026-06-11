@@ -125,7 +125,7 @@ export function SelfFinanceConfirmBottomSheet({
               id="self-finance-things-to-know-title"
               className={`mt-[24px] ${bottomSheetTitleWidthWithIllustration} text-left text-[20px] font-semibold leading-[1.35] tracking-[-0.1px] text-[#121212]`}
             >
-              Here is how self finance works
+              Here is how your own bank loan works
             </h2>
 
             <div id="self-finance-how-it-works" className="mt-4">

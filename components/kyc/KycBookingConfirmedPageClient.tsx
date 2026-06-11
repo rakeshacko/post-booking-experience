@@ -3,11 +3,18 @@
 import { useLayoutEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
+import { ConciergeMoment } from "@/components/concierge/ConciergeMoment";
 import { KycBookingConfirmedScreen } from "@/components/kyc/KycBookingConfirmedScreen";
 import {
   syncModifySelectionBookingSnapshot,
   type ActiveBookingSnapshot,
 } from "@/lib/active-booking-snapshot";
+import {
+  clearChangeEntryStage,
+  readChangeEntryStage,
+  recordPostLockChangeUsed,
+} from "@/lib/change-policy";
+import { isModifyWithChargesFlow } from "@/lib/experience-flow";
 import {
   BOOKING_LOCK_AMOUNT_INR,
   MODIFY_SELECTION_RETURN_SOURCE,
@@ -36,12 +43,23 @@ export function KycBookingConfirmedPageClient() {
       return;
     }
     setActiveBooking(syncModifySelectionBookingSnapshot(variant, paidAmountInr));
+    // One-time change rule (policy §1.9): a post-lock change consumes the allowance.
+    if (readChangeEntryStage() === "post" || isModifyWithChargesFlow()) {
+      recordPostLockChangeUsed();
+    }
+    clearChangeEntryStage();
   }, [afterModifySelection, paidAmountInr, variant]);
 
   const paymentPaidInr = useMemo(
     () => (variant === "payment" ? paidAmountInr : undefined),
     [variant, paidAmountInr],
   );
+
+  // Spine (no checkout return) — the concierge “car reserved” turn.
+  // Checkout returns (initial lock legacy + modify-selection) keep the celebration screen.
+  if (variant === "default" && !afterModifySelection) {
+    return <ConciergeMoment moment="carReserved" />;
+  }
 
   return (
     <KycBookingConfirmedScreen

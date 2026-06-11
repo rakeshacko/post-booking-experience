@@ -1,3 +1,4 @@
+import { readChangeEntryStage } from "@/lib/change-policy";
 import { isModifyWithChargesFlow } from "@/lib/experience-flow";
 import type { ModifySelectionColourOption } from "@/lib/modify-selection-colours-content";
 import {
@@ -60,9 +61,12 @@ export function buildModifySelectionColourReviewPaySummary(
 
   const newBookingAmountInr = MODIFY_SELECTION_NEW_BOOKING_AMOUNT_INR;
   const bookingAmountPaidInr = MODIFY_SELECTION_BOOKING_AMOUNT_PAID_INR;
-  const changeSelectionFeeInr = isModifyWithChargesFlow()
-    ? MODIFY_BOOKING_CHANGE_FEE_INR
-    : 0;
+  // ₹5,000 one-time change fee applies after Booking Confirmation (policy §1.9):
+  // modify-with-charges demo flow, or express/standard entering post-lock.
+  const changeSelectionFeeInr =
+    isModifyWithChargesFlow() || readChangeEntryStage() === "post"
+      ? MODIFY_BOOKING_CHANGE_FEE_INR
+      : 0;
   const bookingAmountToPayInr =
     Math.max(0, newBookingAmountInr - bookingAmountPaidInr) + changeSelectionFeeInr;
 

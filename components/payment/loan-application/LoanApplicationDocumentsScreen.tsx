@@ -41,7 +41,7 @@ export function LoanApplicationDocumentsScreen() {
       <main className={LOAN_APPLICATION_MAIN_CLASS}>
         <LoanApplicationPageStagger delayMs={LOAN_APPLICATION_STAGGER_MS.title}>
           <h1 className={LOAN_APPLICATION_PAGE_TITLE_CLASS}>
-            Upload your financial documents
+            Last bits of paper — what the bank needs from you
           </h1>
         </LoanApplicationPageStagger>
 

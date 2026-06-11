@@ -128,7 +128,7 @@ export function LoanApplicationReferencesScreen() {
       <main className={LOAN_APPLICATION_MAIN_CLASS}>
         <LoanApplicationPageStagger delayMs={LOAN_APPLICATION_STAGGER_MS.title}>
           <h1 className={LOAN_APPLICATION_PAGE_TITLE_CLASS}>
-            Share two people we can contact if needed
+            Two people who can vouch for you — the bank&apos;s standard ask
           </h1>
         </LoanApplicationPageStagger>
 

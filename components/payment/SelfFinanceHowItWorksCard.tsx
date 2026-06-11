@@ -20,7 +20,7 @@ export function SelfFinanceHowItWorksCard({
       className={
         isEmbedded
           ? "w-full rounded-2xl bg-[#f5f5f5] p-5"
-          : "w-full rounded-2xl border border-[#E8E8E8] bg-white p-5 shadow-[0_4px_16px_rgba(0,0,0,0.06)]"
+          : "w-full rounded-2xl bg-white card-elevated p-5"
       }
     >
       {showTitle && (

@@ -1,19 +1,15 @@
-import { KycBookingProcessingScreen } from "@/components/kyc/KycBookingProcessingScreen";
+import { ConciergeMoment } from "@/components/concierge/ConciergeMoment";
 import { ModifyNoChargesGatedPage } from "@/components/kyc/ModifyNoChargesGatedPage";
 import { FadePageTransition } from "@/components/ui/page-transition";
-import { JOURNEY_PATHS } from "@/lib/journey-routes";
 
 /**
- * Post-documents booking processing — Figma node 1880:6887.
+ * Dealer search — verified; Shivi is out finding the exact car.
  */
 export default function KycProcessingPage() {
   return (
     <ModifyNoChargesGatedPage>
       <FadePageTransition>
-        <KycBookingProcessingScreen
-          nextHref={JOURNEY_PATHS.kyc.bookingAccepted}
-          prefetchHref={JOURNEY_PATHS.kyc.bookingAccepted}
-        />
+        <ConciergeMoment moment="dealerSearch" />
       </FadePageTransition>
     </ModifyNoChargesGatedPage>
   );

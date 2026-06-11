@@ -5,7 +5,6 @@ import { useCallback, useMemo, useState } from "react";
 
 import { KycBookingProcessingScreen } from "@/components/kyc/KycBookingProcessingScreen";
 import { AckoDriveBankPartnerRow } from "@/components/payment/AckoDriveBankPartnerRow";
-import { AckoDriveFinanceSuccessLottie } from "@/components/payment/AckoDriveFinanceSuccessLottie";
 import { AckoDriveLoanDocumentsHint } from "@/components/payment/AckoDriveLoanDocumentsHint";
 import {
   ackoDriveFinanceActionPath,
@@ -15,8 +14,11 @@ import { loanApplicationEntryPath } from "@/lib/loan-application-urls";
 import { BankSelectionBottomSheet } from "@/components/payment/BankSelectionBottomSheet";
 import { LoanProcessingWhatsNext } from "@/components/payment/LoanProcessingWhatsNext";
 
-const HEADLINE_LINE_1 = "You're financing with";
-const HEADLINE_LINE_2 = "ACKO Drive";
+const HEADLINE_LINE_1 = "Good choice — I'll run";
+const HEADLINE_LINE_2 = "your loan from here.";
+
+const SUBLINE =
+  "I take your application to the bank, chase the approval, and keep you posted at every step. Keep these documents handy and we can start right now.";
 
 /**
  * ACKO Drive finance — action step after celebration confirmation.
@@ -59,12 +61,11 @@ export function AckoDriveFinanceActionScreen() {
         headline={HEADLINE_LINE_1}
         headlineLine2={HEADLINE_LINE_2}
         belowHeadline={belowHeadline}
-        subline=""
-        heroIllustrationSlot={<AckoDriveFinanceSuccessLottie />}
+        subline={SUBLINE}
         heroSummaryCard={heroSummaryCard}
         nextHref={uploadHref}
         prefetchHref={uploadHref}
-        nextCtaLabel="Continue with loan application"
+        nextCtaLabel="Start my loan application"
         whatsNextCard={whatsNextCard}
         manageBookingShowVehicleIdentification
       />

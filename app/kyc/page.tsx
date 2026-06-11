@@ -1,9 +1,9 @@
-import { KycPendingScreen } from "@/components/kyc/KycPendingScreen";
+import { ConciergeVerifyIdentityScreen } from "@/components/concierge/ConciergeVerifyIdentityScreen";
 
 /**
- * KYC verification (pending) — [Figma 2179:8512](https://www.figma.com/design/nW5SWmJdxxsCEDlqBN7C0L/Post-booking-experience?node-id=2179-8512).
- * Omit `HeroPageTransition`: its upward slide duplicated motion and felt like the page loading bottom-to-top.
+ * Identity turn — Shivi asks for PAN + Aadhaar and collects them inline.
+ * (Shivi is introduced on arrival at `/payment/booking-success`.)
  */
 export default function KycPage() {
-  return <KycPendingScreen />;
+  return <ConciergeVerifyIdentityScreen />;
 }

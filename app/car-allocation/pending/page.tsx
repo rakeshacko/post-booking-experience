@@ -1,13 +1,13 @@
-import { CarAllocationPendingPageClient } from "@/components/kyc/CarAllocationPendingPageClient";
+import { ConciergeMoment } from "@/components/concierge/ConciergeMoment";
 import { ModifyNoChargesGatedPage } from "@/components/kyc/ModifyNoChargesGatedPage";
 
 /**
- * After booking celebration “Okay” — same shell as `/kyc/processing`; Next → allocation confirmed.
+ * Exact-unit assignment underway — Shivi pushes the dealer for fresh stock.
  */
 export default function CarAllocationPendingPage() {
   return (
     <ModifyNoChargesGatedPage>
-      <CarAllocationPendingPageClient />
+      <ConciergeMoment moment="allocationPending" />
     </ModifyNoChargesGatedPage>
   );
 }

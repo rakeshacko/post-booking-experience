@@ -52,7 +52,7 @@ export function DownPaymentSummaryCard({
 
   return (
     <section
-      className="w-full rounded-xl border border-[#e8e8e8] bg-white px-3 py-3 text-left"
+      className="w-full rounded-xl bg-white card-elevated px-3 py-3 text-left"
       aria-label={ariaLabel}
     >
       <dl className="m-0 flex flex-col gap-[12px]">

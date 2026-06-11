@@ -210,8 +210,8 @@ export function WhatsNextTimeline({
 
   const sectionClassName =
     variant === "compact"
-      ? "rounded-2xl border border-[#e8e8e8] bg-white p-4"
-      : "rounded-2xl border border-[#e8e8e8] bg-white px-5 py-6 shadow-[0_2px_8px_-2px_rgba(54,53,76,0.06)]";
+      ? "rounded-2xl bg-white card-elevated p-4"
+      : "rounded-2xl bg-white card-elevated px-5 py-6";
   const rowGapClass = variant === "compact" ? "gap-y-3" : "gap-y-4";
 
   const timelineRail = (

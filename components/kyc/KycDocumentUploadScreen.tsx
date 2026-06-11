@@ -10,6 +10,7 @@ import {
   KYC_UPLOAD_SUBMIT_LABEL,
 } from "@/components/kyc/kyc-upload-content";
 import { PaymentSuccessStagger } from "@/components/ui/stagger-container";
+import { writeConciergeEcho } from "@/lib/concierge/echo";
 import {
   createEmptyKycUploads,
   readKycUploadState,
@@ -53,6 +54,7 @@ export function KycDocumentUploadScreen() {
 
   const handleSubmit = useCallback(() => {
     if (!canSubmit) return;
+    writeConciergeEcho("Documents sent");
     router.push("/kyc/documents-received");
   }, [canSubmit, router]);
 
@@ -66,7 +68,7 @@ export function KycDocumentUploadScreen() {
   );
 
   return (
-    <div className="min-h-dvh bg-white font-sans">
+    <div className="min-h-dvh bg-[#f1f0f5] font-sans">
       <KycTopNavHeader />
 
       <main className="mx-auto w-full max-w-[640px] px-5 pb-32 pt-2">

@@ -80,7 +80,7 @@
   --type-caption-size: 12px;
   --type-caption-leading: 16px;
 
-  --color-surface: #fbfbfb;
+  --color-surface: #f1f0f5;
   --color-surface-elevated: #ffffff;
   --color-border-subtle: #e0e0e1;
   --color-border-strong: #cccccd;
@@ -224,6 +224,129 @@ body {
   animation: payment-success-fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
+/* Concierge — user reply echo chip (your last words, landing on the next turn) */
+@keyframes concierge-echo-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.concierge-echo-in {
+  animation: concierge-echo-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .concierge-echo-in {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Concierge — soft reply (secondary answer to Shivi; white, quiet) */
+.reply-soft-cta {
+  display: flex;
+  height: 48px;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  border: 1px solid #e8e8e8;
+  background-color: #ffffff;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  color: #121212;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.12s ease;
+}
+.reply-soft-cta:hover {
+  background-color: #fafafa;
+  border-color: #d9d9d9;
+}
+.reply-soft-cta:active {
+  background-color: #f5f5f5;
+  transform: scale(0.99);
+}
+
+/* Concierge — next-step card attention sweep */
+@keyframes next-step-shimmer-sweep {
+  0% {
+    left: -70%;
+  }
+  55% {
+    left: 130%;
+  }
+  100% {
+    left: 130%;
+  }
+}
+
+.next-step-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.next-step-shimmer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -70%;
+  width: 55%;
+  background: linear-gradient(
+    105deg,
+    transparent,
+    rgba(255, 255, 255, 0.7),
+    transparent
+  );
+  transform: skewX(-12deg);
+  animation: next-step-shimmer-sweep 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .next-step-shimmer::after {
+    animation: none;
+    display: none;
+  }
+}
+
+/* Concierge — demo time-skip pill (prototype chrome, not product UI) */
+.time-skip-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 9999px;
+  border: 1px dashed #c2c2c2;
+  background-color: rgb(255 255 255 / 0.8);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: #757575;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    background-color 0.15s ease;
+}
+.time-skip-chip:hover {
+  border-color: #8f8f8f;
+  color: #4b4b4b;
+  background-color: #ffffff;
+}
+
 /* Choose loan — down payment range (Figma 2111:7963: grey track, dark fill, white thumb + border) */
 .choose-loan-down-range {
   -webkit-appearance: none;
@@ -351,6 +474,13 @@ body {
 }
 .cta-ghost-on-dark:active {
   background-color: rgb(255 255 255 / 0.16);
+}
+
+/* Elevated white card — replaces hairline outlines on the #f1f0f5 page surface */
+.card-elevated {
+  box-shadow:
+    0 1px 2px rgb(18 18 18 / 0.03),
+    0 4px 14px rgb(18 18 18 / 0.04);
 }
 
 /* KYC pending — hero content column (Figma: Surface-White + elevation shadow) */

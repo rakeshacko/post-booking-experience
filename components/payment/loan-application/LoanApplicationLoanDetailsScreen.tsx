@@ -61,11 +61,12 @@ export function LoanApplicationLoanDetailsScreen() {
     const isFresh = searchParams.get("fresh") === "1";
     if (isFresh) {
       freshHandledRef.current = true;
-      persist(createDefaultLoanApplicationState());
-      setEmploymentType(null);
-      setLoanAmountInr(0);
-      setLoanAmountInput("");
-      setTenureMonths(0);
+      const next = createDefaultLoanApplicationState();
+      persist(next);
+      setEmploymentType(next.loanDetails.employmentType);
+      setLoanAmountInr(next.loanDetails.loanAmountInr);
+      setLoanAmountInput(formatInrAmountDigits(next.loanDetails.loanAmountInr));
+      setTenureMonths(next.loanDetails.tenureMonths);
       router.replace(loanApplicationPath(bankId, "loan-details"));
       return;
     }
@@ -110,7 +111,7 @@ export function LoanApplicationLoanDetailsScreen() {
     <LoanApplicationShell currentRoute="loan-details">
       <main className={LOAN_APPLICATION_MAIN_CLASS}>
         <LoanApplicationPageStagger delayMs={LOAN_APPLICATION_STAGGER_MS.title}>
-          <h1 className={LOAN_APPLICATION_PAGE_TITLE_CLASS}>Provide your finance details</h1>
+          <h1 className={LOAN_APPLICATION_PAGE_TITLE_CLASS}>First, the loan itself — how much and how long?</h1>
         </LoanApplicationPageStagger>
 
         <LoanApplicationPageStagger
@@ -145,7 +146,7 @@ export function LoanApplicationLoanDetailsScreen() {
             <label htmlFor="loan-amount-input" className="sr-only">
               Loan amount in rupees
             </label>
-            <div className="flex h-12 w-full items-center rounded-lg border border-[#e8e8e8] bg-white px-4">
+            <div className="flex h-12 w-full items-center rounded-lg bg-white card-elevated px-4">
               <span
                 className={`shrink-0 ${LOAN_APPLICATION_CONTROL_TEXT_CLASS} text-[#040222]`}
                 aria-hidden

@@ -36,7 +36,7 @@ export function ModifySelectionReviewBookingAmountCard({
         {MODIFY_SELECTION_BOOKING_AMOUNT_SUMMARY_HEADING}
       </h2>
 
-      <div className="mt-3 overflow-hidden rounded-2xl border border-[#e8e8e8] bg-white">
+      <div className="mt-3 overflow-hidden rounded-2xl bg-white card-elevated">
         <div className="px-4 py-4">
           <div className="flex items-center justify-between gap-2">
             <span className="text-sm leading-5 text-[#121212]">New booking amount</span>
@@ -54,7 +54,7 @@ export function ModifySelectionReviewBookingAmountCard({
 
           {summary.changeSelectionFeeInr > 0 ? (
             <div className="mt-4 flex items-center justify-between gap-2">
-              <span className="text-sm leading-5 text-[#121212]">Booking change fee</span>
+              <span className="text-sm leading-5 text-[#121212]">One-time change fee</span>
               <span className="text-sm font-medium leading-5 text-[#121212]">
                 {formatModifySelectionInr(summary.changeSelectionFeeInr)}
               </span>

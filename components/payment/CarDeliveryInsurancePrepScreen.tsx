@@ -9,11 +9,11 @@ import { LoanProcessingWhatsNext } from "@/components/payment/LoanProcessingWhat
 import { useFullPaymentJourney } from "@/components/payment/use-full-payment-journey";
 import { ZeroDepInsuranceCoverageCard } from "@/components/payment/ZeroDepInsuranceCoverageCard";
 
-const HEADLINE = "We're setting up your car insurance, Sharath!";
-const INSURANCE_PREP_DAY_RANGE = "2–3";
-const SUBLINE = `We're insuring your car. This usually takes ${INSURANCE_PREP_DAY_RANGE} days.`;
+const HEADLINE = "You're covered, Sharath ✓";
+const SUBLINE =
+  "Issued the moment your payment landed — insurance is us, after all. Zero depreciation, active from today. Next, I take your registration file to the RTO.";
 
-/** After down-payment / disbursement messaging — delivery prep + insurance (hero card + timeline). */
+/** Policy issued instantly (ACKO is the insurer) — news turn, then on to the RTO wait. */
 export function CarDeliveryInsurancePrepScreen() {
   const searchParams = useSearchParams();
   const { isFullPayment, withBank } = useFullPaymentJourney();
@@ -34,11 +34,14 @@ export function CarDeliveryInsurancePrepScreen() {
     <KycBookingProcessingScreen
       headline={HEADLINE}
       subline={SUBLINE}
+      callLabel="Questions about coverage? I can call you"
       heroIllustrationSrc={KYC_ASSETS.insuranceInProgressHero}
       nextHref={withBank("/payment/car-delivery-rto")}
       prefetchHref={withBank("/payment/car-delivery-rto")}
-      nextCtaLabel="Next"
-      heroSummaryCard={<ZeroDepInsuranceCoverageCard />}
+      nextCtaLabel="On to the RTO"
+      heroSummaryCard={
+        <ZeroDepInsuranceCoverageCard description="Your car is covered by ACKO Drive Shield — zero depreciation plus 5 add-ons, only on ACKO Drive." />
+      }
       whatsNextCard={whatsNextCard}
     />
   );

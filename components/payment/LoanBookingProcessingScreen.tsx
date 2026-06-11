@@ -3,15 +3,13 @@
 import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 
+import { NextStepCard } from "@/components/concierge/artifacts";
+import { ShimmerInfoCard } from "@/components/ui/ShimmerInfoCard";
 import { bankForQueryParam } from "@/components/payment/acko-drive-finance-bank";
 import { KycBookingProcessingScreen } from "@/components/kyc/KycBookingProcessingScreen";
-import { KYC_ASSETS } from "@/components/kyc/kyc-assets";
 import { LoanProcessingWhatsNext } from "@/components/payment/LoanProcessingWhatsNext";
 
-const LOAN_PROCESSING_HEADLINE = "We're processing your loan application, Sharath!";
-
-const LOAN_PROCESSING_INFO_BODY =
-  "A bank representative will call you to verify a few details. Share the OTP when asked.";
+const LOAN_PROCESSING_HEADLINE = "Your application is with the bank.";
 
 function loanSanctionedHref(bank: string | null) {
   return bank
@@ -20,8 +18,9 @@ function loanSanctionedHref(bank: string | null) {
 }
 
 /**
- * Loan document flow — same layout as KYC booking processing (`/kyc/processing`).
- * “Next” goes to `/payment/loan-sanctioned` (preserves `?bank=` when present).
+ * Loan under review — bank reviews take days (honest time), and the bank's
+ * verification call is the user's pending action (NextStepCard with stakes).
+ * “Skip ahead” goes to `/payment/loan-sanctioned` (preserves `?bank=`).
  */
 export function LoanBookingProcessingScreen() {
   const searchParams = useSearchParams();
@@ -30,7 +29,7 @@ export function LoanBookingProcessingScreen() {
   const nextHref = loanSanctionedHref(bankId);
   const subline = useMemo(
     () =>
-      `${bank.name} will review your application. This usually takes 2-3 business days. We will reach out once your loan is approved.`,
+      `${bank.name} usually takes 2–3 business days to review. I'll chase them and message you the moment there's news. And if you're rethinking the bank or the amount — you get one free switch; just call me.`,
     [bank.name],
   );
 
@@ -38,10 +37,27 @@ export function LoanBookingProcessingScreen() {
     <KycBookingProcessingScreen
       headline={LOAN_PROCESSING_HEADLINE}
       subline={subline}
-      infoBox={{ body: LOAN_PROCESSING_INFO_BODY }}
-      heroIllustrationSrc={KYC_ASSETS.loanProcessingHero}
+      heroSummaryCard={
+        <div className="flex flex-col gap-4">
+          <NextStepCard
+            title={`Pick up ${bank.name}'s call`}
+            body="A bank representative will call to confirm a few details — share the OTP they ask for."
+            etaLabel="Expected within 2 business days"
+          />
+          <ShimmerInfoCard icon="alert">
+            Missed calls push the approval — and your delivery — out.
+          </ShimmerInfoCard>
+        </div>
+      }
       nextHref={nextHref}
       prefetchHref={nextHref}
+      altTimeSkip={{
+        label: "If the bank declines",
+        href: bankId
+          ? `/payment/loan-rejected?bank=${encodeURIComponent(bankId)}`
+          : "/payment/loan-rejected",
+      }}
+      callLabel="Anxious about the loan? I can call you"
       whatsNextCard={<LoanProcessingWhatsNext />}
       manageBookingShowVehicleIdentification
     />

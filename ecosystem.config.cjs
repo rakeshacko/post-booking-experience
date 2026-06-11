@@ -1,6 +1,6 @@
 /**
  * PM2 — keeps `next dev` running in the background (survives closing the terminal).
- * Port matches `package.json` → `npm run dev` (3000).
+ * Port 3100 — 3000 is occupied by another local project (animatedmockups).
  *
  * Usage:
  *   npm run dev:daemon        # start in background
@@ -13,9 +13,8 @@ module.exports = {
     {
       name: "post-booking-experience",
       cwd: __dirname,
-      script: "npm",
-      args: "run dev",
-      interpreter: "none",
+      script: "node_modules/next/dist/bin/next",
+      args: "dev --turbopack --port 3100",
       autorestart: true,
       max_restarts: 50,
       min_uptime: "10s",

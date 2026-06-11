@@ -1,13 +1,13 @@
-import { KycDocumentsReceivedScreen } from "@/components/kyc/KycDocumentsReceivedScreen";
+import { ConciergeMoment } from "@/components/concierge/ConciergeMoment";
 import { ModifyNoChargesGatedPage } from "@/components/kyc/ModifyNoChargesGatedPage";
 
 /**
- * KYC — documents submitted success (Figma node 1880:6801).
+ * Documents in — Shivi acknowledges and visibly starts the verification.
  */
 export default function KycDocumentsReceivedPage() {
   return (
     <ModifyNoChargesGatedPage>
-      <KycDocumentsReceivedScreen />
+      <ConciergeMoment moment="documentsReceived" />
     </ModifyNoChargesGatedPage>
   );
 }

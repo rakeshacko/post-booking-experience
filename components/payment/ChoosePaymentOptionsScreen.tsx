@@ -2,21 +2,46 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useCallback, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-import { GetHelpPillButton } from "@/components/kyc/GetHelpPillButton";
-import { KycTopNavHeader } from "@/components/kyc/KycTopNavHeader";
+import { ConciergeTurnShell } from "@/components/concierge/ConciergeTurnShell";
+import { bankForQueryParam } from "@/components/payment/acko-drive-finance-bank";
+import { writeConciergeEcho } from "@/lib/concierge/echo";
 import { BankSelectionBottomSheet } from "@/components/payment/BankSelectionBottomSheet";
 import { FullPaymentConfirmBottomSheet } from "@/components/payment/FullPaymentConfirmBottomSheet";
 import { SelfFinanceConfirmBottomSheet } from "@/components/payment/SelfFinanceConfirmBottomSheet";
 import {
+  BANK_DISBURSEMENT_INR,
+  DEFAULT_TENURE_MONTHS,
+  FULL_PAYMENT_CAR_AMOUNT_INR,
+} from "@/components/payment/loan-amount-demo-constants";
+import {
+  BANK_SHEET_OPTIONS,
   PARTNER_BANK_LOGOS,
   PAYMENT_CHOOSE_ASSETS,
 } from "@/components/payment/payment-choose-assets";
+import { estimateMonthlyEmiInr, parseAnnualRateFromLabel } from "@/lib/loan-emi";
 
-/** Stagger: nav + CTA immediate; then headline → each finance card in order (`payment-success-stagger` in globals). */
-const STAGGER_TITLE_MS = 90;
-const STAGGER_FIRST_OPTION_MS = 280;
+function formatInr(amount: number) {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(Math.max(0, Math.round(amount)));
+}
+
+/** Best partner-bank rate — the honest “EMI from” number on the fork. */
+const BEST_PARTNER_RATE = Math.min(
+  ...BANK_SHEET_OPTIONS.map((bank) => parseAnnualRateFromLabel(bank.rate)),
+);
+
+const ACKO_EMI_FROM_INR = estimateMonthlyEmiInr(
+  BANK_DISBURSEMENT_INR,
+  DEFAULT_TENURE_MONTHS,
+  BEST_PARTNER_RATE,
+);
+
+/** Stagger between option cards once the artifact reveals (`payment-success-stagger` in globals). */
 const STAGGER_OPTION_STEP_MS = 115;
 
 type PaymentOptionId = "acko_drive" | "self_finance" | "full_payment";
@@ -30,102 +55,201 @@ function RadioIndicator({ selected }: { selected: boolean }) {
   );
 }
 
-type OptionCardProps = {
-  id: PaymentOptionId;
-  selected: boolean;
-  onSelect: () => void;
-  illustrationSrc: string;
-  title: string;
-  children: ReactNode;
+type OptionStat = {
+  value: string;
+  caption: string;
 };
 
-function OptionCard({ id, selected, onSelect, illustrationSrc, title, children }: OptionCardProps) {
+/** Auto-advance cadence for the how-it-works slideshow. */
+const FLOW_SLIDE_MS = 2200;
+
+/**
+ * “How it works” as a one-line slideshow — steps cycle one at a time with
+ * position dots, inside a fixed-height strip so nothing jumps. Runs only on
+ * the selected card.
+ */
+function FlowStrip({
+  steps,
+  active,
+  bankLogosOnStep,
+}: {
+  steps: readonly string[];
+  active: boolean;
+  /** Show partner-bank marks beside this step (e.g. “You pick the bank”). */
+  bankLogosOnStep?: number;
+}) {
+  const [idx, setIdx] = useState(0);
+  const [reduceMotion, setReduceMotion] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const apply = () => setReduceMotion(mq.matches);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+
+  useEffect(() => {
+    if (!active) {
+      setIdx(0);
+      return;
+    }
+    const id = window.setInterval(
+      () => setIdx((i) => (i + 1) % steps.length),
+      reduceMotion ? FLOW_SLIDE_MS + 1300 : FLOW_SLIDE_MS,
+    );
+    return () => window.clearInterval(id);
+  }, [active, steps.length, reduceMotion]);
+
   return (
-    <button
-      type="button"
-      id={`payment-option-${id}`}
-      onClick={onSelect}
-      aria-pressed={selected}
-      className={`w-full rounded-2xl border p-[15px] text-left transition-colors ${
-        selected ? "border-[#121212] bg-[#F5F5F5]" : "border-[#e8e8e8] bg-white"
-      }`}
-    >
-      <div className="flex flex-col gap-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="relative h-12 w-12 shrink-0">
-            <Image
-              src={illustrationSrc}
-              alt=""
-              fill
-              className="object-contain"
-              unoptimized
-              sizes="48px"
-            />
-          </div>
-          <RadioIndicator selected={selected} />
-        </div>
-        <div className="min-w-0">
-          <p className="text-base font-medium leading-6 text-[#121212]">{title}</p>
-          <div className="mt-2">{children}</div>
+    <div className="flex h-5 items-center gap-3" aria-label="How it works">
+      <div className="min-w-0 flex-1 overflow-hidden">
+        <div
+          key={idx}
+          className={`flex items-center gap-2 ${reduceMotion ? "" : "kyc-stagger"}`}
+        >
+          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#efe9fb] text-[10px] font-semibold leading-none text-[#5920c5]">
+            {idx + 1}
+          </span>
+          <span className="min-w-0 truncate text-xs leading-5 text-[#4b4b4b]">{steps[idx]}</span>
+          {bankLogosOnStep === idx ? (
+            <span className="flex shrink-0 items-center gap-1">
+              {PARTNER_BANK_LOGOS.map((bank) => (
+                <span key={bank.alt} className="relative h-4 w-4" title={bank.alt}>
+                  <Image
+                    src={bank.src}
+                    alt={bank.alt}
+                    fill
+                    className="object-contain"
+                    unoptimized
+                    sizes="16px"
+                  />
+                </span>
+              ))}
+            </span>
+          ) : null}
         </div>
       </div>
-    </button>
-  );
-}
-
-function BulletList({ items }: { items: string[] }) {
-  return (
-    <ul className="list-disc space-y-1 pl-[18px] text-xs leading-[18px] text-[#4b4b4b]">
-      {items.map((line) => (
-        <li key={line}>{line}</li>
-      ))}
-    </ul>
-  );
-}
-
-/** Horizontal rule: 4px dash, 2px gap. */
-function PartnerBanksSeparator() {
-  return (
-    <div
-      className="h-px w-full"
-      style={{
-        backgroundImage:
-          "repeating-linear-gradient(90deg, #e8e8e8 0, #e8e8e8 4px, transparent 4px, transparent 6px)",
-      }}
-      aria-hidden
-    />
-  );
-}
-
-function PartnerBankMarks() {
-  return (
-    <div className="mt-3">
-      <PartnerBanksSeparator />
-      <div className="mt-3 flex flex-nowrap items-center gap-2 overflow-x-auto">
-        <p className="shrink-0 text-xs leading-[18px] text-[#4b4b4b]">Partner banks:</p>
-        {PARTNER_BANK_LOGOS.map((bank) => (
+      <div className="flex shrink-0 items-center gap-1" aria-hidden>
+        {steps.map((step, i) => (
           <span
-            key={bank.alt}
-            className="relative h-5 w-5 shrink-0"
-            title={bank.alt}
-          >
-            <Image
-              src={bank.src}
-              alt={bank.alt}
-              fill
-              className="object-contain"
-              unoptimized
-              sizes="20px"
-            />
-          </span>
+            key={step}
+            className={`h-1 rounded-full transition-all duration-300 ${
+              i === idx ? "w-3 bg-[#5920c5]" : "w-1 bg-[#d9d8de]"
+            }`}
+          />
         ))}
       </div>
     </div>
   );
 }
 
+type OptionCardProps = {
+  id: PaymentOptionId;
+  selected: boolean;
+  onSelect: () => void;
+  illustrationSrc: string;
+  title: string;
+  /** One-word positioning — “Easiest” / “Most control” / “Fastest”. */
+  chip?: string;
+  /** One sentence, Shivi's voice — what this path actually means for you. */
+  blurb: string;
+  /** The deciding numbers — visible before any tap. */
+  stats: readonly OptionStat[];
+  /** Micro process steps — slideshow in a thin strip when the card is selected. */
+  flow: readonly string[];
+  /** Show partner-bank marks beside this flow step. */
+  flowBankLogosOnStep?: number;
+};
+
+function OptionCard({
+  id,
+  selected,
+  onSelect,
+  illustrationSrc,
+  title,
+  chip,
+  blurb,
+  stats,
+  flow,
+  flowBankLogosOnStep,
+}: OptionCardProps) {
+  return (
+    <button
+      type="button"
+      id={`payment-option-${id}`}
+      onClick={onSelect}
+      aria-pressed={selected}
+      className={`w-full rounded-2xl border p-[15px] text-left transition-colors card-elevated ${
+        selected
+          ? "border-[#bda6e8] bg-white bg-gradient-to-b from-[#f4eefe] to-[#f4eefe]/0"
+          : "border-transparent bg-white"
+      }`}
+    >
+      <div className="flex items-start gap-3">
+        <div className="relative h-10 w-10 shrink-0 self-center">
+          <Image
+            src={illustrationSrc}
+            alt=""
+            fill
+            className="object-contain"
+            unoptimized
+            sizes="40px"
+          />
+        </div>
+        {/* Uniform two-line lockup (title, chip) so every card's header is the same height. */}
+        <div className="min-w-0 flex-1">
+          <p className="text-base font-semibold leading-6 text-[#121212]">{title}</p>
+          {chip ? (
+            <span className="mt-1 inline-flex rounded-full bg-[#efe9fb] px-2 py-0.5 text-[10px] font-semibold uppercase leading-4 tracking-[0.06em] text-[#5920c5]">
+              {chip}
+            </span>
+          ) : null}
+        </div>
+        <span className="mt-1 flex shrink-0">
+          <RadioIndicator selected={selected} />
+        </span>
+      </div>
+
+      <p className="mt-2.5 text-[13px] leading-[19px] text-[#4b4b4b]">{blurb}</p>
+
+      <div className="mt-3 flex">
+        {stats.map((stat, idx) => (
+          <div
+            key={stat.caption}
+            className={
+              idx > 0 ? "ml-4 min-w-0 border-l border-[#ececec] pl-4" : "min-w-0"
+            }
+          >
+            <p className="text-sm font-semibold leading-5 text-[#121212] tabular-nums">
+              {stat.value}
+            </p>
+            <p className="mt-0.5 text-[11px] leading-4 text-[#757575]">{stat.caption}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Selected → the thin how-it-works strip expands; collapsed cards stay compact. */}
+      <div
+        className={`grid transition-[grid-template-rows,opacity] duration-500 ease-in-out ${
+          selected ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+        }`}
+        aria-hidden={!selected}
+      >
+        <div className="overflow-hidden">
+          <div className="mt-3 border-t border-dashed border-[#dcdbe1] pt-3">
+            <FlowStrip steps={flow} active={selected} bankLogosOnStep={flowBankLogosOnStep} />
+          </div>
+        </div>
+      </div>
+    </button>
+  );
+}
+
 /**
- * Choose payment option — Figma Post-booking-experience / Payment options (1890:7959).
+ * Choose payment option — the money fork, as a Shivi turn: the remaining
+ * amount anchors the question, the three paths are the artifact, the reply
+ * adapts to the selection.
  */
 export function ChoosePaymentOptionsScreen() {
   const router = useRouter();
@@ -146,116 +270,120 @@ export function ChoosePaymentOptionsScreen() {
     setFullPaymentConfirmOpen(true);
   }, [choice]);
 
+  // Straight into Shivi's action turns — no “Payment option confirmed” interstitials.
   const onFullPaymentConfirm = useCallback(() => {
     setFullPaymentConfirmOpen(false);
-    router.push("/payment/full-payment-option-confirmed");
+    writeConciergeEcho("I'll pay in full");
+    router.push("/payment/full-payment-confirmed");
   }, [router]);
 
   const onSelfFinanceConfirm = useCallback(() => {
     setSelfFinanceConfirmOpen(false);
-    router.push("/payment/self-finance-confirmed");
+    writeConciergeEcho("I'll arrange the loan myself");
+    router.push("/payment/self-finance-action");
   }, [router]);
 
   const onBankSheetConfirm = useCallback((bankId: string) => {
     setBankSheetOpen(false);
-    router.push(`/payment/acko-drive-finance-confirmed?bank=${encodeURIComponent(bankId)}`);
+    writeConciergeEcho(`Let's finance via ${bankForQueryParam(bankId).name}`);
+    router.push(`/payment/acko-drive-finance-action?bank=${encodeURIComponent(bankId)}`);
   }, [router]);
 
   const ctaLabel =
     choice === "acko_drive"
-      ? "See bank options"
+      ? "Show me the bank options"
       : choice === "self_finance"
-        ? "Continue with Self finance"
-        : "Continue with Full payment";
+        ? "I'll use my own bank loan"
+        : "I'll pay in full";
 
   return (
-    <div className="min-h-dvh bg-[#FFFFFF] font-sans">
-      <KycTopNavHeader endSlot={<GetHelpPillButton />} />
+    <>
+      <ConciergeTurnShell
+        says={[
+          "How do you want to pay the remaining ₹13,63,780?",
+          "Pick what suits you — I'll make any of these painless.",
+        ]}
+        artifact={
+          <>
+            <div className="payment-success-stagger w-full">
+              <OptionCard
+                id="acko_drive"
+                selected={choice === "acko_drive"}
+                onSelect={() => setChoice("acko_drive")}
+                illustrationSrc={PAYMENT_CHOOSE_ASSETS.ackoDriveFinance}
+                title="Finance with ACKO Drive"
+                chip="Easiest"
+                blurb="You pick the bank, I run the entire loan — at rates I've already pushed down for you."
+                stats={[
+                  { value: "~2 days", caption: "to approval" },
+                  { value: `${formatInr(ACKO_EMI_FROM_INR)}/mo`, caption: "EMI from" },
+                ]}
+                flow={[
+                  "You pick the bank",
+                  "Apply in minutes",
+                  "Bank verifies & approves",
+                  "Pay your down payment",
+                  "Bank pays the dealer",
+                ]}
+                flowBankLogosOnStep={0}
+              />
+            </div>
 
-      <main className="mx-auto w-full max-w-[640px] px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-[8px]">
-        <h1
-          className="payment-success-stagger text-2xl font-semibold leading-8 tracking-tight text-[#121212]"
-          style={{ animationDelay: `${STAGGER_TITLE_MS}ms` }}
-        >
-          Choose how you want to pay
-        </h1>
-
-        <div className="mt-[20px] flex flex-col gap-4">
-          <div
-            className="payment-success-stagger w-full"
-            style={{ animationDelay: `${STAGGER_FIRST_OPTION_MS}ms` }}
-          >
-            <OptionCard
-              id="acko_drive"
-              selected={choice === "acko_drive"}
-              onSelect={() => setChoice("acko_drive")}
-              illustrationSrc={PAYMENT_CHOOSE_ASSETS.ackoDriveFinance}
-              title="Finance with ACKO Drive"
+            <div
+              className="payment-success-stagger w-full"
+              style={{ animationDelay: `${STAGGER_OPTION_STEP_MS}ms` }}
             >
-              <BulletList
-                items={[
-                  "We handle the entire loan process for you",
-                  "Pre-negotiated interest rates",
-                  "Faster approvals with minimal paperwork",
+              <OptionCard
+                id="self_finance"
+                selected={choice === "self_finance"}
+                onSelect={() => setChoice("self_finance")}
+                illustrationSrc={PAYMENT_CHOOSE_ASSETS.selfFinance}
+                title="Loan from your own bank"
+                chip="Most control"
+                blurb="Your bank, your terms — bring me the sanction letter and I take it from there."
+                stats={[
+                  { value: "5–7 days", caption: "typical bank approval" },
+                  { value: "Any bank", caption: "your relationship, your rate" },
+                ]}
+                flow={[
+                  "I hand you the invoice",
+                  "Your bank approves the loan",
+                  "Pay your down payment",
+                  "Your bank pays the dealer",
                 ]}
               />
-              <PartnerBankMarks />
-            </OptionCard>
-          </div>
+            </div>
 
-          <div
-            className="payment-success-stagger w-full"
-            style={{
-              animationDelay: `${STAGGER_FIRST_OPTION_MS + STAGGER_OPTION_STEP_MS}ms`,
-            }}
-          >
-            <OptionCard
-              id="self_finance"
-              selected={choice === "self_finance"}
-              onSelect={() => setChoice("self_finance")}
-              illustrationSrc={PAYMENT_CHOOSE_ASSETS.selfFinance}
-              title="Self finance"
+            <div
+              className="payment-success-stagger w-full"
+              style={{ animationDelay: `${2 * STAGGER_OPTION_STEP_MS}ms` }}
             >
-              <BulletList
-                items={[
-                  "Arrange a loan with your preferred bank",
-                  "Bring your own loan approval letter",
+              <OptionCard
+                id="full_payment"
+                selected={choice === "full_payment"}
+                onSelect={() => setChoice("full_payment")}
+                illustrationSrc={PAYMENT_CHOOSE_ASSETS.fullCash}
+                title="Pay in full — no loan"
+                chip="Fastest"
+                blurb="No loan, no EMI, no paperwork — pay and your car gets ready for delivery."
+                stats={[
+                  { value: formatInr(FULL_PAYMENT_CAR_AMOUNT_INR), caption: "due now" },
+                  { value: "No bank wait", caption: "fastest to delivery" },
+                ]}
+                flow={[
+                  "Pay — in parts or at once",
+                  "That’s the money done",
+                  "We get your car ready",
                 ]}
               />
-            </OptionCard>
-          </div>
-
-          <div
-            className="payment-success-stagger w-full"
-            style={{
-              animationDelay: `${STAGGER_FIRST_OPTION_MS + 2 * STAGGER_OPTION_STEP_MS}ms`,
-            }}
-          >
-            <OptionCard
-              id="full_payment"
-              selected={choice === "full_payment"}
-              onSelect={() => setChoice("full_payment")}
-              illustrationSrc={PAYMENT_CHOOSE_ASSETS.fullCash}
-              title="Full payment"
-            >
-              <BulletList
-                items={[
-                  "Pay the entire amount upfront",
-                  "No loan, no EMI, no paperwork",
-                ]}
-              />
-            </OptionCard>
-          </div>
-        </div>
-      </main>
-
-      <div className="fixed bottom-0 left-0 right-0 z-10 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_6px_0_rgba(54,53,76,0.08)]">
-        <div className="mx-auto w-full max-w-[640px] bg-white px-5 py-4">
-          <button type="button" onClick={onContinue} className="primary-cta w-full">
-            {ctaLabel}
-          </button>
-        </div>
-      </div>
+            </div>
+          </>
+        }
+        replies={[{ label: ctaLabel, onClick: onContinue, echo: null }]}
+        footnote="Your delivery date locks in once the money plan is set — best done now"
+        callLabel="Not sure? I can call you"
+        manageShowVehicleIdentification
+      />
 
       <BankSelectionBottomSheet
         open={bankSheetOpen}
@@ -274,6 +402,6 @@ export function ChoosePaymentOptionsScreen() {
         onClose={() => setFullPaymentConfirmOpen(false)}
         onConfirm={onFullPaymentConfirm}
       />
-    </div>
+    </>
   );
 }

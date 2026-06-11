@@ -12,17 +12,23 @@ export type BookingLockSuccessOptions = {
   returnSource?: string;
 };
 
-/** After booking-lock payment — celebration at `/kyc/booking-confirmed`. */
+/**
+ * After booking-lock payment.
+ * Initial lock (no `returnSource`) lands on the concierge arrival at
+ * `/payment/booking-success`; modify-selection returns keep the celebration
+ * at `/kyc/booking-confirmed`.
+ */
 export function buildBookingLockSuccessHref(
   paidInr: number,
   options?: BookingLockSuccessOptions,
 ): string {
   const q = new URLSearchParams();
-  q.set("source", "payment");
   q.set("paid", String(Math.round(paidInr)));
-  if (options?.returnSource) {
-    q.set("return_source", options.returnSource);
+  if (!options?.returnSource) {
+    return `/payment/booking-success?${q.toString()}`;
   }
+  q.set("source", "payment");
+  q.set("return_source", options.returnSource);
   return `/kyc/booking-confirmed?${q.toString()}`;
 }
 

@@ -13,7 +13,7 @@ export const KYC_UPLOAD_DIGILOCKER_COLOR = "#643bfc";
 
 export const KYC_UPLOAD_INFO_TIPS = [
   "The name on the Aadhaar and PAN should match",
-  "The address on your Aadhaar should match your city of booking",
+  "The address on your Aadhaar should match the city your car is registered in",
 ] as const;
 
 export const KYC_UPLOAD_SUBMIT_LABEL = "Submit documents";
@@ -45,7 +45,7 @@ export const KYC_DOCUMENTS: KycDocumentDefinition[] = [
   {
     kind: "pan",
     title: "PAN card",
-    description: "Upload a clear images of your PAN",
+    description: "Upload a clear image of your PAN",
     allowMultiple: false,
   },
 ];

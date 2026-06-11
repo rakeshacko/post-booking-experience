@@ -1,8 +1,8 @@
-import { PaymentDefaultScreen } from "@/components/payment/PaymentDefaultScreen";
+import { ConciergeMoment } from "@/components/concierge/ConciergeMoment";
 
 /**
- * Payment default — payment prompt; shell aligned with `/car-allocation/pending` (processing hero + sheets).
+ * The money chapter opens — Shivi lays out what remains and how to handle it.
  */
 export default function PaymentDefaultPage() {
-  return <PaymentDefaultScreen />;
+  return <ConciergeMoment moment="moneyIntro" />;
 }

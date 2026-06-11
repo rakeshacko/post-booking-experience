@@ -3,9 +3,18 @@
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { KYC_ASSETS } from "@/components/kyc/kyc-assets";
 import {
+  INSURANCE_COMPARE_BODY,
+  INSURANCE_COMPARE_ROWS,
+  INSURANCE_COMPARE_TITLE,
   INSURANCE_COVERAGE_ITEMS,
   INSURANCE_COVERAGE_SHEET_TITLE,
+  INSURANCE_IDV_BODY,
+  INSURANCE_IDV_TITLE,
+  INSURANCE_INCLUDED_ADDONS,
+  INSURANCE_PRICE_PROMISE,
+  INSURANCE_SHEET_SHIVI_LINE,
   type InsuranceCoverageItem,
 } from "@/components/payment/insurance-coverage-content";
 import { BottomSheetCloseIcon } from "@/components/ui/BottomSheetCloseIcon";
@@ -141,10 +150,118 @@ export function InsuranceCoverageBottomSheet({ open, onClose }: InsuranceCoverag
             <div
               className={`min-h-0 flex-1 overflow-y-auto px-5 pt-4 ${BOTTOM_SHEET_BODY_BEFORE_CTA_CLASS}`}
             >
-              <div className="flex flex-col gap-5 rounded-xl bg-[#f5f5f5] p-5">
+              {/* Shivi framing — she sells the contract, not the card */}
+              <div className="flex items-center gap-3">
+                <span className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full bg-[#f5f5f5]">
+                  <Image
+                    src={KYC_ASSETS.avatarSmall}
+                    alt=""
+                    fill
+                    className="object-cover"
+                    unoptimized
+                    sizes="36px"
+                  />
+                </span>
+                <p className="min-w-0 text-sm leading-5 text-[#121212]">
+                  {INSURANCE_SHEET_SHIVI_LINE}
+                </p>
+              </div>
+
+              {/* IDV — the headline justification */}
+              <div className="mt-4 rounded-xl border border-[#e3d9fa] bg-[#f9f6ff] p-4">
+                <p className="text-sm font-semibold leading-5 text-[#121212]">
+                  {INSURANCE_IDV_TITLE}
+                </p>
+                <p className="mt-1.5 text-xs leading-[18px] text-[#4b4b4b]">{INSURANCE_IDV_BODY}</p>
+              </div>
+
+              {/* Base covers */}
+              <div className="mt-4 flex flex-col gap-5 rounded-xl bg-[#f5f5f5] p-5">
                 {INSURANCE_COVERAGE_ITEMS.map((item) => (
                   <CoverageDetailRow key={item.planTitle} {...item} />
                 ))}
+              </div>
+
+              {/* Add-ons included at no extra charge */}
+              <p className="mt-5 text-sm font-semibold leading-5 text-[#121212]">
+                Included at no extra charge
+              </p>
+              <div className="mt-2 flex flex-col rounded-xl border border-[#e8e8e8] bg-white px-4 py-1">
+                {INSURANCE_INCLUDED_ADDONS.map((addon, idx) => (
+                  <div
+                    key={addon.title}
+                    className={`flex items-start gap-2.5 py-3 ${
+                      idx > 0 ? "border-t border-dashed border-[#efefef]" : ""
+                    }`}
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      aria-hidden
+                      className="mt-0.5 shrink-0"
+                    >
+                      <circle cx="12" cy="12" r="9" fill="#0fa457" />
+                      <path
+                        d="M8.4 12.2l2.4 2.4 4.8-5"
+                        stroke="#ffffff"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium leading-5 text-[#121212]">{addon.title}</p>
+                      <p className="text-xs leading-[18px] text-[#757575]">{addon.detail}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* The acko.com comparison — preempt the other-tab check */}
+              <p className="mt-5 text-sm font-semibold leading-5 text-[#121212]">
+                {INSURANCE_COMPARE_TITLE}
+              </p>
+              <p className="mt-1.5 text-xs leading-[18px] text-[#4b4b4b]">{INSURANCE_COMPARE_BODY}</p>
+              <div className="mt-3 overflow-hidden rounded-xl border border-[#e8e8e8]">
+                {INSURANCE_COMPARE_ROWS.map((row, idx) => (
+                  <div
+                    key={row.label}
+                    className={`flex items-center justify-between gap-3 px-4 py-3 ${
+                      idx > 0 ? "border-t border-[#f0f0f0]" : ""
+                    } ${row.highlight ? "bg-[#f9f6ff]" : "bg-white"}`}
+                  >
+                    <div className="min-w-0">
+                      <p
+                        className={`text-sm leading-5 ${
+                          row.highlight
+                            ? "font-semibold text-[#5920c5]"
+                            : "font-medium text-[#121212]"
+                        }`}
+                      >
+                        {row.label}
+                      </p>
+                      <p className="text-xs leading-[18px] text-[#757575]">
+                        {row.idvLabel} · {row.addonsLabel}
+                      </p>
+                    </div>
+                    <p
+                      className={`shrink-0 text-sm font-semibold leading-5 tabular-nums ${
+                        row.highlight ? "text-[#5920c5]" : "text-[#121212]"
+                      }`}
+                    >
+                      {row.priceLabel}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Her price promise */}
+              <div className="mt-3 rounded-xl bg-[#e7f6ee] px-4 py-3">
+                <p className="text-xs font-medium leading-[18px] text-[#0c7a42]">
+                  {INSURANCE_PRICE_PROMISE}
+                </p>
               </div>
             </div>
 

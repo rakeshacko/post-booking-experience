@@ -156,7 +156,7 @@ export function ChooseLoanAmountScreen() {
     sliderSpan > 0 ? ((loanAmount - MIN_LOAN_INR) / sliderSpan) * 100 : 0;
 
   return (
-    <div className="min-h-dvh bg-white font-sans">
+    <div className="min-h-dvh bg-[#f1f0f5] font-sans">
       <KycTopNavHeader endSlot={<GetHelpPillButton />} />
 
       <main className="mx-auto w-full max-w-[640px] px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-[8px]">
@@ -215,7 +215,7 @@ export function ChooseLoanAmountScreen() {
           className="payment-success-stagger mt-8 flex items-center gap-4"
           style={{ animationDelay: `${STAGGER_AMOUNT_ROW_MS}ms` }}
         >
-          <div className="flex h-12 min-h-12 w-[174px] max-w-full shrink-0 items-center rounded-lg border border-[#e8e8e8] bg-white px-4">
+          <div className="flex h-12 min-h-12 w-[174px] max-w-full shrink-0 items-center rounded-lg bg-white card-elevated px-4">
             <label htmlFor="choose-loan-amount-input" className="sr-only">
               Loan amount in rupees
             </label>
@@ -333,7 +333,7 @@ export function ChooseLoanAmountScreen() {
                 </span>
                 <p className="min-w-0 text-xs leading-[18px] text-[#4b4b4b]">
                   <span className="font-medium text-[#121212]">{formatInr(FULL_PAYMENT_INSURANCE_INR)} insurance amount.</span>{" "}
-                  Pay after your loan is disbursed
+                  Pay later, just before delivery — it&apos;s needed for RTO registration
                 </p>
               </li>
             </ul>

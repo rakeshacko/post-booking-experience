@@ -124,7 +124,7 @@ export function BookingCarSummaryCard({
 
   if (showVehicleIdentification) {
     return (
-      <div className="relative w-full shrink-0 overflow-hidden rounded-2xl border border-[#E8E8E8] bg-white">
+      <div className="relative w-full shrink-0 overflow-hidden rounded-2xl bg-white card-elevated">
         <div className="relative h-[228px] w-full bg-white">
           <BookingCarSummaryCardVisualStage
             emphasizeBottomMerge
@@ -137,7 +137,7 @@ export function BookingCarSummaryCard({
   }
 
   return (
-    <div className="relative h-[228px] w-full shrink-0 overflow-hidden rounded-2xl border border-[#E8E8E8] bg-white">
+    <div className="relative h-[228px] w-full shrink-0 overflow-hidden rounded-2xl bg-white card-elevated">
       <BookingCarSummaryCardVisualStage
         emphasizeBottomMerge={false}
         carCutoutSrc={carCutoutSrc}

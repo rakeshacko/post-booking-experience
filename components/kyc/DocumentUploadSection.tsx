@@ -87,10 +87,10 @@ export function DocumentUploadSection({
   const handleAddMore = onAddMoreClick ?? onUploadClick;
 
   return (
-    <section className="rounded-2xl border border-[#e8e8e8] bg-white px-[15px] pb-[15px] pt-[15px]">
+    <section className="rounded-2xl bg-white card-elevated px-[15px] pb-[15px] pt-[15px]">
       <p className={DOCUMENT_UPLOAD_CARD_TITLE_CLASS}>{title}</p>
       {description ? (
-        <p className="mt-1 w-full max-w-[288px] text-xs leading-[18px] text-[#757575]">{description}</p>
+        <p className="mt-1 w-full text-xs leading-[18px] text-[#757575]">{description}</p>
       ) : null}
 
       {files.length > 0 ? (

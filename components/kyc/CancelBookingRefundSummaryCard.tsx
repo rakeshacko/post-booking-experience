@@ -17,7 +17,7 @@ export function CancelBookingRefundSummaryCard() {
   const refundAmount = cancelBookingRefundAmountInr();
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-[#e8e8e8] bg-white">
+    <div className="overflow-hidden rounded-2xl bg-white card-elevated">
       <div className="px-4 py-4">
         <div className="flex items-center justify-between gap-4">
           <p className="text-sm leading-5 text-[#121212]">

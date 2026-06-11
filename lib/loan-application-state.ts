@@ -67,30 +67,59 @@ export function emptyReference(): LoanApplicationReference {
   return { fullName: "", phone: "", address: "" };
 }
 
+/**
+ * Demo prefill — the wizard starts with every step complete so demos can move
+ * fast (Continue is enabled immediately; fields stay editable).
+ */
 export function createDefaultLoanApplicationState(): LoanApplicationState {
   return {
     loanDetails: {
-      loanAmountInr: 0,
-      tenureMonths: 0,
-      employmentType: null,
+      loanAmountInr: 10_73_780,
+      tenureMonths: 60,
+      employmentType: "salaried",
     },
     personal: {
-      email: "",
-      motherName: "",
+      email: "sharath.hv@gmail.com",
+      motherName: "Lakshmi H V",
       spouseName: "",
       work: {
-        officialEmail: "",
-        employerName: "",
-        officialAddress: emptyOfficialAddress(),
+        officialEmail: "sharath.hv@meridiansoft.in",
+        employerName: "Meridian Software Pvt Ltd",
+        officialAddress: {
+          pincode: "560066",
+          city: "Bengaluru",
+          state: "Karnataka",
+          address: "4th Floor, Tower B, Prestige Tech Park, Marathahalli",
+        },
       },
     },
     address: {
-      permanent: emptyAddress(),
-      current: emptyAddress(),
-      currentSameAsPermanent: false,
+      permanent: {
+        line1: "221, 6th Main Road",
+        line2: "HSR Layout, Sector 2",
+        city: "Bengaluru",
+        state: "Karnataka",
+        pincode: "560102",
+      },
+      current: {
+        line1: "221, 6th Main Road",
+        line2: "HSR Layout, Sector 2",
+        city: "Bengaluru",
+        state: "Karnataka",
+        pincode: "560102",
+      },
+      currentSameAsPermanent: true,
     },
-    documents: createEmptyLoanApplicationDocuments(),
-    references: [emptyReference(), emptyReference()],
+    documents: {
+      salarySlip: [{ id: "demo-salary-1", name: "Salary_slip_Mar.pdf", source: "file" }],
+      bankStatement: [{ id: "demo-bank-1", name: "Bank_statement_6mo.pdf", source: "file" }],
+      addressProof: [{ id: "demo-addr-1", name: "Rental_agreement.pdf", source: "file" }],
+      form16: [{ id: "demo-form16-1", name: "Form16_FY25.pdf", source: "file" }],
+    },
+    references: [
+      { fullName: "Rohan Kumar", phone: "9876543210", address: "HSR Layout, Bengaluru" },
+      { fullName: "Priya Nair", phone: "9876501234", address: "Indiranagar, Bengaluru" },
+    ],
   };
 }
 

@@ -12,7 +12,7 @@ import { PAYMENT_CHOOSE_ASSETS } from "@/components/payment/payment-choose-asset
 const HEADLINE = "Your margin money slip is ready!";
 
 const SUBLINE =
-  "Your down payment is received. Share this slip with your bank so they can transfer the loan amount to the dealer.";
+  "Your down payment is in. Hand this slip to your bank — they release the loan to the dealer against it. The sooner that happens, the sooner delivery prep starts.";
 
 /**
  * Self finance — after full down payment; user downloads margin money slip for the bank.

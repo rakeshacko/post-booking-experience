@@ -5,7 +5,7 @@ import Image from "next/image";
 import infoIcon from "@/assets/Info.svg";
 
 const RTO_REGISTRATION_INFO_COPY =
-  "You'll get your car number once registration is complete.";
+  "You'll get your registration number the moment the RTO issues it.";
 
 /**
  * RTO registration status — matches hero info callout on `KycBookingProcessingScreen` (info icon + xs body).
@@ -13,7 +13,7 @@ const RTO_REGISTRATION_INFO_COPY =
 export function RtoRegistrationStatusCard() {
   return (
     <section
-      className="flex w-full items-center gap-3 rounded-2xl border border-[#E8E8E8] bg-white px-3 py-3 text-left"
+      className="flex w-full items-center gap-3 rounded-2xl bg-white card-elevated px-3 py-3 text-left"
       aria-label="RTO registration status"
     >
       <span className="relative h-5 w-5 shrink-0" aria-hidden>

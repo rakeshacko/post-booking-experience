@@ -3,22 +3,26 @@
 import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 
+import { CarPriceBreakupCard } from "@/components/concierge/artifacts";
 import { KycBookingProcessingScreen } from "@/components/kyc/KycBookingProcessingScreen";
 import { KYC_ASSETS } from "@/components/kyc/kyc-assets";
-import { DownPaymentAmountSummaryCard } from "@/components/payment/DownPaymentAmountSummaryCard";
+import { bankForQueryParam } from "@/components/payment/acko-drive-finance-bank";
 import { DownPaymentSummaryCard } from "@/components/payment/DownPaymentSummaryCard";
-import { carDownPaymentFromTotalInr } from "@/components/payment/loan-amount-demo-constants";
+import {
+  ACKO_LOAN_DOWN_PAYMENT_INR,
+  BANK_DISBURSEMENT_INR,
+  BOOKING_AMOUNT_PAID_INR,
+  FULL_PAYMENT_INSURANCE_INR,
+  ON_ROAD_PRICE_INR,
+} from "@/components/payment/loan-amount-demo-constants";
 import { LoanProcessingWhatsNext } from "@/components/payment/LoanProcessingWhatsNext";
 
 const HEADLINE_FIRST = "Time to pay your down payment, Sharath!";
 const HEADLINE_REMAINING = "Complete your remaining down payment, Sharath!";
 
-/** Same treatment as `PaymentDefaultScreen` — orange line above primary CTA. */
+/** Urgency line above the primary CTA — consequence, not a deadline to procrastinate against. */
 const PAY_DOWN_PAYMENT_CTA_WARNING =
-  "Pay by 31 March 2026, 11:59 PM to avoid cancellation";
-
-/** Shorter deadline copy for the loan timeline “Down payment” substep (matches user-facing example). */
-const DOWN_PAYMENT_TIMELINE_DEADLINE = "31 March";
+  "Delivery prep starts the moment this lands — every day here moves your delivery date";
 
 function formatInr(amount: number) {
   return new Intl.NumberFormat("en-IN", {
@@ -86,55 +90,49 @@ export function PayDownPaymentScreen() {
 
     const timelinePayLine =
       Number.isFinite(d) && d > 0
-        ? `Pay ${formatInr(Math.round(d))} before ${DOWN_PAYMENT_TIMELINE_DEADLINE}`
+        ? `Pay ${formatInr(Math.round(d))} — delivery prep starts after this`
         : null;
 
+    // `down_payment` is the NET cash due now — already excludes the price lock
+    // and insurance (the price identity: lock + disbursement + insurance + DP = total).
     if (hasRemainingFlow) {
-      const carTotalInr = carDownPaymentFromTotalInr(o);
-      const carRemainingInr = carDownPaymentFromTotalInr(d);
-      const carPaidInr = Math.max(0, carTotalInr - carRemainingInr);
       return {
         headline: HEADLINE_REMAINING,
         subline:
-          "The bank will disburse the loan amount after the full down payment is completed.",
+          "The bank releases its disbursement to the dealer once your full down payment is in.",
         nextCtaLabel: "Pay remaining amount",
         nextHref: href,
         prefetchHref: href,
         summary: {
-          downPaymentTotalInr: carTotalInr,
-          amountPaidInr: carPaidInr,
-          remainingAmountInr: carRemainingInr,
+          downPaymentTotalInr: Math.round(o),
+          amountPaidInr: Math.max(0, Math.round(o) - Math.round(d)),
+          remainingAmountInr: Math.round(d),
         },
         downPaymentAmountInr: null,
         downPaymentTimelineDescription: timelinePayLine,
       };
     }
 
-    if (Number.isFinite(d) && d > 0) {
-      return {
-        headline: HEADLINE_FIRST,
-        subline:
-          "Your loan plan is confirmed. You can pay down payment in one go or split it across multiple instalments.",
-        nextCtaLabel: "Pay down payment",
-        nextHref: href,
-        prefetchHref: href,
-        summary: null,
-        downPaymentAmountInr: carDownPaymentFromTotalInr(d),
-        downPaymentTimelineDescription: timelinePayLine,
-      };
-    }
-
-    const fallbackHref = buildPaymentHref(bank, loanAmount, downPayment, originalDownPaymentParam);
+    const dueInr = Number.isFinite(d) && d > 0 ? Math.round(d) : ACKO_LOAN_DOWN_PAYMENT_INR;
+    const freshHref =
+      Number.isFinite(d) && d > 0
+        ? href
+        : buildPaymentHref(
+            bank,
+            loanAmount ?? String(BANK_DISBURSEMENT_INR),
+            String(dueInr),
+            null,
+          );
     return {
       headline: HEADLINE_FIRST,
       subline:
-        "Your loan plan is confirmed. You can pay down payment in one go or split it across multiple instalments.",
+        "One last look at the split, then pay — in one go or across instalments. Insurance waits till just before delivery.",
       nextCtaLabel: "Pay down payment",
-      nextHref: fallbackHref,
-      prefetchHref: fallbackHref,
+      nextHref: freshHref,
+      prefetchHref: freshHref,
       summary: null,
-      downPaymentAmountInr: null,
-      downPaymentTimelineDescription: null,
+      downPaymentAmountInr: dueInr,
+      downPaymentTimelineDescription: timelinePayLine,
     };
   }, [bank, loanAmount, downPayment, originalDownPaymentParam]);
 
@@ -166,7 +164,23 @@ export function PayDownPaymentScreen() {
             remainingAmountInr={summary.remainingAmountInr}
           />
         ) : downPaymentAmountInr != null ? (
-          <DownPaymentAmountSummaryCard downPaymentAmountInr={downPaymentAmountInr} />
+          <CarPriceBreakupCard
+            totalInr={ON_ROAD_PRICE_INR}
+            bookingPaidInr={BOOKING_AMOUNT_PAID_INR}
+            disbursementLabel={
+              bank === "self_finance"
+                ? "Your bank disburses"
+                : `${bankForQueryParam(bank).name} disburses`
+            }
+            disbursementInr={
+              loanAmount != null && Number.isFinite(Number(loanAmount))
+                ? Math.round(Number(loanAmount))
+                : BANK_DISBURSEMENT_INR
+            }
+            insuranceInr={FULL_PAYMENT_INSURANCE_INR}
+            dueLabel="Your down payment — due now"
+            dueInr={downPaymentAmountInr}
+          />
         ) : undefined
       }
     />

@@ -121,7 +121,7 @@ export function ModifySelectionDifferentCarColourScreen({
   }
 
   return (
-    <div className="min-h-dvh bg-white font-sans">
+    <div className="min-h-dvh bg-[#f1f0f5] font-sans">
       <KycTopNavHeader />
 
       <main className="mx-auto flex w-full max-w-[640px] flex-1 flex-col px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-2">

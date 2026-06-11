@@ -6,7 +6,7 @@ export type KycVerificationFailureReason =
   | "address_mismatch";
 
 export const KYC_VERIFICATION_FAILED_CTA_WARNING =
-  "1 attempt left. Complete by 24 Apr, 3:00 PM to keep your booking.";
+  "1 attempt left — fix this now and your price lock and delivery date stay safe";
 
 export type KycVerificationFailedCopy = {
   /** Short label for the on-screen reason switcher. */
@@ -46,15 +46,15 @@ export const KYC_VERIFICATION_FAILED_VARIANTS: Record<
     label: "Name mismatch",
     headline: "The name on your documents does not match",
     subline:
-      "The name on your PAN and Aadhaar need to match for us to verify your identity.",
+      "The names on your PAN and Aadhaar need to match for verification to pass.",
     infoBox: "Check that the name is spelled the same way on both your PAN and Aadhaar.",
     ctaLabel: "Re-upload documents",
   },
   address_mismatch: {
     label: "Addr mismatch",
-    headline: "Your Aadhaar address does not match your booking location",
+    headline: "Your Aadhaar address isn’t in Bengaluru",
     subline:
-      "Your Aadhaar needs to show an address in your booking city for us to complete verification.",
+      "Your Aadhaar needs an address in Bengaluru — where your car gets registered — for verification to pass.",
     ctaLabel: "Re-upload documents",
   },
 };

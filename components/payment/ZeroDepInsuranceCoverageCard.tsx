@@ -32,6 +32,8 @@ export type ZeroDepInsuranceCoverageCardProps = {
   description?: string;
   /** When set, shows the insurance premium amount below the description. */
   premiumAmountInr?: number;
+  /** Compact value line under the premium (e.g. IDV + add-on count). */
+  includesLine?: string;
 };
 
 /**
@@ -42,6 +44,7 @@ export function ZeroDepInsuranceCoverageCard({
   coverageTitle = DEFAULT_COVERAGE_TITLE,
   description,
   premiumAmountInr,
+  includesLine,
 }: ZeroDepInsuranceCoverageCardProps) {
   const bodyCopy = description ?? DEFAULT_DESCRIPTION;
   const [coverageSheetOpen, setCoverageSheetOpen] = useState(false);
@@ -74,7 +77,7 @@ export function ZeroDepInsuranceCoverageCard({
   return (
     <>
       <section
-        className="w-full rounded-xl border border-[#e8e8e8] bg-white p-3 text-left"
+        className="w-full rounded-xl bg-white card-elevated p-3 text-left"
         aria-label="Car insurance coverage"
       >
         <div className="flex items-start gap-3">
@@ -103,6 +106,9 @@ export function ZeroDepInsuranceCoverageCard({
                     {formatInr(STRIKETHROUGH_PREMIUM_INR)}
                   </p>
                 </div>
+                {includesLine ? (
+                  <p className="mt-1 text-xs leading-[18px] text-[#4b4b4b]">{includesLine}</p>
+                ) : null}
                 {coverageDetailsControl}
               </>
             ) : (

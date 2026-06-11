@@ -34,7 +34,7 @@ export function MarginMoneySlipCard() {
 
   return (
     <section
-      className="w-full rounded-xl border border-[#e8e8e8] bg-white p-3 text-left"
+      className="w-full rounded-xl bg-white card-elevated p-3 text-left"
       aria-label="Margin money slip"
     >
       <div className="flex items-center gap-3">

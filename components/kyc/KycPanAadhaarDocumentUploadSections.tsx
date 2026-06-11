@@ -27,6 +27,8 @@ type KycPanAadhaarDocumentUploadSectionsProps = {
   onUploadsChange: (next: KycUploadsState) => void;
   /** Persists mock filename index with parent session state. */
   mockUploadCounterRef: React.MutableRefObject<number>;
+  /** No internal top margins — for parents that already space blocks (concierge shell's gap). */
+  flush?: boolean;
   wrapTips?: (node: ReactNode) => ReactNode;
   wrapCard?: (kind: string, card: ReactNode) => ReactNode;
 };
@@ -39,6 +41,7 @@ export function KycPanAadhaarDocumentUploadSections({
   uploads,
   onUploadsChange,
   mockUploadCounterRef,
+  flush = false,
   wrapTips,
   wrapCard,
 }: KycPanAadhaarDocumentUploadSectionsProps) {
@@ -82,7 +85,7 @@ export function KycPanAadhaarDocumentUploadSections({
   );
 
   const tipsBlock = (
-    <div className={DOCUMENT_UPLOAD_TITLE_TO_TIPS_CLASS}>
+    <div className={flush ? undefined : DOCUMENT_UPLOAD_TITLE_TO_TIPS_CLASS}>
       <DocumentUploadInfoTipsCard tips={KYC_UPLOAD_INFO_TIPS} />
     </div>
   );
@@ -91,7 +94,7 @@ export function KycPanAadhaarDocumentUploadSections({
     <>
       {wrapTips != null ? wrapTips(tipsBlock) : tipsBlock}
 
-      <div className={DOCUMENT_UPLOAD_TIPS_TO_SECTIONS_CLASS}>
+      <div className={flush ? undefined : DOCUMENT_UPLOAD_TIPS_TO_SECTIONS_CLASS}>
         <DocumentUploadDocumentCards
           documents={KYC_UPLOAD_CARD_DEFINITIONS}
           getFiles={(kind) => uploads[kind as KycDocumentKind] ?? []}

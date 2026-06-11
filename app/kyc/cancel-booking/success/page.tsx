@@ -1,13 +1,19 @@
-import { CancelBookingFlowGuard } from "@/components/kyc/CancelBookingFlowGuard";
-import { CancelBookingSuccessScreen } from "@/components/kyc/CancelBookingSuccessScreen";
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+
+import { JOURNEY_PATHS } from "@/lib/journey-routes";
 
 /**
- * Cancel booking success — cancel-no-charges demo flow only.
+ * Legacy — the cancellation success is now a phase of the cancel turn itself.
  */
-export default function CancelBookingSuccessPage() {
-  return (
-    <CancelBookingFlowGuard>
-      <CancelBookingSuccessScreen />
-    </CancelBookingFlowGuard>
-  );
+export default function LegacyCancelBookingSuccessPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace(JOURNEY_PATHS.kyc.cancelBooking);
+  }, [router]);
+
+  return null;
 }

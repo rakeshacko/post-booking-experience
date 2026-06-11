@@ -21,14 +21,14 @@ function formatInr(amount: number) {
 const LOAN_HEADLINE = "Down payment received";
 const LOAN_BANK_TRANSFER_HEADLINE = "Payment received";
 const LOAN_SUBLINE =
-  "Your loan disbursement to the dealer is being processed. This usually takes 24 to 48 hours.";
-const LOAN_DISBURSEMENT_INFO_BODY = `The insurance amount of ${formatInr(FULL_PAYMENT_INSURANCE_INR)} is payable after your loan is disbursed.`;
+  "The bank is moving your loan to the dealer. Banks take 24–48 hours here — I'll confirm the moment it lands.";
+const LOAN_DISBURSEMENT_INFO_BODY = `Insurance (${formatInr(FULL_PAYMENT_INSURANCE_INR)}) is due much later — I'll ask just before delivery, when the RTO registration needs it.`;
 const LOAN_BANK_TRANSFER_SUBLINE =
-  "We're verifying the loan amount transferred from your bank. This usually takes 24 to 48 hours, after which we'll start getting your car ready for delivery.";
+  "I'm confirming the transfer from your bank — it takes 24–48 hours to clear. The moment it does, I start your delivery prep.";
 
 const FULL_PAYMENT_HEADLINE = "Your payment is complete";
 const FULL_PAYMENT_SUBLINE = "Your car is now being prepared for delivery.";
-const FULL_PAYMENT_INSURANCE_INFO_BODY = `${formatInr(FULL_PAYMENT_INSURANCE_INR)} insurance payment is due before car registration. We will remind you.`;
+const FULL_PAYMENT_INSURANCE_INFO_BODY = `${formatInr(FULL_PAYMENT_INSURANCE_INR)} insurance payment is due before car registration. I'll remind you.`;
 
 /** Post–full down payment: hero + CTA + timeline (DP done; disbursement or delivery next). */
 export function DownPaymentInsuranceSetupScreen() {
@@ -54,7 +54,7 @@ export function DownPaymentInsuranceSetupScreen() {
     if (isFullPayment || !bankTransferRef) return undefined;
     return (
       <section
-        className="w-full rounded-xl border border-[#e8e8e8] bg-white px-4 py-3 text-left"
+        className="w-full rounded-xl bg-white card-elevated px-4 py-3 text-left"
         aria-label="Bank transfer reference"
       >
         <dl className="m-0 flex items-center justify-between gap-3">
@@ -100,6 +100,7 @@ export function DownPaymentInsuranceSetupScreen() {
     <KycBookingProcessingScreen
       headline={headline}
       subline={subline}
+      callLabel="Want an update? I can call you"
       infoBox={infoBox}
       heroIllustrationSrc={KYC_ASSETS.downPaymentCompleteHero}
       heroSummaryCard={heroSummaryCard}

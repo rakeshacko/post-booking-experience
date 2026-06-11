@@ -14,9 +14,9 @@ import {
   type InsuranceJourneyQuery,
 } from "@/lib/paymentUrls";
 
-const HEADLINE = "Just the insurance left";
+const HEADLINE = "Your car's nearly ready — one last payment.";
 const SUBLINE =
-  "Once you pay, we'll get your policy ready. Your car is covered from day one.";
+  "The RTO won't register a car without an active policy, so insurance is the final gate before delivery. Pay and your policy is issued on the spot — insurance is us, after all.";
 
 function formatInr(amount: number) {
   return new Intl.NumberFormat("en-IN", {
@@ -49,7 +49,13 @@ export function PayInsurancePremiumScreen() {
   );
 
   const heroSummaryCard = useMemo(
-    () => <ZeroDepInsuranceCoverageCard premiumAmountInr={FULL_PAYMENT_INSURANCE_INR} />,
+    () => (
+      <ZeroDepInsuranceCoverageCard
+        coverageTitle="ACKO Drive Shield · zero depreciation"
+        premiumAmountInr={FULL_PAYMENT_INSURANCE_INR}
+        includesLine="Only on ACKO Drive · ₹9,54,900 IDV (full ex-showroom) · 5 add-ons included"
+      />
+    ),
     [],
   );
 
@@ -73,6 +79,7 @@ export function PayInsurancePremiumScreen() {
       prefetchHref={nextHref}
       nextCtaLabel={`Pay ${formatInr(FULL_PAYMENT_INSURANCE_INR)}`}
       heroSummaryCard={heroSummaryCard}
+      callLabel="Price questions? I can call you"
       whatsNextCard={whatsNextCard}
     />
   );

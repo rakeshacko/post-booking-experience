@@ -140,7 +140,7 @@ export function LoanApplicationAddressScreen() {
     <LoanApplicationShell currentRoute="address">
       <main className={LOAN_APPLICATION_MAIN_CLASS}>
         <LoanApplicationPageStagger delayMs={LOAN_APPLICATION_STAGGER_MS.title}>
-          <h1 className={LOAN_APPLICATION_PAGE_TITLE_CLASS}>Share your address details</h1>
+          <h1 className={LOAN_APPLICATION_PAGE_TITLE_CLASS}>Where do you live? The bank wants it on file.</h1>
         </LoanApplicationPageStagger>
 
         <LoanApplicationPageStagger

@@ -128,7 +128,7 @@ export function ModifySelectionColourConfirmationScreen() {
   const expressQuote = resolveModifySelectionColourQuote(option, "express");
 
   return (
-    <div className="min-h-dvh bg-white font-sans">
+    <div className="min-h-dvh bg-[#f1f0f5] font-sans">
       <KycTopNavHeader endSlot={<GetHelpPillButton />} />
 
       <main className="mx-auto flex w-full max-w-[640px] flex-1 flex-col px-5 pb-[calc(5rem+32px+env(safe-area-inset-bottom))] pt-2">

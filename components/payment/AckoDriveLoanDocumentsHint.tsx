@@ -15,7 +15,7 @@ export function AckoDriveLoanDocumentsHint() {
   return (
     <>
       <div
-        className="flex w-full items-center gap-3 rounded-2xl border border-[#E8E8E8] bg-white px-3 py-3 text-left"
+        className="flex w-full items-center gap-3 rounded-2xl bg-white card-elevated px-3 py-3 text-left"
         role="region"
         aria-label="Loan documents"
       >

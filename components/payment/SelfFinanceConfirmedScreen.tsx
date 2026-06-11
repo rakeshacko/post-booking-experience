@@ -59,7 +59,7 @@ export function SelfFinanceConfirmedScreen() {
   }, [showCopy, prefersReducedMotion]);
 
   return (
-    <div className="relative flex h-dvh flex-col overflow-hidden bg-[#fafbfb] font-sans">
+    <div className="relative flex h-dvh flex-col overflow-hidden bg-[#f1f0f5] font-sans">
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-[50%] bg-gradient-to-b from-[#e8f8ef]/90 via-[#f4fbf7]/40 to-transparent"
         aria-hidden

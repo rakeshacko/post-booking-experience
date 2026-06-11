@@ -1,11 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
 import loanApprovedIllustration from "@/assets/loan approved.svg";
+import { TimeSkipChip } from "@/components/concierge/TimeSkipChip";
 import {
   DEMO_DEFAULT_LOAN_DISBURSEMENT_INR,
   DEMO_LOAN_DISBURSEMENT_TRANSACTION_ID,
@@ -15,7 +16,7 @@ import { buildPayInsurancePremiumHref } from "@/lib/paymentUrls";
 
 const HEADLINE = "Loan disbursed, Sharath!";
 const SUBLINE =
-  "The bank has sent the full loan amount to the dealer. Your car is now being prepped for delivery.";
+  "The bank's money has reached the dealer — I checked. Delivery prep starts now; nothing is due from you until just before delivery.";
 
 /** After header + subtext, delay before disbursed amount card (step 3). */
 const CARD_AFTER_HEADER_MS = 420;
@@ -52,7 +53,6 @@ type LoanDisbursementReceivedScreenProps = {
 export function LoanDisbursementReceivedScreen({
   okayHref: okayHrefProp,
 }: LoanDisbursementReceivedScreenProps) {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const headerRevealedByHeroRef = useRef(false);
   const [showHeader, setShowHeader] = useState(false);
@@ -111,12 +111,8 @@ export function LoanDisbursementReceivedScreen({
     return () => window.clearTimeout(id);
   }, [showAmountCard]);
 
-  const onContinue = useCallback(() => {
-    router.push(okayHref);
-  }, [okayHref, router]);
-
   return (
-    <div className="relative min-h-dvh overflow-hidden bg-[#fafbfb] font-sans shadow-[0_-4px_8px_-2px_rgba(54,53,76,0.06)]">
+    <div className="relative min-h-dvh overflow-hidden bg-[#f1f0f5] font-sans shadow-[0_-4px_8px_-2px_rgba(54,53,76,0.06)]">
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-[50%] bg-gradient-to-b from-[#e8f8ef]/90 via-[#f4fbf7]/40 to-transparent transition-opacity duration-700"
         aria-hidden
@@ -161,7 +157,7 @@ export function LoanDisbursementReceivedScreen({
               className="mt-5 w-full"
               aria-label="Disbursed amount summary"
             >
-              <div className="w-full rounded-xl border border-[#e8e8e8] bg-white px-4 py-3 text-left">
+              <div className="w-full rounded-xl bg-white card-elevated px-4 py-3 text-left">
                 <dl className="m-0 flex flex-col gap-3">
                   <div className="flex items-center justify-between gap-3">
                     <dt className="text-sm font-normal leading-5 text-[#4b4b4b]">Disbursed amount</dt>
@@ -186,13 +182,8 @@ export function LoanDisbursementReceivedScreen({
       {showFooter && (
         <div className="fixed inset-x-0 bottom-0 z-20 bg-white pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[0_-4px_6px_0_rgba(54,53,76,0.08)]">
           <div className="mx-auto flex w-full max-w-[640px] items-start justify-center px-5 pt-3">
-            <button
-              type="button"
-              className="primary-cta w-full rounded-lg focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#121212]/30 focus-visible:ring-offset-2"
-              onClick={onContinue}
-            >
-              Continue
-            </button>
+            {/* Insurance is due just before delivery — time passes before the next ask. */}
+            <TimeSkipChip label="When your car's nearly ready" href={okayHref} />
           </div>
         </div>
       )}

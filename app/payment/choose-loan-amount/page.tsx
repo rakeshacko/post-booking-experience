@@ -1,16 +1,39 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
-import { ChooseLoanAmountScreen } from "@/components/payment/ChooseLoanAmountScreen";
+import {
+  ACKO_LOAN_DOWN_PAYMENT_INR,
+  BANK_DISBURSEMENT_INR,
+} from "@/components/payment/loan-amount-demo-constants";
+import { buildPayDownPaymentHref } from "@/lib/paymentUrls";
 
 /**
- * Post–loan-sanction: choose loan amount (Figma 2111:7963 — loan slider, derived down payment).
+ * Legacy — there is no loan-amount slider anymore: the bank's disbursement is
+ * the bank's decision, and the down payment is derived from the price identity.
  */
+function LegacyChooseLoanAmountRedirect() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    router.replace(
+      buildPayDownPaymentHref(
+        searchParams.get("bank"),
+        String(BANK_DISBURSEMENT_INR),
+        ACKO_LOAN_DOWN_PAYMENT_INR,
+      ),
+    );
+  }, [router, searchParams]);
+
+  return null;
+}
+
 export default function ChooseLoanAmountPage() {
   return (
     <Suspense fallback={null}>
-      <ChooseLoanAmountScreen />
+      <LegacyChooseLoanAmountRedirect />
     </Suspense>
   );
 }

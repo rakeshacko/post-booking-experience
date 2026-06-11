@@ -44,7 +44,7 @@ export function ChooseLoanPaymentSummaryCard({
   const showRemainingFooter = showDownPaymentPaidRow && !downPaymentFullyPaid;
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-[#e8e8e8]">
+    <div className="overflow-hidden rounded-2xl bg-white card-elevated">
       <div className="bg-white px-4 pb-4 pt-4">
         <button
           type="button"

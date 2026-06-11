@@ -17,7 +17,7 @@ import { loanProcessingPath } from "@/lib/loan-application-urls";
 export const LOAN_APPLICATION_SUBMITTED_AUTO_REDIRECT_MS = 3000;
 
 /**
- * Loan application submitted acknowledgment — no CTA; auto-navigates after 3 seconds.
+ * Your application is on its way acknowledgment — no CTA; auto-navigates after 3 seconds.
  */
 export function LoanApplicationSubmittedSuccessScreen() {
   const router = useRouter();
@@ -31,7 +31,7 @@ export function LoanApplicationSubmittedSuccessScreen() {
   }, [bankId, router]);
 
   return (
-    <div className="relative min-h-dvh overflow-hidden bg-white font-sans">
+    <div className="relative min-h-dvh overflow-hidden bg-[#f1f0f5] font-sans">
       <div
         className="pointer-events-none absolute left-1/2 top-0 h-[240px] w-full max-w-[640px] -translate-x-1/2"
         aria-hidden
@@ -72,7 +72,7 @@ export function LoanApplicationSubmittedSuccessScreen() {
               Loan application submitted
             </h1>
             <p className="max-w-sm text-sm font-normal leading-5 text-[#6b7280]">
-              {bank.name} will now review your application.
+              I&apos;ve sent it to {bank.name} — I&apos;ll chase the review and keep you posted.
             </p>
           </div>
         </div>

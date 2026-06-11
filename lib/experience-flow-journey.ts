@@ -209,9 +209,10 @@ export function getExperienceFlowJourneyRedirectTarget(
 }
 
 /**
- * When not in a modify-selection demo flow, `/kyc/modify-selection/*` redirects to `/kyc`.
- * Modify-with-charges: only from booking accepted onward (else → booking accepted).
- * Returns `null` when no redirect is needed.
+ * Modify-selection routes are open to express/standard (policy §2.3 — one change
+ * post-confirmation belongs to every booking) and the modify demo flows; other
+ * flows redirect to `/kyc`. Modify-with-charges: only from booking accepted
+ * onward (else → booking accepted). Returns `null` when no redirect is needed.
  */
 export function getModifySelectionFlowRedirectTarget(
   pathname: string,
@@ -222,7 +223,10 @@ export function getModifySelectionFlowRedirectTarget(
     return null;
   }
 
-  if (!isModifySelectionDemoFlow(flow)) {
+  const active = flow ?? readExperienceFlow();
+  const allowed =
+    isModifySelectionDemoFlow(active) || active === "express" || active === "standard";
+  if (!allowed) {
     return JOURNEY_PATHS.kyc.hub;
   }
 

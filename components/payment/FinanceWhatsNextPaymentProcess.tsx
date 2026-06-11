@@ -59,7 +59,7 @@ export function FinanceWhatsNextPaymentProcess() {
   const items = tab === "salaried" ? SALARIED_DOCUMENTS : SELF_EMPLOYED_DOCUMENTS;
 
   return (
-    <div className="mx-auto w-full overflow-hidden rounded-[16px] border border-solid border-[#e8e8e8] bg-white">
+    <div className="mx-auto w-full overflow-hidden rounded-[16px] bg-white card-elevated">
       <div
         className="flex w-full border-b border-solid border-[#e8e8e8] pt-[15px]"
         role="tablist"

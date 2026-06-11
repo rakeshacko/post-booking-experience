@@ -30,7 +30,7 @@ export function LoanApplicationShell({ currentRoute, children }: LoanApplication
   }, [bankId, currentRoute, router]);
 
   return (
-    <div className="relative flex min-h-dvh flex-col bg-white font-sans">
+    <div className="relative flex min-h-dvh flex-col bg-[#f1f0f5] font-sans">
       <div className="relative z-10 mx-auto flex w-full min-h-0 max-w-[640px] flex-1 flex-col">
         <div className="relative shrink-0">
           <div

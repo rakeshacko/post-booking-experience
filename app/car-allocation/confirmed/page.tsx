@@ -1,13 +1,13 @@
-import { CarAllocationConfirmedScreen } from "@/components/kyc/CarAllocationConfirmedScreen";
+import { ConciergeMoment } from "@/components/concierge/ConciergeMoment";
 import { ModifyNoChargesGatedPage } from "@/components/kyc/ModifyNoChargesGatedPage";
 
 /**
- * After `/car-allocation/pending` Next — celebration + car card; Okay → `/payment/default`.
+ * Exact unit assigned — engine + chassis in the user's name.
  */
 export default function CarAllocationConfirmedPage() {
   return (
     <ModifyNoChargesGatedPage>
-      <CarAllocationConfirmedScreen />
+      <ConciergeMoment moment="allocationDone" />
     </ModifyNoChargesGatedPage>
   );
 }

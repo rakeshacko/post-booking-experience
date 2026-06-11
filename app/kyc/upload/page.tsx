@@ -1,16 +1,20 @@
-import { KycDocumentUploadScreen } from "@/components/kyc/KycDocumentUploadScreen";
-import { ModifyNoChargesGatedPage } from "@/components/kyc/ModifyNoChargesGatedPage";
-import { FadePageTransition } from "@/components/ui/page-transition";
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+
+import { JOURNEY_PATHS } from "@/lib/journey-routes";
 
 /**
- * KYC document upload — Figma nodes 2501:8136, 2502:8777, 2502:8901.
+ * Legacy — document upload now happens inline on the `/kyc` identity turn
+ * (verification-failed re-upload links land here too).
  */
-export default function KycUploadPage() {
-  return (
-    <ModifyNoChargesGatedPage>
-      <FadePageTransition>
-        <KycDocumentUploadScreen />
-      </FadePageTransition>
-    </ModifyNoChargesGatedPage>
-  );
+export default function LegacyKycUploadPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace(JOURNEY_PATHS.kyc.hub);
+  }, [router]);
+
+  return null;
 }

@@ -31,7 +31,7 @@ export function FullPaymentOptionConfirmedScreen() {
   }, [router]);
 
   return (
-    <div className="relative min-h-dvh overflow-hidden bg-white font-sans">
+    <div className="relative min-h-dvh overflow-hidden bg-[#f1f0f5] font-sans">
       <div
         className="pointer-events-none absolute left-1/2 top-0 h-[240px] w-full max-w-[640px] -translate-x-1/2"
         aria-hidden

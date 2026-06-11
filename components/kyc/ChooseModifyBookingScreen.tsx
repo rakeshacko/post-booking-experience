@@ -55,8 +55,8 @@ function ModifyOptionCard({
       id={`modify-option-${id}`}
       onClick={onSelect}
       aria-pressed={selected}
-      className={`w-full rounded-2xl border p-[15px] text-left transition-colors ${
-        selected ? "border-[#121212] bg-[#F5F5F5]" : "border-[#e8e8e8] bg-white"
+      className={`w-full rounded-2xl border p-[15px] text-left transition-colors card-elevated ${
+        selected ? "border-[#121212] bg-[#F5F5F5]" : "border-transparent bg-white"
       }`}
     >
       <div className="flex flex-col gap-3">
@@ -112,7 +112,7 @@ export function ChooseModifyBookingScreen() {
   }, [router, selectedOption.continuePath]);
 
   return (
-    <div className="min-h-dvh bg-white font-sans">
+    <div className="min-h-dvh bg-[#f1f0f5] font-sans">
       <KycTopNavHeader endSlot={<GetHelpPillButton />} />
 
       <main className="mx-auto w-full max-w-[640px] px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-2">

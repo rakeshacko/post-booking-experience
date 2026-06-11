@@ -1,8 +1,18 @@
-import { SelfFinanceConfirmedScreen } from "@/components/payment/SelfFinanceConfirmedScreen";
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 /**
- * Self finance — payment option confirmed. Same celebration shell as car allocation confirmed.
+ * Legacy — interstitial removed; the choose screen hands off straight to the
+ * self-finance action turn.
  */
 export default function SelfFinanceConfirmedPage() {
-  return <SelfFinanceConfirmedScreen />;
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace("/payment/self-finance-action");
+  }, [router]);
+
+  return null;
 }

@@ -91,7 +91,7 @@ export function FullPaymentAmountDueCard({
   if (variant === "car_only") {
     return (
       <section
-        className="w-full rounded-xl border border-[#e8e8e8] bg-white px-3 py-3 text-left"
+        className="w-full rounded-xl bg-white card-elevated px-3 py-3 text-left"
         aria-label="Amount for your new car"
       >
         <AmountRow
@@ -104,7 +104,7 @@ export function FullPaymentAmountDueCard({
 
   return (
     <section
-      className="w-full rounded-xl border border-[#e8e8e8] bg-white px-3 py-3 text-left"
+      className="w-full rounded-xl bg-white card-elevated px-3 py-3 text-left"
       aria-label="Amount to pay"
     >
       <div className="flex flex-col gap-[12px]">
