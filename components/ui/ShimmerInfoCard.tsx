@@ -44,7 +44,7 @@ export function ShimmerInfoCard({ icon = "alert", lead, children, className }: S
   return (
     <div
       className={cn(
-        "next-step-shimmer flex items-start gap-2.5 rounded-xl border border-[#f3e0b6] bg-gradient-to-b from-[#fff7e5] to-[#fff7e5]/0 px-3.5 py-2.5",
+        "next-step-shimmer flex items-start gap-2.5 rounded-xl border border-[#f3e0b6] bg-[linear-gradient(to_bottom,#fff7e5,rgba(255,247,229,0))] px-3.5 py-2.5",
         className
       )}
     >

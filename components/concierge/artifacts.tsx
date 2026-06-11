@@ -378,7 +378,7 @@ export type NextStepCardProps = {
  */
 export function NextStepCard({ eyebrow = "Now", title, body, etaLabel }: NextStepCardProps) {
   return (
-    <div className="rounded-2xl border border-[#e3d9fa] bg-gradient-to-b from-[#f4eefe] to-[#f4eefe]/0 px-4 py-4">
+    <div className="rounded-2xl border border-[#e3d9fa] bg-[linear-gradient(to_bottom,#f4eefe,rgba(244,238,254,0))] px-4 py-4">
       <p className="text-[10px] font-semibold uppercase leading-4 tracking-[0.08em] text-[#5920c5]">
         {eyebrow}
       </p>

@@ -182,7 +182,7 @@ function OptionCard({
       aria-pressed={selected}
       className={`w-full rounded-2xl border p-[15px] text-left transition-colors card-elevated ${
         selected
-          ? "border-[#bda6e8] bg-white bg-gradient-to-b from-[#f4eefe] to-[#f4eefe]/0"
+          ? "border-[#bda6e8] bg-white bg-[linear-gradient(to_bottom,#f4eefe,rgba(244,238,254,0))]"
           : "border-transparent bg-white"
       }`}
     >
