@@ -87,7 +87,13 @@ export type ConciergeTurnShellProps = ConciergeTurn & {
  * `transform`), so `scale` must be named in the transition list explicitly.
  */
 const RECEDE_TRANSITION =
-  "transition-[scale,filter,opacity] duration-[650ms] ease-in-out will-change-[scale,filter,opacity] motion-reduce:transition-none";
+  "transition-[scale,filter,opacity] duration-[650ms] ease-in-out motion-reduce:transition-none";
+/**
+ * Layer-promotion hint, applied ONLY while the manage layer is up. Left on
+ * permanently, `will-change: filter` keeps the whole page in a rasterized
+ * composited layer — iOS Safari quantizes the subtle card shadows there.
+ */
+const RECEDE_WILL_CHANGE = "will-change-[scale,filter,opacity]";
 const RECEDE_ACTIVE = "pointer-events-none scale-[0.88] opacity-0 blur-[8px]";
 
 /**
@@ -319,7 +325,11 @@ export function ConciergeTurnShell({
 
       {/* Page layer — recedes into depth while the manage layer is up. */}
       <div
-        className={cn(RECEDE_TRANSITION, manage.shown && RECEDE_ACTIVE)}
+        className={cn(
+          RECEDE_TRANSITION,
+          manage.mounted && RECEDE_WILL_CHANGE,
+          manage.shown && RECEDE_ACTIVE
+        )}
         aria-hidden={manage.open || undefined}
         inert={manage.open || undefined}
       >
@@ -386,6 +396,7 @@ export function ConciergeTurnShell({
           className={cn(
             "fixed inset-x-0 bottom-0 z-20 origin-bottom",
             RECEDE_TRANSITION,
+            manage.mounted && RECEDE_WILL_CHANGE,
             ready ? "opacity-100" : "pointer-events-none opacity-0",
             manage.shown && RECEDE_ACTIVE
           )}
