@@ -61,7 +61,7 @@ export function SelfFinanceConfirmedScreen() {
   return (
     <div className="relative flex h-dvh flex-col overflow-hidden bg-[#f1f0f5] font-sans">
       <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-[50%] bg-gradient-to-b from-[#e8f8ef]/90 via-[#f4fbf7]/40 to-transparent"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[50%] bg-[linear-gradient(to_bottom,rgba(232,248,239,0.9),rgba(244,251,247,0.4),rgba(244,251,247,0))]"
         aria-hidden
       />
 

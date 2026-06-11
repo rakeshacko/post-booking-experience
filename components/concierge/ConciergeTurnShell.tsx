@@ -401,7 +401,7 @@ export function ConciergeTurnShell({
             manage.shown && RECEDE_ACTIVE
           )}
         >
-          <div className="mx-auto w-full max-w-[640px] bg-gradient-to-t from-[#f1f0f5] via-[#f1f0f5] to-transparent px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-12">
+          <div className="mx-auto w-full max-w-[640px] bg-[linear-gradient(to_top,#f1f0f5_55%,rgba(241,240,245,0))] px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-12">
             {footnote && !footnoteInline ? (
               <div className="mb-3">
                 <ShimmerInfoCard icon="clock">{footnote}</ShimmerInfoCard>

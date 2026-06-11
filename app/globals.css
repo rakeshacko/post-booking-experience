@@ -304,9 +304,9 @@ body {
   width: 55%;
   background: linear-gradient(
     105deg,
-    transparent,
+    rgba(255, 255, 255, 0),
     rgba(255, 255, 255, 0.7),
-    transparent
+    rgba(255, 255, 255, 0)
   );
   transform: skewX(-12deg);
   animation: next-step-shimmer-sweep 2.8s ease-in-out infinite;
