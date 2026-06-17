@@ -41,8 +41,8 @@ const MODIFY_NO_CHARGES_BLOCKED_PATHS = new Set<string>([
   JOURNEY_PATHS.kyc.processing,
   JOURNEY_PATHS.kyc.bookingAccepted,
   JOURNEY_PATHS.kyc.bookingConfirmed,
-  JOURNEY_PATHS.carAllocation.pending,
-  JOURNEY_PATHS.carAllocation.confirmed,
+  // Car-allocation paths (incl. the failure branch) are caught by the
+  // `/car-allocation/` prefix guard below.
 ]);
 
 /** Paths beyond verification in progress that redirect in the cancel-no-charges demo flow. */
@@ -51,8 +51,7 @@ const CANCEL_NO_CHARGES_BLOCKED_PATHS = new Set<string>([
   JOURNEY_PATHS.kyc.processing,
   JOURNEY_PATHS.kyc.bookingAccepted,
   JOURNEY_PATHS.kyc.bookingConfirmed,
-  JOURNEY_PATHS.carAllocation.pending,
-  JOURNEY_PATHS.carAllocation.confirmed,
+  // Car-allocation paths are caught by the `/car-allocation/` prefix guard below.
 ]);
 
 const CANCEL_NO_CHARGES_ALLOWED_KYC_PATHS = new Set<string>([

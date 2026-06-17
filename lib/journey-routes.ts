@@ -20,8 +20,10 @@ export const JOURNEY_PATHS = {
     exit: "/kyc",
   },
   carAllocation: {
-    pending: "/car-allocation/pending",
-    confirmed: "/car-allocation/confirmed",
+    // The exact unit (engine/chassis) is now revealed on the dealer-found turn,
+    // so the pending/confirmed allocation screens are gone — only the no-car
+    // failure branch off the dealer search remains.
+    failed: "/car-allocation/failed",
   },
   payment: {
     default: "/payment/default",

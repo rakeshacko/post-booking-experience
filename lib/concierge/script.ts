@@ -25,8 +25,6 @@ export type ConciergeMomentId =
   | "dealerSearch"
   | "dealerFound"
   | "carReserved"
-  | "allocationPending"
-  | "allocationDone"
   | "moneyIntro";
 
 export type TurnWords = {
@@ -137,8 +135,8 @@ const EXPRESS_SCRIPT: Record<ConciergeMomentId, TurnWords> = {
 
   dealerFound: {
     says: [
-      "Morning, Sharath — found it.",
-      "Three dealers came back overnight; Advaith Hyundai can move the fastest, so I've reserved your Creta with them. They'll call you today — an OTP will land on your phone, you read it back to them, and the car is locked to you.",
+      "Morning, Sharath — found it, down to the exact car.",
+      "Three dealers came back overnight; Advaith Hyundai can move the fastest, so I've reserved a specific Creta for you — fresh stock, and its engine and chassis numbers are below. They'll call you today: an OTP lands on your phone, you read it back, and this exact car is locked to you for good.",
     ],
     timeSkipLabel: "After the dealer's call",
     callLabel: "Questions? I can call you",
@@ -146,34 +144,8 @@ const EXPRESS_SCRIPT: Record<ConciergeMomentId, TurnWords> = {
 
   carReserved: {
     says: [
-      "OTP confirmed — your Creta is locked to you.",
-      "Advaith Hyundai matched your OTP on the Hyundai portal, so the reservation is now a lock. Next they assign your exact unit — a specific car with its own engine and chassis number. I'm pushing for the freshest stock in their yard.",
-    ],
-    replyLabel: "Sounds good, go on",
-    replyEcho: "Sounds good, go on",
-  },
-
-  allocationPending: {
-    says: [
-      "Picking your exact unit.",
-      "I've asked Advaith Hyundai for the newest manufacture date in their stock. Their yard team assigns units through the day — nothing needed from you. The moment yours is locked, the engine and chassis numbers are yours.",
-    ],
-    workingLines: [
-      "Request placed with Advaith Hyundai",
-      "They review incoming stock and manufacture dates…",
-      "Your unit gets assigned — engine & chassis in your name",
-    ],
-    workingMode: "ongoing",
-    workingDoneCount: 1,
-    workingEtaLabel: "Expect the assignment by this evening",
-    timeSkipLabel: "Later that day",
-    callLabel: "Questions while you wait? I can call you",
-  },
-
-  allocationDone: {
-    says: [
-      "This one's yours, Sharath.",
-      "Advaith Hyundai came back this evening — a fresh unit, newest manufacture date in their stock, now with your name on it. Engine and chassis below.",
+      "OTP confirmed — this exact Creta is yours.",
+      "Advaith Hyundai matched your OTP on the Hyundai portal, so the car below — engine, chassis and all — is locked to you for good. That's the whole car settled, Sharath.",
     ],
     replyLabel: "What's next?",
     replyEcho: "What's next?",
@@ -212,28 +184,8 @@ const STANDARD_OVERRIDES: Partial<Record<ConciergeMomentId, Partial<TurnWords>>>
   },
   dealerFound: {
     says: [
-      "Welcome back, Sharath — found it.",
-      "Took a couple of days of chasing, but three dealers came back with your exact Creta; Advaith Hyundai can move the fastest, so I've reserved it with them. They'll call you today — an OTP will land on your phone, you read it back to them, and the car is locked to you.",
-    ],
-  },
-  carReserved: {
-    says: [
-      "OTP confirmed — your Creta is locked to you.",
-      "Advaith Hyundai matched your OTP on the Hyundai portal, so the reservation is now a lock. Next they assign your exact unit — on the standard timeline that takes a few days, and I'll nudge them along.",
-    ],
-  },
-  allocationPending: {
-    says: [
-      "Picking your exact unit.",
-      "I've asked Advaith Hyundai for the newest manufacture date in their stock. On the standard timeline their allocations take a few days — nothing needed from you. I'll nudge them along and tell you the moment it's assigned.",
-    ],
-    workingEtaLabel: "Expect the assignment in 3–4 days",
-    timeSkipLabel: "4 days later",
-  },
-  allocationDone: {
-    says: [
-      "This one's yours, Sharath.",
-      "Advaith Hyundai confirmed your unit — fresh stock, newest manufacture date they had, now with your name on it. Engine and chassis below.",
+      "Welcome back, Sharath — found it, down to the exact car.",
+      "Took a couple of days of chasing, but three dealers came back with your exact Creta; Advaith Hyundai can move the fastest, so I've reserved a specific car for you — fresh stock, engine and chassis numbers below. They'll call you today: an OTP lands on your phone, you read it back, and this exact car is locked to you for good.",
     ],
   },
   moneyIntro: {

@@ -213,7 +213,7 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
             : undefined,
           // A dealer is only assigned once a car is found, so the no-car branch
           // lives here. Past this point a dealer (and the car) is secured.
-          altTimeSkip: { label: "If no car is found", href: "/car-allocation/failed" },
+          altTimeSkip: { label: "If no car is found", href: JOURNEY_PATHS.carAllocation.failed },
         };
 
       case "dealerFound": {
@@ -236,6 +236,8 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
                 deliveryLineClassName={deliveryLineClass}
                 dealerName={DEALER_NAME}
                 dealerDetail={DEALER_DETAIL}
+                engineNo={DEMO_VEHICLE_ENGINE_NO}
+                chassisNo={DEMO_VEHICLE_CHASSIS_NO}
               />
               <NextStepCard
                 title={`Pick up ${DEALER_NAME}'s call`}
@@ -259,35 +261,8 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
       }
 
       case "carReserved":
-        return {
-          ...base,
-          artifact: (
-            <CarSummaryCardLite
-              title={car.title}
-              variant={car.variant}
-              colour={car.colour}
-              statusChip="Locked to you ✓"
-              deliveryLine={deliveryLine}
-              deliveryLineClassName={deliveryLineClass}
-              dealerName={DEALER_NAME}
-              dealerDetail={DEALER_DETAIL}
-            />
-          ),
-          replies: primaryReply(JOURNEY_PATHS.carAllocation.pending),
-        };
-
-      case "allocationPending":
-        // The car is already found and the dealer secured, so this step moves
-        // straight through to the assignment — no no-car branch here.
-        return {
-          ...base,
-          working,
-          timeSkip: words.timeSkipLabel
-            ? { label: words.timeSkipLabel, href: JOURNEY_PATHS.carAllocation.confirmed }
-            : undefined,
-        };
-
-      case "allocationDone":
+        // OTP locked the exact unit found at dealer-found — engine/chassis and
+        // all. The car is fully settled here; next stop is the money.
         return {
           ...base,
           artifact: (

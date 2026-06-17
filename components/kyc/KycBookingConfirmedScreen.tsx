@@ -75,7 +75,7 @@ export function KycBookingConfirmedScreen({
       : afterModifySelection
         ? JOURNEY_PATHS.kyc.hub
         : BUYING_GUIDE_ENTRY_PATH
-    : "/car-allocation/pending";
+    : JOURNEY_PATHS.payment.default;
 
   const ctaLabel = isPayment
     ? afterModifyWithCharges
@@ -91,7 +91,7 @@ export function KycBookingConfirmedScreen({
       : afterModifySelection
         ? "Verify your identity"
         : "Buying guide"
-    : "Car allocation";
+    : "The money plan";
 
   const paymentConfirmedAmountInr = afterModifySelection
     ? (activeBooking?.newBookingAmountInr ?? MODIFY_SELECTION_NEW_BOOKING_AMOUNT_INR)

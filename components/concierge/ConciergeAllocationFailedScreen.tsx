@@ -29,9 +29,10 @@ export function ConciergeAllocationFailedScreen() {
           label: "I'll wait — switch me to standard delivery",
           onClick: () => {
             // The same car on the honest longer clock — delivery moves to 25 Oct '26.
+            // Re-enter at the dealer-found turn: on standard the car gets sourced.
             writeExperienceFlow("standard");
             writeConciergeEcho("Okay — standard delivery it is");
-            router.push(JOURNEY_PATHS.carAllocation.pending);
+            router.push(JOURNEY_PATHS.kyc.bookingAccepted);
           },
           echo: null,
         },
