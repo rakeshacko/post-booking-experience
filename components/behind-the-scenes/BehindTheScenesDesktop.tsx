@@ -50,8 +50,9 @@ const KIND_ICON: Record<AutoKind, ReactNode> = {
  */
 export function BehindTheScenesDesktop() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const lastActiveRef = useRef<string>(WAIT_STEPS[0].id);
-  const [activeId, setActiveId] = useState<string>(WAIT_STEPS[0].id);
+  const lastActiveRef = useRef<string | null>(null);
+  /** null = the phone is on a non-wait screen (quote / payment); panel sits empty. */
+  const [activeId, setActiveId] = useState<string | null>(null);
 
   const syncFromIframe = useCallback(() => {
     const frame = iframeRef.current;
@@ -63,8 +64,8 @@ export function BehindTheScenesDesktop() {
       return; // mid-navigation cross-origin guard
     }
     if (!path) return;
-    const id = matchStepIdForPath(path);
-    if (id && id !== lastActiveRef.current) {
+    const id = matchStepIdForPath(path); // null when the route isn't a wait
+    if (id !== lastActiveRef.current) {
       lastActiveRef.current = id;
       setActiveId(id);
     }
@@ -80,8 +81,8 @@ export function BehindTheScenesDesktop() {
     if (frame) frame.src = href;
   }, []);
 
-  const active = stepById(activeId) ?? WAIT_STEPS[0];
-  const accent = active.accent;
+  const active = stepById(activeId);
+  const accent = active?.accent ?? "#8b8a93";
 
   return (
     <div className="fixed inset-0 z-50 flex bg-white text-[#1b1a22]">
@@ -93,18 +94,20 @@ export function BehindTheScenesDesktop() {
       {/* Right — only the current step; recolours per step */}
       <main className="relative flex min-w-0 flex-1 flex-col overflow-hidden border-l border-black/[0.07] px-10 py-8">
         {/* accent wash — re-keyed per step so it blooms in on change */}
-        <div
-          key={active.id}
-          aria-hidden
-          className="bts-wash-in pointer-events-none absolute inset-0"
-          style={{
-            backgroundImage: `radial-gradient(58% 52% at 94% -8%, ${accent}26, ${accent}00 60%), radial-gradient(46% 48% at -6% 108%, ${accent}1a, ${accent}00 58%)`,
-          }}
-        />
+        {active ? (
+          <div
+            key={active.id}
+            aria-hidden
+            className="bts-wash-in pointer-events-none absolute inset-0"
+            style={{
+              backgroundImage: `radial-gradient(58% 52% at 94% -8%, ${accent}26, ${accent}00 60%), radial-gradient(46% 48% at -6% 108%, ${accent}1a, ${accent}00 58%)`,
+            }}
+          />
+        ) : null}
         <div className="relative z-10 flex min-h-0 flex-1 flex-col">
           <Stepper activeId={activeId} accent={accent} onJump={(s) => loadInPhone(s.launchHref)} />
           <div className="flex flex-1 flex-col justify-center overflow-y-auto py-6">
-            <FocusedStep key={active.id} step={active} />
+            {active ? <FocusedStep key={active.id} step={active} /> : <EmptyState />}
           </div>
         </div>
       </main>
@@ -139,12 +142,12 @@ function Stepper({
   accent,
   onJump,
 }: {
-  activeId: string;
+  activeId: string | null;
   accent: string;
   onJump: (s: WaitStep) => void;
 }) {
-  const activeNum = stepById(activeId)?.num ?? 1;
-  const progress = (activeNum - 1) / (WAIT_STEPS.length - 1);
+  const activeNum = activeId ? (stepById(activeId)?.num ?? 0) : 0;
+  const progress = activeNum > 0 ? (activeNum - 1) / (WAIT_STEPS.length - 1) : 0;
   return (
     <nav className="relative flex items-start justify-between" aria-label="Journey waits">
       <div className="pointer-events-none absolute inset-x-[15px] top-[15px] h-[2px] rounded-full bg-black/10" aria-hidden />
@@ -193,6 +196,18 @@ function Stepper({
 }
 
 /* ------------------------------------------------------------------ */
+
+/** Shown while the phone is on a non-wait screen (quote / payment) — airy, not blank. */
+function EmptyState() {
+  return (
+    <div className="mx-auto flex max-w-[440px] flex-col items-center text-center">
+      <p className="text-[13.5px] leading-relaxed text-[#a9a8b1]">
+        Walk the journey on the phone. As each wait comes up, the work behind it — and how we
+        remove it — appears here.
+      </p>
+    </div>
+  );
+}
 
 function FocusedStep({ step }: { step: WaitStep }) {
   const northstar = step.status === "northstar";
