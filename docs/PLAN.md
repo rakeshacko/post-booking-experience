@@ -135,6 +135,7 @@ Switch on **`/quote`** via the top-left menu (`QuoteFlowMenuSheet`). Active flow
 | Path | Purpose |
 |------|---------|
 | `/` | Redirects to `/quote` |
+| `/behind-the-scenes` | **Desktop "behind the scenes" view** (wide screens) — the mobile prototype in a phone frame (iframe) on the left (~1/3), and every journey *wait* on the right (~2/3): what's happening operationally, who runs it by hand today, and the real automation lever (integration / government rail / banking API / parallel matching / in-app code). Light mode; the panel recolours to a per-step accent on every change. Live-syncs the active step to the phone's route and offers per-step jumps. Source: `components/behind-the-scenes/BehindTheScenesDesktop.tsx`, wait catalogue in `lib/behind-the-scenes/steps.ts`. Steps track the concierge spine (`lib/concierge/script.ts`), incl. the dealer-found turn (reservation + exact unit) and the on-screen OTP (`/kyc/otp-verify`). |
 | `/quote` | Entry / quote screen |
 | `/payment/choose` | Choose payment method (ACKO Drive / self finance / full payment) |
 | `/payment/acko-drive-finance-confirmed` | After bank sheet **Confirm banking partner** — celebration + docs card; **Continue** → `/payment/acko-drive-finance-action?bank=` |

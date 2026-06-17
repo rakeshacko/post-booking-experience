@@ -224,6 +224,40 @@ body {
   animation: payment-success-fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
+/* Behind-the-scenes — focused step swap (one step shown at a time) */
+@keyframes bts-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.bts-fade-in {
+  animation: bts-fade-in 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* Behind-the-scenes — background wash that blooms in on every step change,
+   pulling attention to the right panel. */
+@keyframes bts-wash-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.bts-wash-in {
+  animation: bts-wash-in 0.6s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bts-fade-in,
+  .bts-wash-in {
+    animation: none;
+  }
+}
+
 /* Concierge — user reply echo chip (your last words, landing on the next turn) */
 @keyframes concierge-echo-in {
   from {

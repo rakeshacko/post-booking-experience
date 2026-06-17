@@ -7,6 +7,12 @@
       "runtimeArgs": ["next", "dev", "--turbopack"],
       "port": 3000,
       "autoPort": true
+    },
+    {
+      "name": "pbe-3100",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["next", "dev", "--turbopack", "--port", "3100"],
+      "port": 3100
     }
   ]
 }
