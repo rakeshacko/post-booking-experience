@@ -139,18 +139,18 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
         const planItems: PlanItem[] = [
           {
             icon: "documents",
-            title: "Share your PAN & Aadhaar",
-            detail: "Two minutes, right now — I file everything else.",
+            title: "A quick paperwork step",
+            detail: "Confirm a couple of documents. Two minutes.",
           },
           {
             icon: "car",
             title: "I find your exact car",
-            detail: "Your variant and colour, reserved in your name with a dealer.",
+            detail: "Your variant and colour, reserved in your name.",
           },
           {
             icon: "money",
-            title: "We sort the money",
-            detail: "Finance through me or your own bank — your call.",
+            title: "We sort the payment",
+            detail: "Finance through me or your own bank. Your choice.",
           },
           {
             icon: "delivery",
@@ -185,7 +185,7 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
           ...base,
           working:
             working && failed
-              ? { ...working, doneLabel: "Hmm — one detail needs a second look" }
+              ? { ...working, doneLabel: "One detail needs a second look" }
               : working,
           replies: failed
             ? [
@@ -209,7 +209,7 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
           ...base,
           artifact: (
             <NoteCallout iconSrc={infoIcon}>
-              Nothing needed from you right now — I&apos;ll message you the moment there&apos;s
+              Nothing needed from you right now. I&apos;ll message you as soon as there&apos;s
               news.
             </NoteCallout>
           ),
@@ -271,25 +271,25 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
               {ackoOnly ? (
                 <NextStepCard
                   title="Confirm with a one-time code"
-                  body="I'll trigger an OTP on your phone, you enter it on the next screen, and the car is locked to you. No dealer call — I handle that in the background."
-                  etaLabel="Under a minute"
+                  body="We'll notify you when your code is ready. Enter it here within 10 minutes to confirm your car."
+                  etaLabel="Usually within 30 minutes"
                 />
               ) : (
                 <>
                   <NextStepCard
                     title={`Pick up ${dealer.name}'s call`}
-                    body="An OTP will land on your phone — read it back to them to lock the car."
-                    etaLabel="Expected today, before 6:00 PM"
+                    body="They'll send a one-time code to your phone. Share it with them to confirm your car."
+                    etaLabel="Expected today, before 6 PM"
                   />
                   <ShimmerInfoCard icon="alert">
-                    If the call slips, your reservation — and your {deliveryDate} delivery — can
-                    slip with it.
+                    If you miss the call, your reservation and your {deliveryDate} delivery could
+                    slip.
                   </ShimmerInfoCard>
                 </>
               )}
               <p className="px-1 text-xs leading-[18px] text-[#757575]">
-                Second thoughts? One change costs ₹5,000; cancelling holds back 50% of what
-                you&apos;ve paid — both live in the ⋮ menu up top.
+                Having second thoughts? A change costs ₹5,000 and cancelling holds back half of
+                what you&apos;ve paid. Both are in the ⋮ menu up top.
               </p>
             </>
           ),

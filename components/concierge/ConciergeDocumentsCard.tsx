@@ -168,8 +168,8 @@ export function ConciergeDocumentsCard({
     <>
       {/* Pre-action caveat — must be read before files are picked, so it sits above the card. */}
       <ShimmerInfoCard lead="Quick check:">
-        the name should match on both documents, and the Aadhaar address should be in Bengaluru
-        — where your car gets registered.
+        the name should match on both documents, and the Aadhaar address should be in Bengaluru,
+        where your car gets registered.
       </ShimmerInfoCard>
 
       <div className="overflow-hidden rounded-2xl bg-white card-elevated">
@@ -207,7 +207,7 @@ export function ConciergeDocumentsCard({
               )}
             </span>
             <span className="mt-0.5 block text-xs leading-[18px] text-[#757575]">
-              Both documents in one tap — no photos needed
+              Both documents in one tap, no photos needed
             </span>
           </span>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden className="shrink-0 text-[#5920c5]">
@@ -258,7 +258,7 @@ export function ConciergeDocumentsCard({
               strokeLinecap="round"
             />
           </svg>
-          Encrypted, and used only for this purchase — nobody else sees them.
+          Encrypted, and used only for this purchase. Nobody else sees them.
         </p>
       </div>
 

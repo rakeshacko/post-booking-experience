@@ -99,7 +99,7 @@ export function ShiviCallSheet({ open, onClose }: ShiviCallSheetProps) {
               id="shivi-call-sheet-title"
               className="mt-5 text-xl font-medium leading-7 text-[#121212]"
             >
-              On it — I&apos;ll call you within 10 minutes.
+              On it. I&apos;ll call you within 10 minutes.
             </h2>
             <p className="mt-2 text-sm leading-5 text-[#4b4b4b]">
               The call comes from ACKO Drive on your number ending in 21. Keep your phone handy.

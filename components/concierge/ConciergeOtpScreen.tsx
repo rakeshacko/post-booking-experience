@@ -1,10 +1,16 @@
 "use client";
 
-import { useId, useRef, useState, type ChangeEvent, type KeyboardEvent } from "react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type KeyboardEvent,
+} from "react";
 
-import { NoteCallout } from "@/components/concierge/artifacts";
+import { NextStepCard } from "@/components/concierge/artifacts";
 import { ConciergeTurnShell } from "@/components/concierge/ConciergeTurnShell";
-import infoIcon from "@/assets/Info.svg";
 import {
   OTP_DEMO_PHONE_SUFFIX,
   OTP_ENTER_WORDS,
@@ -13,13 +19,16 @@ import {
 import { JOURNEY_PATHS } from "@/lib/journey-routes";
 
 const OTP_LENGTH = 6;
+/** The window the customer has to enter the code once it lands. */
+const OTP_WINDOW_SECONDS = 10 * 60;
 
 /**
- * On-screen OTP — the AckoDrive-only replacement for the dealer's call. Two
- * beats: a heads-up that the code is about to be triggered, then the entry
- * screen. AckoDrive relays the code to the dealer in the background, so the
- * customer never talks to anyone but us. Submitting lands on the existing
- * "OTP confirmed — yours" turn (booking-confirmed / carReserved).
+ * On-screen OTP — the AckoDrive-only replacement for the dealer's call. The
+ * code is triggered when the dealer is ready (not by the customer), so the
+ * first beat is a heads-up: we'll notify you, here's roughly when, and you'll
+ * have ~10 minutes to enter it before it expires. The second beat is the entry
+ * screen, reached when the notification lands (a demo time-skip stands in for
+ * that). Submitting lands on the "your car is confirmed" turn.
  */
 export function ConciergeOtpScreen() {
   const [phase, setPhase] = useState<"headsup" | "enter">("headsup");
@@ -34,18 +43,26 @@ export function ConciergeOtpScreen() {
         says={OTP_HEADSUP_WORDS.says}
         callLabel={OTP_HEADSUP_WORDS.callLabel}
         artifact={
-          <NoteCallout iconSrc={infoIcon}>
-            No dealer call — I trigger the code, you read it back here, and I confirm it with
-            the dealer in the background.
-          </NoteCallout>
+          <NextStepCard
+            title="Watch for your code"
+            body="We'll notify you the moment it's ready. Open the app and enter it within 10 minutes."
+            etaLabel="Usually within 30 minutes"
+          />
         }
-        replies={[
-          {
-            label: OTP_HEADSUP_WORDS.replyLabel ?? "Trigger my OTP",
-            echo: OTP_HEADSUP_WORDS.replyEcho,
-            onClick: () => setPhase("enter"),
-          },
-        ]}
+        footerExtra={
+          <button
+            type="button"
+            className="time-skip-chip"
+            onClick={() => setPhase("enter")}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path d="M4 5v14l8-7-8-7zM13 5v14l8-7-8-7z" fill="currentColor" fillOpacity="0.7" />
+            </svg>
+            <span>
+              When the code arrives <span className="text-[#a6a6a6]">· demo</span>
+            </span>
+          </button>
+        }
       />
     );
   }
@@ -57,9 +74,9 @@ export function ConciergeOtpScreen() {
       artifact={<OtpInput digits={digits} onChange={setDigits} />}
       replies={[
         {
-          label: "Verify & lock my car",
+          label: "Confirm my car",
           href: JOURNEY_PATHS.kyc.bookingConfirmed,
-          echo: "OTP confirmed",
+          echo: "Code entered",
           disabled: !complete,
         },
       ]}
@@ -72,10 +89,28 @@ type OtpInputProps = {
   onChange: (next: string[]) => void;
 };
 
-/** Six single-digit boxes with auto-advance and backspace handling. */
+/** Six single-digit boxes with auto-advance, backspace handling, and an expiry countdown. */
 function OtpInput({ digits, onChange }: OtpInputProps) {
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
   const groupId = useId();
+  const [remaining, setRemaining] = useState(OTP_WINDOW_SECONDS);
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setRemaining((value) => Math.max(0, value - 1));
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const expired = remaining === 0;
+  const minutes = Math.floor(remaining / 60);
+  const seconds = String(remaining % 60).padStart(2, "0");
+
+  const resend = () => {
+    onChange(Array<string>(OTP_LENGTH).fill(""));
+    setRemaining(OTP_WINDOW_SECONDS);
+    inputsRef.current[0]?.focus();
+  };
 
   const focusBox = (index: number) => {
     const el = inputsRef.current[index];
@@ -135,15 +170,35 @@ function OtpInput({ digits, onChange }: OtpInputProps) {
             autoComplete={index === 0 ? "one-time-code" : "off"}
             maxLength={index === 0 ? OTP_LENGTH : 1}
             value={digit}
+            disabled={expired}
             onChange={handleChange(index)}
             onKeyDown={handleKeyDown(index)}
             aria-label={`Digit ${index + 1}`}
-            className="h-12 w-11 rounded-xl border border-[#e0e0e0] bg-[#fafafa] text-center text-lg font-semibold text-[#121212] tabular-nums outline-none transition-colors focus:border-[#121212] focus:bg-white"
+            className="h-12 w-11 rounded-xl border border-[#e0e0e0] bg-[#fafafa] text-center text-lg font-semibold text-[#121212] tabular-nums outline-none transition-colors focus:border-[#121212] focus:bg-white disabled:opacity-50"
           />
         ))}
       </div>
       <p className="mt-3 text-center text-xs leading-[18px] text-[#757575]">
-        Sent to your phone ending {OTP_DEMO_PHONE_SUFFIX}
+        {expired ? (
+          <>
+            Your code expired.{" "}
+            <button
+              type="button"
+              onClick={resend}
+              className="font-medium text-[#5920c5] underline underline-offset-2"
+            >
+              Send a new one
+            </button>
+          </>
+        ) : (
+          <>
+            Sent to your phone ending {OTP_DEMO_PHONE_SUFFIX}. Expires in{" "}
+            <span className="font-medium text-[#121212] tabular-nums">
+              {minutes}:{seconds}
+            </span>
+            .
+          </>
+        )}
       </p>
     </div>
   );

@@ -26,26 +26,26 @@ export function ConciergeAllocationFailedScreen() {
   }, []);
 
   const reason = isAckoOnly(dealerVisibility)
-    ? "We couldn't source your exact Creta on the express timeline — no allocation came through near you. This one is on us, not you — so every option below is free, and your money is never stuck."
-    : "Advaith Hyundai's allocation fell through, and no dealer near you has your exact Creta on the express timeline. This one is on us, not you — so every option below is free, and your money is never stuck.";
+    ? "We couldn't source your exact Creta on the express timeline. This one is on us, not you, so every option below is free and your money stays safe."
+    : "The dealer fell through, and no one nearby has your exact Creta on the express timeline. This one is on us, not you, so every option below is free and your money stays safe.";
 
   return (
     <ConciergeTurnShell
-      says={["I couldn't find your car, Sharath — I'm sorry.", reason]}
+      says={["I'm sorry, Sharath. I couldn't find your car.", reason]}
       replies={[
         {
-          label: "I'll wait — switch me to standard delivery",
+          label: "I'll wait for standard delivery",
           onClick: () => {
             // The same car on the honest longer clock — delivery moves to 25 Oct '26.
             // Re-enter at the dealer-found turn: on standard the car gets sourced.
             writeExperienceFlow("standard");
-            writeConciergeEcho("Okay — standard delivery it is");
+            writeConciergeEcho("I'll wait for standard delivery");
             router.push(JOURNEY_PATHS.kyc.bookingAccepted);
           },
           echo: null,
         },
         {
-          label: "Show me different cars — free change",
+          label: "Show me other cars",
           kind: "soft",
           onClick: () => {
             // Our failure: the change is free and doesn't consume the one-time allowance.
@@ -62,8 +62,8 @@ export function ConciergeAllocationFailedScreen() {
           echo: null,
         },
       ]}
-      footnote="All three options are free — this one's on us"
-      callLabel="Annoyed? Fair. I can call you"
+      footnote="All three options are free. This one's on us."
+      callLabel="Want to talk it through? I can call you"
     />
   );
 }
