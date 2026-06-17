@@ -197,10 +197,66 @@ const STANDARD_OVERRIDES: Partial<Record<ConciergeMomentId, Partial<TurnWords>>>
   },
 };
 
-/** Words for a turn — standard delivery overrides merge over the express base. */
-export function getTurnWords(moment: ConciergeMomentId, flow: ExperienceFlow): TurnWords {
+/**
+ * AckoDrive-only overrides — the dealer is never named and the OTP is on-screen
+ * rather than a dealer call. Flow-neutral wording so it merges cleanly over
+ * either the express or standard base.
+ */
+const ACKO_ONLY_OVERRIDES: Partial<Record<ConciergeMomentId, Partial<TurnWords>>> = {
+  dealerFound: {
+    says: [
+      "Found it, Sharath — down to the exact car.",
+      "I've sourced and reserved a specific Creta for you through AckoDrive — fresh stock, with its engine and chassis numbers below. To lock it to you there's a quick one-time code: I'll trigger it on your phone and you enter it on the next screen. No dealer calls — I handle all of that in the background.",
+    ],
+  },
+  carReserved: {
+    says: [
+      "OTP confirmed — this exact Creta is yours.",
+      "Your one-time code checked out, so the car below — engine, chassis and all — is locked to you for good. I squared everything with the dealer in the background. That's the whole car settled, Sharath.",
+    ],
+  },
+};
+
+/**
+ * Words for a turn — standard delivery overrides merge over the express base,
+ * then the AckoDrive-only overrides merge on top when the dealer is hidden.
+ */
+export function getTurnWords(
+  moment: ConciergeMomentId,
+  flow: ExperienceFlow,
+  ackoOnly = false,
+): TurnWords {
   const base = EXPRESS_SCRIPT[moment];
-  if (flow !== "standard") return base;
-  const override = STANDARD_OVERRIDES[moment];
-  return override ? { ...base, ...override } : base;
+  const withFlow =
+    flow === "standard" && STANDARD_OVERRIDES[moment]
+      ? { ...base, ...STANDARD_OVERRIDES[moment] }
+      : base;
+  if (!ackoOnly) return withFlow;
+  const ackoOverride = ACKO_ONLY_OVERRIDES[moment];
+  return ackoOverride ? { ...withFlow, ...ackoOverride } : withFlow;
 }
+
+/**
+ * On-screen OTP turn (`/kyc/otp-verify`) — bespoke screen with two beats
+ * (heads-up → enter the code) handled inline by `ConciergeOtpScreen`, so its
+ * words live here but outside the moment map. AckoDrive-only path only.
+ */
+export const OTP_HEADSUP_WORDS: TurnWords = {
+  says: [
+    "Last step to lock your Creta — a one-time code.",
+    "When you're ready I'll trigger it on your phone as an SMS. Read it back to me on the next screen and this exact car is yours — the dealer never has to call you, I pass it on in the background.",
+  ],
+  replyLabel: "Trigger my OTP",
+  replyEcho: "Trigger my OTP",
+  callLabel: "Rather do this on a call? I can call you",
+};
+
+export const OTP_ENTER_WORDS: TurnWords = {
+  says: [
+    "Sent — enter the 6-digit code.",
+    "It's on its way to your phone ending 3210. Pop it in and your exact Creta is locked to you.",
+  ],
+};
+
+/** Demo masked phone the OTP appears to land on. */
+export const OTP_DEMO_PHONE_SUFFIX = "3210";

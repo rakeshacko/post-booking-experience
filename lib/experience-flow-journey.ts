@@ -40,6 +40,7 @@ const MODIFY_NO_CHARGES_BLOCKED_PATHS = new Set<string>([
   JOURNEY_PATHS.kyc.verificationFailed,
   JOURNEY_PATHS.kyc.processing,
   JOURNEY_PATHS.kyc.bookingAccepted,
+  JOURNEY_PATHS.kyc.otpVerify,
   JOURNEY_PATHS.kyc.bookingConfirmed,
   // Car-allocation paths (incl. the failure branch) are caught by the
   // `/car-allocation/` prefix guard below.
@@ -50,6 +51,7 @@ const CANCEL_NO_CHARGES_BLOCKED_PATHS = new Set<string>([
   JOURNEY_PATHS.kyc.verificationFailed,
   JOURNEY_PATHS.kyc.processing,
   JOURNEY_PATHS.kyc.bookingAccepted,
+  JOURNEY_PATHS.kyc.otpVerify,
   JOURNEY_PATHS.kyc.bookingConfirmed,
   // Car-allocation paths are caught by the `/car-allocation/` prefix guard below.
 ]);

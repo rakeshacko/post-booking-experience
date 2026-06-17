@@ -15,6 +15,12 @@ import {
   SELF_FINANCE_LOAN_DEFAULT_INR,
   SLIDER_STEP,
 } from "@/components/payment/loan-amount-demo-constants";
+import {
+  DEFAULT_DEALER_VISIBILITY,
+  readDealerVisibility,
+  resolveDealerAttribution,
+  type DealerVisibility,
+} from "@/lib/dealer-visibility";
 import { BOOKING_LOCK_AMOUNT_INR, buildDownPaymentCheckoutHref } from "@/lib/paymentUrls";
 import { formatInrAmountDigits, parseInrAmountInput } from "@/lib/loan-emi";
 
@@ -58,6 +64,13 @@ export function EnterDisbursementAmountScreen() {
   const [loanAmountInput, setLoanAmountInput] = useState(() =>
     formatInrAmountDigits(clampDisbursementLoan(SELF_FINANCE_LOAN_DEFAULT_INR)),
   );
+  const [dealerVisibility, setDealerVisibility] = useState<DealerVisibility>(
+    DEFAULT_DEALER_VISIBILITY,
+  );
+
+  useEffect(() => {
+    setDealerVisibility(readDealerVisibility());
+  }, []);
 
   const applyLoanAmount = useCallback((amount: number) => {
     const clamped = clampDisbursementLoan(amount);
@@ -134,7 +147,7 @@ export function EnterDisbursementAmountScreen() {
           className="payment-success-stagger mt-4 text-sm font-normal leading-5 text-[#4b4b4b]"
           style={{ animationDelay: `${STAGGER_SUBTEXT_MS}ms` }}
         >
-          Enter the amount your bank will transfer to Advaith Hyundai. This is usually your
+          Enter the amount your bank will transfer to {resolveDealerAttribution(dealerVisibility).name}. This is usually your
           sanctioned amount minus any processing fees.
         </p>
 

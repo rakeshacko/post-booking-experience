@@ -2,6 +2,10 @@ import {
   getBookingDeliveryLine,
   splitBookingDeliveryLine,
 } from "@/lib/experience-flow-content";
+import {
+  resolveDealerAttribution,
+  type DealerVisibility,
+} from "@/lib/dealer-visibility";
 import type { ExperienceFlow } from "@/lib/experience-flow";
 import { normalizeAppPathname } from "@/lib/journey-routes";
 
@@ -110,14 +114,17 @@ export type JourneyReceipt = {
 };
 
 /** Paper trail by stage — what exists so far, oldest first. */
-export function getJourneyReceipts(pathname: string): JourneyReceipt[] {
+export function getJourneyReceipts(
+  pathname: string,
+  dealerVisibility: DealerVisibility = "revealed",
+): JourneyReceipt[] {
   const stage = resolveJourneyStageIndex(pathname);
   const receipts: JourneyReceipt[] = [
     { title: "Price-lock receipt", meta: "₹10,000 · paid" },
   ];
   if (stage >= 2) {
     receipts.push(
-      { title: "Reservation confirmation", meta: "Advaith Hyundai" },
+      { title: "Reservation confirmation", meta: resolveDealerAttribution(dealerVisibility).name },
       { title: "Allocation certificate", meta: "Engine & chassis no." },
       { title: "Proforma invoice", meta: "On-road price breakup" },
     );

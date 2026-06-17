@@ -28,6 +28,13 @@ import { ShimmerInfoCard } from "@/components/ui/ShimmerInfoCard";
 import { readActiveBookingSnapshot } from "@/lib/active-booking-snapshot";
 import { ARRIVAL_LEAD_PAID, getTurnWords, type ConciergeMomentId } from "@/lib/concierge/script";
 import {
+  DEFAULT_DEALER_VISIBILITY,
+  isAckoOnly,
+  readDealerVisibility,
+  resolveDealerAttribution,
+  type DealerVisibility,
+} from "@/lib/dealer-visibility";
+import {
   DEFAULT_EXPERIENCE_FLOW,
   isCancelNoChargesFlow,
   readExperienceFlow,
@@ -45,9 +52,6 @@ import {
 } from "@/lib/kyc-verification-outcome";
 import { BOOKING_LOCK_AMOUNT_INR } from "@/lib/paymentUrls";
 
-const DEALER_NAME = "Advaith Hyundai";
-const DEALER_DETAIL = "Whitefield · Bengaluru";
-
 export type ConciergeMomentProps = {
   moment: ConciergeMomentId;
 };
@@ -60,16 +64,29 @@ export type ConciergeMomentProps = {
 export function ConciergeMoment({ moment }: ConciergeMomentProps) {
   const router = useRouter();
   const [flow, setFlow] = useState<ExperienceFlow>(DEFAULT_EXPERIENCE_FLOW);
+  const [dealerVisibility, setDealerVisibility] = useState<DealerVisibility>(
+    DEFAULT_DEALER_VISIBILITY,
+  );
   const [flowReady, setFlowReady] = useState(false);
   /** Arrival only — the price-lock payment settles while Shivi talks. */
   const [arrivalPaid, setArrivalPaid] = useState(false);
 
   useEffect(() => {
     setFlow(readExperienceFlow());
+    setDealerVisibility(readDealerVisibility());
     setFlowReady(true);
   }, []);
 
-  const words = useMemo(() => getTurnWords(moment, flow), [moment, flow]);
+  const ackoOnly = isAckoOnly(dealerVisibility);
+  const words = useMemo(
+    () => getTurnWords(moment, flow, ackoOnly),
+    [moment, flow, ackoOnly],
+  );
+  /** Who the car is attributed to on cards — the dealer, or AckoDrive when hidden. */
+  const dealer = useMemo(
+    () => resolveDealerAttribution(dealerVisibility),
+    [dealerVisibility],
+  );
 
   /** Car details — honour an updated selection from the modify flows. */
   const car = useMemo(() => {
@@ -223,7 +240,8 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
           .trim();
         return {
           ...base,
-          // No reply buttons here, but the date is in the user's hands — the call is the action.
+          // Revealed: the dealer's call is the action (demo time-skip). AckoDrive-only:
+          // the on-screen OTP is the action, so it gets a reply button.
           dateHolder: "you",
           artifact: (
             <>
@@ -234,29 +252,49 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
                 colour={car.colour}
                 deliveryLine={deliveryLine}
                 deliveryLineClassName={deliveryLineClass}
-                dealerName={DEALER_NAME}
-                dealerDetail={DEALER_DETAIL}
+                dealerName={dealer.name}
+                dealerDetail={dealer.detail}
                 engineNo={DEMO_VEHICLE_ENGINE_NO}
                 chassisNo={DEMO_VEHICLE_CHASSIS_NO}
               />
-              <NextStepCard
-                title={`Pick up ${DEALER_NAME}'s call`}
-                body="An OTP will land on your phone — read it back to them to lock the car."
-                etaLabel="Expected today, before 6:00 PM"
-              />
-              <ShimmerInfoCard icon="alert">
-                If the call slips, your reservation — and your {deliveryDate} delivery — can
-                slip with it.
-              </ShimmerInfoCard>
+              {ackoOnly ? (
+                <NextStepCard
+                  title="Confirm with a one-time code"
+                  body="I'll trigger an OTP on your phone, you enter it on the next screen, and the car is locked to you. No dealer call — I handle that in the background."
+                  etaLabel="Under a minute"
+                />
+              ) : (
+                <>
+                  <NextStepCard
+                    title={`Pick up ${dealer.name}'s call`}
+                    body="An OTP will land on your phone — read it back to them to lock the car."
+                    etaLabel="Expected today, before 6:00 PM"
+                  />
+                  <ShimmerInfoCard icon="alert">
+                    If the call slips, your reservation — and your {deliveryDate} delivery — can
+                    slip with it.
+                  </ShimmerInfoCard>
+                </>
+              )}
               <p className="px-1 text-xs leading-[18px] text-[#757575]">
                 Second thoughts? One change costs ₹5,000; cancelling holds back 50% of what
                 you&apos;ve paid — both live in the ⋮ menu up top.
               </p>
             </>
           ),
-          timeSkip: words.timeSkipLabel
-            ? { label: words.timeSkipLabel, href: JOURNEY_PATHS.kyc.bookingConfirmed }
+          replies: ackoOnly
+            ? [
+                {
+                  label: "Confirm with OTP",
+                  href: JOURNEY_PATHS.kyc.otpVerify,
+                  echo: "Confirm with OTP",
+                },
+              ]
             : undefined,
+          timeSkip:
+            !ackoOnly && words.timeSkipLabel
+              ? { label: words.timeSkipLabel, href: JOURNEY_PATHS.kyc.bookingConfirmed }
+              : undefined,
         };
       }
 
@@ -273,8 +311,8 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
               statusChip="Yours ✓"
               deliveryLine={deliveryLine}
               deliveryLineClassName={deliveryLineClass}
-              dealerName={DEALER_NAME}
-              dealerDetail={DEALER_DETAIL}
+              dealerName={dealer.name}
+              dealerDetail={dealer.detail}
               engineNo={DEMO_VEHICLE_ENGINE_NO}
               chassisNo={DEMO_VEHICLE_CHASSIS_NO}
             />
@@ -289,7 +327,18 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
           replies: primaryReply(JOURNEY_PATHS.payment.choose),
         };
     }
-  }, [moment, words, flow, car, deliveryLine, deliveryLineClass, arrivalPaid, router]);
+  }, [
+    moment,
+    words,
+    flow,
+    car,
+    deliveryLine,
+    deliveryLineClass,
+    arrivalPaid,
+    router,
+    ackoOnly,
+    dealer,
+  ]);
 
   const { hideBack, ...turnProps } = turn;
 

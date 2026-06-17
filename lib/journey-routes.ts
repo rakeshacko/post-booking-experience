@@ -12,6 +12,8 @@ export const JOURNEY_PATHS = {
     processing: "/kyc/processing",
     bookingConfirmed: "/kyc/booking-confirmed",
     bookingAccepted: "/kyc/booking-accepted",
+    /** AckoDrive-only on-screen OTP (heads-up → enter) — replaces the dealer call. */
+    otpVerify: "/kyc/otp-verify",
     modifySelection: "/kyc/modify-selection",
     cancelBooking: "/kyc/cancel-booking",
   },

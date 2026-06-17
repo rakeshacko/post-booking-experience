@@ -15,14 +15,18 @@ import {
 } from "@/components/kyc/demo-vehicle-identification";
 import { fireBasicCannon } from "@/lib/confetti-basic-cannon";
 import {
+  DEFAULT_DEALER_VISIBILITY,
+  isAckoOnly,
+  readDealerVisibility,
+  resolveDealerAttribution,
+  type DealerVisibility,
+} from "@/lib/dealer-visibility";
+import {
   DEFAULT_EXPERIENCE_FLOW,
   readExperienceFlow,
   type ExperienceFlow,
 } from "@/lib/experience-flow";
 import { cn } from "@/lib/utils";
-
-const DEALER_NAME = "Advaith Hyundai";
-const DEALER_DETAIL = "Whitefield · Bengaluru";
 
 /** Candidate delivery days inside the promised window (flow-aware). */
 const EXPRESS_DAYS = ["Sat 7 Jun", "Sun 8 Jun", "Mon 9 Jun", "Tue 10 Jun"] as const;
@@ -77,14 +81,19 @@ function SlotChips({
  */
 export function CarDeliveryScheduleScreen() {
   const [flow, setFlow] = useState<ExperienceFlow>(DEFAULT_EXPERIENCE_FLOW);
+  const [dealerVisibility, setDealerVisibility] = useState<DealerVisibility>(
+    DEFAULT_DEALER_VISIBILITY,
+  );
   const [day, setDay] = useState<string | null>(null);
   const [windowSlot, setWindowSlot] = useState<string | null>(null);
   const [scheduled, setScheduled] = useState(false);
 
   useEffect(() => {
     setFlow(readExperienceFlow());
+    setDealerVisibility(readDealerVisibility());
   }, []);
 
+  const dealer = resolveDealerAttribution(dealerVisibility);
   const days = flow === "standard" ? STANDARD_DAYS : EXPRESS_DAYS;
 
   const replies = useMemo(
@@ -115,8 +124,8 @@ export function CarDeliveryScheduleScreen() {
             variant={BOOKING_CAR_VARIANT}
             colour={BOOKING_CAR_COLOR}
             deliveryLine={`Arriving ${day} · ${windowSlot}`}
-            dealerName={DEALER_NAME}
-            dealerDetail={DEALER_DETAIL}
+            dealerName={dealer.name}
+            dealerDetail={dealer.detail}
             engineNo={DEMO_VEHICLE_ENGINE_NO}
             chassisNo={DEMO_VEHICLE_CHASSIS_NO}
           />
@@ -130,7 +139,9 @@ export function CarDeliveryScheduleScreen() {
     <ConciergeTurnShell
       says={[
         "Your Creta is ready, Sharath.",
-        `Registered, insured, and waiting at ${DEALER_NAME}. Pick a day and a window — I'll have it at your door.`,
+        isAckoOnly(dealerVisibility)
+          ? "Registered, insured, and ready to roll. Pick a day and a window — I'll have it at your door."
+          : `Registered, insured, and waiting at ${dealer.name}. Pick a day and a window — I'll have it at your door.`,
       ]}
       replies={replies}
       callLabel="Special instructions? I can call you"

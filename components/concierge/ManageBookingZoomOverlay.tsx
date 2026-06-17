@@ -7,6 +7,11 @@ import { PlanList } from "@/components/concierge/artifacts";
 import { DEMO_BOOKING_ID } from "@/components/kyc/booking-car-card-content";
 import { ManageBookingSections } from "@/components/kyc/ManageBookingBottomSheet";
 import { BottomSheetPortal } from "@/components/ui/BottomSheetPortal";
+import {
+  DEFAULT_DEALER_VISIBILITY,
+  readDealerVisibility,
+  type DealerVisibility,
+} from "@/lib/dealer-visibility";
 import { readExperienceFlow, type ExperienceFlow } from "@/lib/experience-flow";
 import {
   getDeliveryDateFull,
@@ -65,14 +70,21 @@ export function ManageBookingZoomOverlay({
 }: ManageBookingZoomOverlayProps) {
   const pathname = usePathname();
   const [flow, setFlow] = useState<ExperienceFlow | undefined>(undefined);
+  const [dealerVisibility, setDealerVisibility] = useState<DealerVisibility>(
+    DEFAULT_DEALER_VISIBILITY,
+  );
 
   useEffect(() => {
     if (!mounted) return;
     setFlow(readExperienceFlow());
+    setDealerVisibility(readDealerVisibility());
   }, [mounted]);
 
   const steps = useMemo(() => getJourneyStageSteps(pathname, flow), [pathname, flow]);
-  const receipts = useMemo(() => getJourneyReceipts(pathname), [pathname]);
+  const receipts = useMemo(
+    () => getJourneyReceipts(pathname, dealerVisibility),
+    [pathname, dealerVisibility],
+  );
   const nowStep = steps.find((step) => step.status === "now");
   const deliveryDate = getDeliveryDateFull(flow);
   /** Scroll lock — compensate for the scrollbar so the page never reflows. */

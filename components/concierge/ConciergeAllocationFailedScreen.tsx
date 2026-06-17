@@ -1,10 +1,12 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { ConciergeTurnShell } from "@/components/concierge/ConciergeTurnShell";
 import { writeChangeEntryStage } from "@/lib/change-policy";
 import { writeConciergeEcho } from "@/lib/concierge/echo";
+import { DEFAULT_DEALER_VISIBILITY, isAckoOnly, readDealerVisibility } from "@/lib/dealer-visibility";
 import { writeExperienceFlow } from "@/lib/experience-flow";
 import { JOURNEY_PATHS } from "@/lib/journey-routes";
 import { BOOKING_LOCK_AMOUNT_INR } from "@/lib/paymentUrls";
@@ -17,13 +19,19 @@ import { BOOKING_LOCK_AMOUNT_INR } from "@/lib/paymentUrls";
  */
 export function ConciergeAllocationFailedScreen() {
   const router = useRouter();
+  const [dealerVisibility, setDealerVisibility] = useState(DEFAULT_DEALER_VISIBILITY);
+
+  useEffect(() => {
+    setDealerVisibility(readDealerVisibility());
+  }, []);
+
+  const reason = isAckoOnly(dealerVisibility)
+    ? "We couldn't source your exact Creta on the express timeline — no allocation came through near you. This one is on us, not you — so every option below is free, and your money is never stuck."
+    : "Advaith Hyundai's allocation fell through, and no dealer near you has your exact Creta on the express timeline. This one is on us, not you — so every option below is free, and your money is never stuck.";
 
   return (
     <ConciergeTurnShell
-      says={[
-        "I couldn't find your car, Sharath — I'm sorry.",
-        "Advaith Hyundai's allocation fell through, and no dealer near you has your exact Creta on the express timeline. This one is on us, not you — so every option below is free, and your money is never stuck.",
-      ]}
+      says={["I couldn't find your car, Sharath — I'm sorry.", reason]}
       replies={[
         {
           label: "I'll wait — switch me to standard delivery",
