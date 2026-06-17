@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { NextStepCard } from "@/components/concierge/artifacts";
 import { ShimmerInfoCard } from "@/components/ui/ShimmerInfoCard";
 import { bankForQueryParam } from "@/components/payment/acko-drive-finance-bank";
+import { FinanceStatusTimeline } from "@/components/payment/FinanceStatusTimeline";
 import { KycBookingProcessingScreen } from "@/components/kyc/KycBookingProcessingScreen";
 
 const LOAN_PROCESSING_HEADLINE = "Your application is with the bank.";
@@ -46,6 +47,7 @@ export function LoanBookingProcessingScreen() {
           <ShimmerInfoCard icon="alert">
             Missed calls push the approval — and your delivery — out.
           </ShimmerInfoCard>
+          <FinanceStatusTimeline current="review" />
         </div>
       }
       nextHref={nextHref}

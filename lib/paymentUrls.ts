@@ -220,6 +220,22 @@ export function buildDownPaymentCheckoutHref(
 }
 
 /**
+ * Digital agreement (e-sign) step — sits between the locked loan-confirmation
+ * and the down payment, carrying the committed loan + down payment forward.
+ */
+export function buildLoanAgreementHref(
+  bank: string | null,
+  loanAmount: string | null,
+  downPaymentInr: number,
+): string {
+  const q = new URLSearchParams();
+  if (bank) q.set("bank", bank);
+  if (loanAmount) q.set("loan_amount", loanAmount);
+  q.set("down_payment", String(Math.round(downPaymentInr)));
+  return `/payment/loan-agreement?${q.toString()}`;
+}
+
+/**
  * Builds `/payment/pay-down-payment?…` — action screen after a partial instalment (shows remaining + CTA).
  * Pass `originalDownPaymentInr` when remaining is part of a larger commitment so the screen can show progress.
  */
