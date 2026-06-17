@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 
 import infoIcon from "@/assets/Info.svg";
 
@@ -14,6 +14,7 @@ import {
   type PlanItem,
 } from "@/components/concierge/artifacts";
 import { ConciergeTurnShell, type ConciergeTurn } from "@/components/concierge/ConciergeTurnShell";
+import { DealerVisibilityToggle } from "@/components/concierge/DealerVisibilityToggle";
 import {
   BOOKING_CAR_COLOR,
   BOOKING_CAR_TITLE,
@@ -32,6 +33,7 @@ import {
   isAckoOnly,
   readDealerVisibility,
   resolveDealerAttribution,
+  writeDealerVisibility,
   type DealerVisibility,
 } from "@/lib/dealer-visibility";
 import {
@@ -87,6 +89,11 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
     () => resolveDealerAttribution(dealerVisibility),
     [dealerVisibility],
   );
+  /** In-page fork switch (dealer-found turn) — persist and re-render in place. */
+  const handleDealerVisibilityChange = useCallback((next: DealerVisibility) => {
+    writeDealerVisibility(next);
+    setDealerVisibility(next);
+  }, []);
 
   /** Car details — honour an updated selection from the modify flows. */
   const car = useMemo(() => {
@@ -245,6 +252,10 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
           dateHolder: "you",
           artifact: (
             <>
+              <DealerVisibilityToggle
+                value={dealerVisibility}
+                onChange={handleDealerVisibilityChange}
+              />
               <CarSummaryCardLite
                 hero="dealer"
                 title={car.title}
@@ -338,6 +349,8 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
     router,
     ackoOnly,
     dealer,
+    dealerVisibility,
+    handleDealerVisibilityChange,
   ]);
 
   const { hideBack, ...turnProps } = turn;

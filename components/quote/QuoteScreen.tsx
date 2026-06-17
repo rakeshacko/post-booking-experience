@@ -12,12 +12,6 @@ import {
   writeExperienceFlow,
   type ExperienceFlow,
 } from "@/lib/experience-flow";
-import {
-  DEFAULT_DEALER_VISIBILITY,
-  readDealerVisibility,
-  writeDealerVisibility,
-  type DealerVisibility,
-} from "@/lib/dealer-visibility";
 import { resetChangePolicy } from "@/lib/change-policy";
 import { resetKycVerificationFailureCount } from "@/lib/kyc-verification-attempts";
 import { QUOTE_ASSETS } from "./quote-assets";
@@ -57,19 +51,9 @@ export function QuoteScreen() {
   const [discountOpen, setDiscountOpen] = useState(true);
   const [flowMenuOpen, setFlowMenuOpen] = useState(false);
   const [activeFlow, setActiveFlow] = useState<ExperienceFlow>(DEFAULT_EXPERIENCE_FLOW);
-  const [activeDealerVisibility, setActiveDealerVisibility] = useState<DealerVisibility>(
-    DEFAULT_DEALER_VISIBILITY,
-  );
 
   useEffect(() => {
     setActiveFlow(readExperienceFlow());
-    setActiveDealerVisibility(readDealerVisibility());
-  }, []);
-
-  const handleDealerVisibilityChange = useCallback((visibility: DealerVisibility) => {
-    // Orthogonal to the delivery flow — persist and update in place, no re-entry.
-    writeDealerVisibility(visibility);
-    setActiveDealerVisibility(visibility);
   }, []);
 
   const handleFlowChange = useCallback(
@@ -498,10 +482,8 @@ export function QuoteScreen() {
       <QuoteFlowMenuSheet
         open={flowMenuOpen}
         activeFlow={activeFlow}
-        activeDealerVisibility={activeDealerVisibility}
         onClose={() => setFlowMenuOpen(false)}
         onFlowChange={handleFlowChange}
-        onDealerVisibilityChange={handleDealerVisibilityChange}
       />
     </div>
   );

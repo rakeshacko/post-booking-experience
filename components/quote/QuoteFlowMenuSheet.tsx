@@ -13,46 +13,8 @@ import {
   type ExperienceFlow,
   type ExperienceFlowDefinition,
 } from "@/lib/experience-flow";
-import {
-  DEALER_VISIBILITIES,
-  type DealerVisibility,
-} from "@/lib/dealer-visibility";
 
 const SHEET_TRANSITION_MS = 280;
-
-type OptionRowProps = {
-  label: string;
-  description: string;
-  selected: boolean;
-  onSelect: () => void;
-};
-
-/** Shared row markup for both the flow list and the dealer-visibility toggle. */
-function OptionRow({ label, description, selected, onSelect }: OptionRowProps) {
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      className={`flex w-full items-start gap-3 rounded-xl px-2 py-3 text-left transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#121212]/20 focus-visible:ring-offset-2 cursor-pointer hover:bg-[#f5f5f5] active:bg-[#ebebeb] ${
-        selected ? "bg-[#f5f5f5]" : ""
-      }`}
-      aria-pressed={selected}
-    >
-      <span
-        className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
-          selected ? "border-[#121212] bg-[#121212]" : "border-[#c4c4c4] bg-white"
-        }`}
-        aria-hidden
-      >
-        {selected ? <span className="h-2 w-2 rounded-full bg-white" /> : null}
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block text-sm font-medium leading-5 text-[#121212]">{label}</span>
-        <span className="mt-1 block text-xs leading-[18px] text-[#6b7280]">{description}</span>
-      </span>
-    </button>
-  );
-}
 
 type FlowOptionRowProps = {
   flow: ExperienceFlowDefinition;
@@ -101,10 +63,8 @@ function FlowOptionRow({ flow, selected, onSelect }: FlowOptionRowProps) {
 export type QuoteFlowMenuSheetProps = {
   open: boolean;
   activeFlow: ExperienceFlow;
-  activeDealerVisibility: DealerVisibility;
   onClose: () => void;
   onFlowChange: (flow: ExperienceFlow) => void;
-  onDealerVisibilityChange: (visibility: DealerVisibility) => void;
 };
 
 /**
@@ -113,10 +73,8 @@ export type QuoteFlowMenuSheetProps = {
 export function QuoteFlowMenuSheet({
   open,
   activeFlow,
-  activeDealerVisibility,
   onClose,
   onFlowChange,
-  onDealerVisibilityChange,
 }: QuoteFlowMenuSheetProps) {
   const [mounted, setMounted] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
@@ -217,23 +175,6 @@ export function QuoteFlowMenuSheet({
               onSelect={handleSelect}
             />
           ))}
-          </div>
-
-          <div className="mt-5 border-t border-[#f0f0f0] pt-4">
-            <h3 className="px-2 text-xs font-semibold uppercase leading-4 tracking-[0.06em] text-[#8f8e92]">
-              Dealer visibility
-            </h3>
-            <div className="mt-2 flex flex-col gap-1">
-              {DEALER_VISIBILITIES.map((option) => (
-                <OptionRow
-                  key={option.id}
-                  label={option.label}
-                  description={option.description}
-                  selected={activeDealerVisibility === option.id}
-                  onSelect={() => onDealerVisibilityChange(option.id)}
-                />
-              ))}
-            </div>
           </div>
         </div>
       </div>
