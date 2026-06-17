@@ -145,10 +145,10 @@ const EXPRESS_SCRIPT: Record<ConciergeMomentId, TurnWords> = {
   carReserved: {
     says: [
       "Your code checked out, Sharath. This Creta is yours.",
-      "You'll find its engine and chassis numbers on the card below.",
+      "Its engine and chassis numbers are on the card below. Next, let's sort the payment — the last big thing between you and your delivery date.",
     ],
-    replyLabel: "What's next?",
-    replyEcho: "What's next?",
+    replyLabel: "Start the payment",
+    replyEcho: "Let's start the payment",
   },
 
   moneyIntro: {
@@ -212,7 +212,7 @@ const ACKO_ONLY_OVERRIDES: Partial<Record<ConciergeMomentId, Partial<TurnWords>>
   carReserved: {
     says: [
       "Your code checked out, Sharath. This Creta is yours.",
-      "You'll find its engine and chassis numbers on the card below.",
+      "Its engine and chassis numbers are on the card below. Next, let's sort the payment — the last big thing between you and your delivery date.",
     ],
   },
 };
@@ -243,18 +243,21 @@ export function getTurnWords(
  */
 export const OTP_HEADSUP_WORDS: TurnWords = {
   says: [
-    "I'll let you know when your code is ready, Sharath.",
-    "You'll get a notification, usually within the next half hour. Open the app and enter the code within 10 minutes, as it expires after that.",
+    "One last step to make this Creta officially yours, Sharath: a one-time code.",
+    "It's how I register the car to you on Hyundai's system — the code is how they confirm it's really you. I'll send it to your phone and you'll enter it on the next screen.",
   ],
   callLabel: "Prefer a call instead? I can call you",
 };
 
 export const OTP_ENTER_WORDS: TurnWords = {
   says: [
-    "Your code is here. Enter the 6 digits.",
-    "It's just landed on your phone ending 3210. Enter it before it expires.",
+    "Here's your code, Sharath — enter the 6 digits.",
+    "It just landed on your phone ending 3210. This is what registers your Creta with Hyundai and locks it to your name.",
   ],
 };
 
 /** Demo masked phone the OTP appears to land on. */
 export const OTP_DEMO_PHONE_SUFFIX = "3210";
+
+/** Demo code, pre-filled so the OTP step can be confirmed in one tap. */
+export const OTP_DEMO_CODE = "428913";

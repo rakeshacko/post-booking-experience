@@ -7,6 +7,7 @@ import { GetHelpPillButton } from "@/components/kyc/GetHelpPillButton";
 import { KycTopNavHeader } from "@/components/kyc/KycTopNavHeader";
 import { LoanApplicationMilestoneRail } from "@/components/payment/loan-application/LoanApplicationMilestoneRail";
 import {
+  LOAN_APPLICATION_HERO_GRADIENT_BOX_CLASS,
   LOAN_APPLICATION_HERO_GRADIENT_STYLE,
   LOAN_APPLICATION_HERO_MILESTONE_CLASS,
 } from "@/components/payment/loan-application/loan-application-layout";
@@ -34,7 +35,7 @@ export function LoanApplicationShell({ currentRoute, children }: LoanApplication
       <div className="relative z-10 mx-auto flex w-full min-h-0 max-w-[640px] flex-1 flex-col">
         <div className="relative shrink-0">
           <div
-            className="pointer-events-none absolute inset-0"
+            className={LOAN_APPLICATION_HERO_GRADIENT_BOX_CLASS}
             style={LOAN_APPLICATION_HERO_GRADIENT_STYLE}
             aria-hidden
           />

@@ -9,9 +9,12 @@ import {
   type KeyboardEvent,
 } from "react";
 
-import { NextStepCard } from "@/components/concierge/artifacts";
+import infoIcon from "@/assets/Info.svg";
+
+import { NoteCallout } from "@/components/concierge/artifacts";
 import { ConciergeTurnShell } from "@/components/concierge/ConciergeTurnShell";
 import {
+  OTP_DEMO_CODE,
   OTP_DEMO_PHONE_SUFFIX,
   OTP_ENTER_WORDS,
   OTP_HEADSUP_WORDS,
@@ -32,7 +35,8 @@ const OTP_WINDOW_SECONDS = 10 * 60;
  */
 export function ConciergeOtpScreen() {
   const [phase, setPhase] = useState<"headsup" | "enter">("headsup");
-  const [digits, setDigits] = useState<string[]>(() => Array<string>(OTP_LENGTH).fill(""));
+  // Pre-filled demo code so the OTP step can be confirmed in a single tap.
+  const [digits, setDigits] = useState<string[]>(() => OTP_DEMO_CODE.split(""));
 
   const complete = digits.every((d) => d !== "");
 
@@ -43,26 +47,19 @@ export function ConciergeOtpScreen() {
         says={OTP_HEADSUP_WORDS.says}
         callLabel={OTP_HEADSUP_WORDS.callLabel}
         artifact={
-          <NextStepCard
-            title="Watch for your code"
-            body="We'll notify you the moment it's ready. Open the app and enter it within 10 minutes."
-            etaLabel="Usually within 30 minutes"
-          />
+          <NoteCallout iconSrc={infoIcon}>
+            The code is how <span className="font-medium text-[#121212]">Hyundai</span> registers
+            the car in your name — it confirms the buyer is really you, and the Creta is locked to
+            you.
+          </NoteCallout>
         }
-        footerExtra={
-          <button
-            type="button"
-            className="time-skip-chip"
-            onClick={() => setPhase("enter")}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <path d="M4 5v14l8-7-8-7zM13 5v14l8-7-8-7z" fill="currentColor" fillOpacity="0.7" />
-            </svg>
-            <span>
-              When the code arrives <span className="text-[#a6a6a6]">· demo</span>
-            </span>
-          </button>
-        }
+        replies={[
+          {
+            label: "Got it",
+            onClick: () => setPhase("enter"),
+            echo: null,
+          },
+        ]}
       />
     );
   }

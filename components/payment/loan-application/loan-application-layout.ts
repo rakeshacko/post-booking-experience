@@ -1,6 +1,18 @@
+/**
+ * Green hero tint that dissolves into the page background (#f1f0f5) instead of
+ * ending on a hard line. The vertical overlay (rendered first, so it sits on
+ * top) stays invisible through the nav + milestone rail, then fades to the page
+ * colour by the bottom of the (taller) hero box — Safari-safe same-hue 0-alpha
+ * start, never the `transparent` keyword.
+ */
 export const LOAN_APPLICATION_HERO_GRADIENT_STYLE = {
-  backgroundImage: "linear-gradient(114.23deg, #f1ffe8 0%, #e4fafa 100%)",
+  backgroundImage:
+    "linear-gradient(180deg, rgba(241,240,245,0) 0%, rgba(241,240,245,0) 52%, #f1f0f5 100%), linear-gradient(114.23deg, #f1ffe8 0%, #e4fafa 100%)",
 } as const;
+
+/** The hero gradient box extends past the rail so its fade lands in the content. */
+export const LOAN_APPLICATION_HERO_GRADIENT_BOX_CLASS =
+  "pointer-events-none absolute left-0 right-0 top-0 h-[248px]";
 
 /** Gradient extends 20px below the milestone rail. */
 export const LOAN_APPLICATION_HERO_MILESTONE_CLASS = "w-full shrink-0 pt-1 pb-5";

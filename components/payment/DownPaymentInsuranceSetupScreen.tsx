@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { KycBookingProcessingScreen } from "@/components/kyc/KycBookingProcessingScreen";
@@ -9,6 +9,7 @@ import { bankForQueryParam } from "@/components/payment/acko-drive-finance-bank"
 import { MoneyPlanCard, type MoneyPlanStep } from "@/components/payment/MoneyPlanCard";
 import { useFullPaymentJourney } from "@/components/payment/use-full-payment-journey";
 import { FULL_PAYMENT_INSURANCE_INR } from "@/components/payment/loan-amount-demo-constants";
+import { isAckoOnly, readDealerVisibility } from "@/lib/dealer-visibility";
 import { buildLoanDisbursementReceivedHref, buildPayInsurancePremiumHref } from "@/lib/paymentUrls";
 
 function formatInr(amount: number) {
@@ -21,8 +22,8 @@ function formatInr(amount: number) {
 
 const LOAN_HEADLINE = "Down payment received";
 const LOAN_BANK_TRANSFER_HEADLINE = "Payment received";
-const LOAN_SUBLINE =
-  "The bank is moving your loan to the dealer. Banks take 24–48 hours here — I'll confirm the moment it lands.";
+const loanSubline = (recipient: string) =>
+  `The bank is moving your loan to ${recipient}. Banks take 24–48 hours here — I'll confirm the moment it lands.`;
 const LOAN_BANK_TRANSFER_SUBLINE =
   "I'm confirming the transfer from your bank — it takes 24–48 hours to clear. The moment it does, I start your delivery prep.";
 
@@ -48,6 +49,12 @@ export function DownPaymentInsuranceSetupScreen() {
   const originalDownPayment = searchParams.get("original_down_payment");
   const isSelfFinance = bank === "self_finance" || bankTransferRef != null;
 
+  // AckoDrive-only flow never names the dealer.
+  const [ackoOnly, setAckoOnly] = useState(false);
+  useEffect(() => {
+    setAckoOnly(isAckoOnly(readDealerVisibility()));
+  }, []);
+
   const headline = isFullPayment
     ? FULL_PAYMENT_HEADLINE
     : bankTransferRef
@@ -57,7 +64,7 @@ export function DownPaymentInsuranceSetupScreen() {
     ? FULL_PAYMENT_SUBLINE
     : bankTransferRef
       ? LOAN_BANK_TRANSFER_SUBLINE
-      : LOAN_SUBLINE;
+      : loanSubline(ackoOnly ? "AckoDrive" : "the dealer");
 
   const moneyPlanCard = useMemo(() => {
     const paidAmount =

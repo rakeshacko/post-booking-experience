@@ -271,14 +271,14 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
               {ackoOnly ? (
                 <NextStepCard
                   title="Confirm with a one-time code"
-                  body="We'll notify you when your code is ready. Enter it here within 10 minutes to confirm your car."
+                  body="It's how Hyundai registers the car in your name. Enter it here within 10 minutes and the Creta is locked to you."
                   etaLabel="Usually within 30 minutes"
                 />
               ) : (
                 <>
                   <NextStepCard
                     title={`Pick up ${dealer.name}'s call`}
-                    body="They'll send a one-time code to your phone. Share it with them to confirm your car."
+                    body="They'll read out a one-time code that registers the car to you on Hyundai's system — share it back and the Creta is locked in your name."
                     etaLabel="Expected today, before 6 PM"
                   />
                   <ShimmerInfoCard icon="alert">

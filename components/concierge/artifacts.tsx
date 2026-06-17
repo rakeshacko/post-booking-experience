@@ -270,6 +270,8 @@ export type CarPriceBreakupCardProps = {
   /** Bank row — omitted for full payment. */
   disbursementLabel?: string;
   disbursementInr?: number;
+  /** Small tag on the bank row — recipient hidden in the AckoDrive-only flow. */
+  disbursementTag?: string;
   insuranceInr: number;
   /** The derived amount due now. */
   dueLabel: string;
@@ -286,6 +288,7 @@ export function CarPriceBreakupCard({
   bookingPaidInr,
   disbursementLabel,
   disbursementInr,
+  disbursementTag = "Bank → dealer",
   insuranceInr,
   dueLabel,
   dueInr,
@@ -317,7 +320,7 @@ export function CarPriceBreakupCard({
             <span className="flex min-w-0 items-center gap-1.5 text-sm leading-5 text-[#4b4b4b]">
               {disbursementLabel}
               <span className="shrink-0 rounded-full bg-[#f5f5f5] px-2 py-0.5 text-[11px] font-medium leading-4 text-[#757575]">
-                Bank → dealer
+                {disbursementTag}
               </span>
             </span>
             <span className="text-sm font-medium leading-5 text-[#757575] tabular-nums">
