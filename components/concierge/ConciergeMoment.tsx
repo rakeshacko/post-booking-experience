@@ -211,6 +211,9 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
           timeSkip: words.timeSkipLabel
             ? { label: words.timeSkipLabel, href: JOURNEY_PATHS.kyc.bookingAccepted }
             : undefined,
+          // A dealer is only assigned once a car is found, so the no-car branch
+          // lives here. Past this point a dealer (and the car) is secured.
+          altTimeSkip: { label: "If no car is found", href: "/car-allocation/failed" },
         };
 
       case "dealerFound": {
@@ -274,13 +277,14 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
         };
 
       case "allocationPending":
+        // The car is already found and the dealer secured, so this step moves
+        // straight through to the assignment — no no-car branch here.
         return {
           ...base,
           working,
           timeSkip: words.timeSkipLabel
             ? { label: words.timeSkipLabel, href: JOURNEY_PATHS.carAllocation.confirmed }
             : undefined,
-          altTimeSkip: { label: "If no car is found", href: "/car-allocation/failed" },
         };
 
       case "allocationDone":

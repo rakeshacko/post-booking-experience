@@ -304,7 +304,9 @@ export function ConciergeTurnShell({
     onContentShownRef.current?.();
   }, [contentShown]);
 
-  const hasFooter = Boolean(replies?.length || timeSkip || footnote || callLabel || footerExtra);
+  const hasFooter = Boolean(
+    replies?.length || timeSkip || altTimeSkip || footnote || callLabel || footerExtra
+  );
 
   return (
     <div className="relative min-h-dvh overflow-x-clip bg-[#f1f0f5]">
