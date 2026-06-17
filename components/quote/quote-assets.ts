@@ -1,4 +1,4 @@
-import carHero from "@/assets/Car.png";
+import carHero from "@/assets/Hyundai Creta.png";
 import infoIcon from "@/assets/Info.svg";
 
 /** Quote screen imagery from repo `assets/`. */
