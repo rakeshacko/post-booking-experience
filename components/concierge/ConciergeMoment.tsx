@@ -47,6 +47,7 @@ import {
   getBookingDeliveryTextClass,
 } from "@/lib/experience-flow-content";
 import { JOURNEY_PATHS } from "@/lib/journey-routes";
+import { stageIndex, useLiveBooking } from "@/lib/live-booking";
 import { recordKycVerificationFailure } from "@/lib/kyc-verification-attempts";
 import {
   getKycVerificationNextHref,
@@ -57,6 +58,15 @@ import { BOOKING_LOCK_AMOUNT_INR } from "@/lib/paymentUrls";
 export type ConciergeMomentProps = {
   moment: ConciergeMomentId;
 };
+
+/** Live mode — the dealer search ticks off as the OMS stage moves. */
+function liveSearchLines(make: string): readonly string[] {
+  return [
+    `Reaching out to ${make} dealers near you`,
+    `Placing your order with ${make}`,
+    "Getting your exact car's engine and chassis numbers",
+  ];
+}
 
 /**
  * One scripted moment of the concierge journey — resolves the active flow,
@@ -107,6 +117,11 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
       colour: snapshot?.colourName ?? BOOKING_CAR_COLOR,
     };
   }, [flowReady]);
+
+  /** Live mode: the real booking in the demo OMS, when this tab follows one. */
+  const live = useLiveBooking();
+  const engineNo = live?.allocation?.engine || DEMO_VEHICLE_ENGINE_NO;
+  const chassisNo = live?.allocation?.chassis || DEMO_VEHICLE_CHASSIS_NO;
 
   const deliveryLine = getBookingDeliveryLine(flow);
   const deliveryLineClass = getBookingDeliveryTextClass(flow);
@@ -228,6 +243,20 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
       }
 
       case "dealerSearch":
+        if (live) {
+          // The OMS moves this, not a time-skip: each stage ticks off a line.
+          const doneCount = Math.max(0, stageIndex(live.stage) - stageIndex("KYC_APPROVED"));
+          return {
+            ...base,
+            working: {
+              lines: liveSearchLines(live.car?.make || "Hyundai"),
+              mode: "ongoing",
+              etaLabel: "I'll tell you the moment your car is assigned",
+              doneCount,
+            },
+            footnoteInline: true,
+          };
+        }
         return {
           ...base,
           working,
@@ -247,6 +276,8 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
           .trim();
         return {
           ...base,
+          // Live: no time has been skipped, so lead with the news, not a greeting.
+          says: live ? [`Found it, ${live.firstName}. This is your exact car.`, ...base.says.slice(1)] : base.says,
           // Revealed: the dealer's call is the action (demo time-skip). AckoDrive-only:
           // the on-screen OTP is the action, so it gets a reply button.
           dateHolder: "you",
@@ -265,8 +296,8 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
                 deliveryLineClassName={deliveryLineClass}
                 dealerName={dealer.name}
                 dealerDetail={dealer.detail}
-                engineNo={DEMO_VEHICLE_ENGINE_NO}
-                chassisNo={DEMO_VEHICLE_CHASSIS_NO}
+                engineNo={engineNo}
+                chassisNo={chassisNo}
               />
               {ackoOnly ? (
                 <NextStepCard
@@ -324,8 +355,8 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
               deliveryLineClassName={deliveryLineClass}
               dealerName={dealer.name}
               dealerDetail={dealer.detail}
-              engineNo={DEMO_VEHICLE_ENGINE_NO}
-              chassisNo={DEMO_VEHICLE_CHASSIS_NO}
+              engineNo={engineNo}
+              chassisNo={chassisNo}
             />
           ),
           replies: primaryReply(JOURNEY_PATHS.payment.default),
@@ -351,6 +382,9 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
     dealer,
     dealerVisibility,
     handleDealerVisibilityChange,
+    live,
+    engineNo,
+    chassisNo,
   ]);
 
   const { hideBack, ...turnProps } = turn;

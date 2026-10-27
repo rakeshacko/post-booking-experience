@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 import { EUCLID_FONT_ORIGIN, EUCLID_PRELOAD_FONT_FILES, euclidFontHref } from "@/lib/euclid-font-preload";
+import { LiveBookingSync } from "@/components/live/LiveBookingSync";
 import { AnimationProvider } from "@/components/providers";
 
 export const metadata: Metadata = {
@@ -34,6 +35,7 @@ export default function RootLayout({
           <div className="relative mx-auto flex min-h-dvh w-full max-w-[640px] flex-col">
             {children}
           </div>
+          <LiveBookingSync />
         </AnimationProvider>
       </body>
     </html>

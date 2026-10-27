@@ -16,6 +16,7 @@ import {
   cashDownPaymentDueInr,
 } from "@/components/payment/loan-amount-demo-constants";
 import { isAckoOnly, readDealerVisibility } from "@/lib/dealer-visibility";
+import { rupeesToNumber, useLiveBooking } from "@/lib/live-booking";
 import { buildLoanAgreementHref } from "@/lib/paymentUrls";
 import { cn } from "@/lib/utils";
 
@@ -50,8 +51,11 @@ export function LoanSanctionedScreen() {
   const bankId = searchParams.get("bank");
   const bank = useMemo(() => bankForQueryParam(bankId), [bankId]);
 
-  const approvedLoan = BANK_DISBURSEMENT_INR;
+  // Live mode: the amount the bank's email sanctioned, as recorded in the OMS.
+  const live = useLiveBooking();
+  const approvedLoan = rupeesToNumber(live?.loan?.amount) || BANK_DISBURSEMENT_INR;
   const [loan, setLoan] = useState(approvedLoan);
+  useEffect(() => setLoan(approvedLoan), [approvedLoan]);
   const [remaining, setRemaining] = useState(VALIDITY_SECONDS);
   const [ackoOnly, setAckoOnly] = useState(false);
 
@@ -94,7 +98,7 @@ export function LoanSanctionedScreen() {
   return (
     <ConciergeTurnShell
       says={[
-        "Your loan is approved, Sharath!",
+        `Your loan is approved, ${live?.firstName ?? "Sharath"}!`,
         `${bank.name} approved up to ${formatInr(approvedLoan)}. Your part is the down payment below; the loan covers the rest, paid straight to ${recipient}. These terms hold for 24 hours.`,
       ]}
       artifact={
