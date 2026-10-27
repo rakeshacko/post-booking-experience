@@ -33,6 +33,7 @@ import {
   isAckoOnly,
   readDealerVisibility,
   resolveDealerAttribution,
+  useEffectiveDealerVisibility,
   writeDealerVisibility,
   type DealerVisibility,
 } from "@/lib/dealer-visibility";
@@ -47,7 +48,7 @@ import {
   getBookingDeliveryTextClass,
 } from "@/lib/experience-flow-content";
 import { JOURNEY_PATHS } from "@/lib/journey-routes";
-import { stageIndex, useLiveBooking } from "@/lib/live-booking";
+import { stageIndex, useLiveBooking, useLiveMode } from "@/lib/live-booking";
 import { recordKycVerificationFailure } from "@/lib/kyc-verification-attempts";
 import {
   getKycVerificationNextHref,
@@ -76,9 +77,12 @@ function liveSearchLines(make: string): readonly string[] {
 export function ConciergeMoment({ moment }: ConciergeMomentProps) {
   const router = useRouter();
   const [flow, setFlow] = useState<ExperienceFlow>(DEFAULT_EXPERIENCE_FLOW);
-  const [dealerVisibility, setDealerVisibility] = useState<DealerVisibility>(
+  const [storedDealerVisibility, setDealerVisibility] = useState<DealerVisibility>(
     DEFAULT_DEALER_VISIBILITY,
   );
+  /** Live mode: always AckoDrive-only, and no presenter switch. */
+  const liveMode = useLiveMode();
+  const dealerVisibility = useEffectiveDealerVisibility(storedDealerVisibility);
   const [flowReady, setFlowReady] = useState(false);
   /** Arrival only — the price-lock payment settles while Shivi talks. */
   const [arrivalPaid, setArrivalPaid] = useState(false);
@@ -283,10 +287,12 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
           dateHolder: "you",
           artifact: (
             <>
-              <DealerVisibilityToggle
-                value={dealerVisibility}
-                onChange={handleDealerVisibilityChange}
-              />
+              {liveMode ? null : (
+                <DealerVisibilityToggle
+                  value={dealerVisibility}
+                  onChange={handleDealerVisibilityChange}
+                />
+              )}
               <CarSummaryCardLite
                 hero="dealer"
                 title={car.title}
@@ -382,6 +388,7 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
     dealer,
     dealerVisibility,
     handleDealerVisibilityChange,
+    liveMode,
     live,
     engineNo,
     chassisNo,

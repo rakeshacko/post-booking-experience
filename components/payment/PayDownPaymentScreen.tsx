@@ -10,6 +10,7 @@ import {
   BANK_DISBURSEMENT_INR,
 } from "@/components/payment/loan-amount-demo-constants";
 import { buildDownPaymentCheckoutHref } from "@/lib/paymentUrls";
+import { useDealerReference } from "@/lib/dealer-visibility";
 
 const HEADLINE_REMAINING = "Complete your remaining down payment, Sharath!";
 
@@ -24,6 +25,7 @@ const PAY_DOWN_PAYMENT_CTA_WARNING =
  */
 export function PayDownPaymentScreen() {
   const router = useRouter();
+  const dealerRef = useDealerReference();
   const searchParams = useSearchParams();
   const bank = searchParams.get("bank");
   const loanAmount = searchParams.get("loan_amount");
@@ -74,7 +76,7 @@ export function PayDownPaymentScreen() {
   return (
     <KycBookingProcessingScreen
       headline={HEADLINE_REMAINING}
-      subline="The bank releases its disbursement to the dealer once your full down payment is in."
+      subline={`The bank releases its disbursement to ${dealerRef} once your full down payment is in.`}
       nextHref={checkoutHref}
       prefetchHref={checkoutHref}
       nextCtaLabel="Pay remaining amount"

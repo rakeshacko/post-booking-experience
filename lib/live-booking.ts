@@ -3,8 +3,13 @@ import { useSyncExternalStore } from "react";
 /**
  * Live mode — the journey follows a real booking in the demo OMS instead of
  * the scripted time-skips. Open any page with `?live=AD-4821` to start
- * (`?live=off` stops). The OMS stage decides the screen; the orchestrator moves
- * the stage as dealers reply on WhatsApp.
+ * (`?live=off` stops), or set `NEXT_PUBLIC_LIVE_BOOKING_ID` so a clean URL
+ * starts it. The OMS stage decides the screen; the orchestrator moves the stage
+ * as dealers reply on WhatsApp.
+ *
+ * In live mode the app is the customer's real phone: no presenter chrome
+ * (time-skips, variant switches) and the dealer is never named — the customer
+ * only ever deals with AckoDrive (`acko_only` dealer visibility is forced).
  */
 export type LiveBooking = {
   bookingId: string;
@@ -13,7 +18,7 @@ export type LiveBooking = {
   stageSince: string;
   firstName: string;
   car: { make: string; model: string; variant: string; fuel: string; colour: string };
-  dealer: string;
+  // The OMS also sends `dealer`; it is dropped on arrival so no screen can show it.
   loan: { bank: string; amount: string; rate: string; emi: string; tenureMonths: string };
   allocation?: { vin: string; engine: string; chassis: string };
   version: number;
@@ -22,24 +27,67 @@ export type LiveBooking = {
 export const LIVE_OMS_URL = process.env.NEXT_PUBLIC_LIVE_OMS_URL ?? "http://127.0.0.1:8092";
 
 const STORAGE_KEY = "post-booking-live-booking";
+/** Remembered for the tab when `?live=off` stops live mode, so the default id can't restart it. */
+const LIVE_OFF = "off";
 
-export function readLiveBookingId(): string | null {
-  if (typeof window === "undefined") return null;
-  try {
-    return sessionStorage.getItem(STORAGE_KEY);
-  } catch {
-    return null;
-  }
+function normalizeBookingId(value: string | null | undefined): string | null {
+  const id = value?.trim();
+  return id ? id.toUpperCase() : null;
 }
 
-export function writeLiveBookingId(id: string | null): void {
-  if (typeof window === "undefined") return;
+/** Build-time default booking, used when the URL and the tab name none. */
+const DEFAULT_LIVE_BOOKING_ID = normalizeBookingId(process.env.NEXT_PUBLIC_LIVE_BOOKING_ID);
+
+let resolvedBookingId: { id: string | null } | null = null;
+
+/**
+ * The booking this tab follows, or null outside live mode. In order:
+ * `?live=<id>` (remembered for the tab) · `?live=off` (stops it for the tab) ·
+ * what the tab remembered · `NEXT_PUBLIC_LIVE_BOOKING_ID`. Resolved once per
+ * page load, so it is already right during the first render.
+ */
+export function readLiveBookingId(): string | null {
+  if (typeof window === "undefined") return DEFAULT_LIVE_BOOKING_ID;
+  if (resolvedBookingId) return resolvedBookingId.id;
+
+  const param = new URLSearchParams(window.location.search).get("live")?.trim();
+  const fromParam = param
+    ? param.toLowerCase() === LIVE_OFF
+      ? LIVE_OFF
+      : normalizeBookingId(param)
+    : null;
+  let remembered: string | null = fromParam;
   try {
-    if (id) sessionStorage.setItem(STORAGE_KEY, id);
-    else sessionStorage.removeItem(STORAGE_KEY);
+    if (fromParam) sessionStorage.setItem(STORAGE_KEY, fromParam);
+    remembered = sessionStorage.getItem(STORAGE_KEY);
   } catch {
-    /* ignore quota / private mode */
+    /* private mode — the URL alone decides */
   }
+
+  const id = remembered === LIVE_OFF ? null : (remembered ?? DEFAULT_LIVE_BOOKING_ID);
+  resolvedBookingId = { id };
+  return id;
+}
+
+/** True while this tab follows a live booking. */
+export function isLiveMode(): boolean {
+  return readLiveBookingId() !== null;
+}
+
+const subscribeNever = () => () => {};
+
+/**
+ * The followed booking id for rendering — right on the first client render
+ * after a navigation; on a full page load it hydrates as the build-time
+ * default, then settles to the tab's choice.
+ */
+export function useLiveBookingId(): string | null {
+  return useSyncExternalStore(subscribeNever, readLiveBookingId, () => DEFAULT_LIVE_BOOKING_ID);
+}
+
+/** True while this tab follows a live booking (see `useLiveBookingId`). */
+export function useLiveMode(): boolean {
+  return useLiveBookingId() !== null;
 }
 
 /** OMS stages in order — the journey only ever moves forward through these. */

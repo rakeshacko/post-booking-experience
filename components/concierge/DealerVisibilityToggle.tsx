@@ -1,6 +1,7 @@
 "use client";
 
 import { DEALER_VISIBILITIES, type DealerVisibility } from "@/lib/dealer-visibility";
+import { useLiveMode } from "@/lib/live-booking";
 
 export type DealerVisibilityToggleProps = {
   value: DealerVisibility;
@@ -11,9 +12,11 @@ export type DealerVisibilityToggleProps = {
  * In-page demo switch for the dealer-found fork — the variation only diverges
  * here, so the control lives on this turn. Flipping it re-renders the turn in
  * place (dialogue, card, next step and CTA all swap) so both variants can be
- * compared without leaving the screen.
+ * compared without leaving the screen. Never shown in live mode.
  */
 export function DealerVisibilityToggle({ value, onChange }: DealerVisibilityToggleProps) {
+  const liveMode = useLiveMode();
+  if (liveMode) return null;
   return (
     <div className="rounded-2xl border border-dashed border-[#d8d4ea] bg-[#faf9fe] px-3 py-2.5">
       <div className="mb-2 flex items-center gap-2 px-0.5">

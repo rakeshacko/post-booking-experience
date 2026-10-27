@@ -21,12 +21,14 @@ import {
   readDealerVisibility,
   resolveDealerAttribution,
   type DealerVisibility,
+  useEffectiveDealerVisibility,
 } from "@/lib/dealer-visibility";
 import {
   DEFAULT_EXPERIENCE_FLOW,
   readExperienceFlow,
   type ExperienceFlow,
 } from "@/lib/experience-flow";
+import { useLiveBooking } from "@/lib/live-booking";
 import { cn } from "@/lib/utils";
 
 /** Candidate days inside the promised window (flow-aware). */
@@ -141,13 +143,16 @@ function PickupLocationCard({ name }: { name: string }) {
  */
 export function CarDeliveryScheduleScreen() {
   const [flow, setFlow] = useState<ExperienceFlow>(DEFAULT_EXPERIENCE_FLOW);
-  const [dealerVisibility, setDealerVisibility] = useState<DealerVisibility>(
+  const [storedDealerVisibility, setDealerVisibility] = useState<DealerVisibility>(
     DEFAULT_DEALER_VISIBILITY,
   );
+  const dealerVisibility = useEffectiveDealerVisibility(storedDealerVisibility);
   const [mode, setMode] = useState<FulfilMode>("pickup");
   const [day, setDay] = useState<string | null>(null);
   const [windowSlot, setWindowSlot] = useState<string | null>(null);
   const [scheduled, setScheduled] = useState(false);
+  /** Live mode: the numbers the dealer sent, as recorded in the OMS. */
+  const allocation = useLiveBooking()?.allocation;
 
   useEffect(() => {
     setFlow(readExperienceFlow());
@@ -191,8 +196,8 @@ export function CarDeliveryScheduleScreen() {
             deliveryLine={isPickup ? `Collect ${day} · ${windowSlot}` : `Arriving ${day} · ${windowSlot}`}
             dealerName={isPickup ? pickupName : dealer.name}
             dealerDetail={isPickup ? PICKUP_ADDRESS : dealer.detail}
-            engineNo={DEMO_VEHICLE_ENGINE_NO}
-            chassisNo={DEMO_VEHICLE_CHASSIS_NO}
+            engineNo={allocation?.engine || DEMO_VEHICLE_ENGINE_NO}
+            chassisNo={allocation?.chassis || DEMO_VEHICLE_CHASSIS_NO}
           />
         }
         timeSkip={{ label: "Start over", href: "/quote" }}

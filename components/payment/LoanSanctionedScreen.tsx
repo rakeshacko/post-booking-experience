@@ -16,7 +16,7 @@ import {
   cashDownPaymentDueInr,
 } from "@/components/payment/loan-amount-demo-constants";
 import { isAckoOnly, readDealerVisibility } from "@/lib/dealer-visibility";
-import { rupeesToNumber, useLiveBooking } from "@/lib/live-booking";
+import { rupeesToNumber, useLiveBooking, useLiveMode } from "@/lib/live-booking";
 import { buildLoanAgreementHref } from "@/lib/paymentUrls";
 import { cn } from "@/lib/utils";
 
@@ -57,7 +57,9 @@ export function LoanSanctionedScreen() {
   const [loan, setLoan] = useState(approvedLoan);
   useEffect(() => setLoan(approvedLoan), [approvedLoan]);
   const [remaining, setRemaining] = useState(VALIDITY_SECONDS);
-  const [ackoOnly, setAckoOnly] = useState(false);
+  const [storedAckoOnly, setAckoOnly] = useState(false);
+  /** Live mode never mentions the dealer: the loan is paid to AckoDrive. */
+  const ackoOnly = useLiveMode() || storedAckoOnly;
 
   useEffect(() => {
     setAckoOnly(isAckoOnly(readDealerVisibility()));

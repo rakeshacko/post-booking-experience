@@ -10,6 +10,7 @@ import { BottomSheetPortal } from "@/components/ui/BottomSheetPortal";
 import {
   DEFAULT_DEALER_VISIBILITY,
   readDealerVisibility,
+  useEffectiveDealerVisibility,
   type DealerVisibility,
 } from "@/lib/dealer-visibility";
 import { readExperienceFlow, type ExperienceFlow } from "@/lib/experience-flow";
@@ -18,6 +19,7 @@ import {
   getJourneyReceipts,
   getJourneyStageSteps,
 } from "@/lib/journey-stage";
+import { useLiveBookingId } from "@/lib/live-booking";
 import { cn } from "@/lib/utils";
 
 /** Matches the page-recede transition in ConciergeTurnShell. */
@@ -70,9 +72,11 @@ export function ManageBookingZoomOverlay({
 }: ManageBookingZoomOverlayProps) {
   const pathname = usePathname();
   const [flow, setFlow] = useState<ExperienceFlow | undefined>(undefined);
-  const [dealerVisibility, setDealerVisibility] = useState<DealerVisibility>(
+  const [storedDealerVisibility, setDealerVisibility] = useState<DealerVisibility>(
     DEFAULT_DEALER_VISIBILITY,
   );
+  const dealerVisibility = useEffectiveDealerVisibility(storedDealerVisibility);
+  const liveBookingId = useLiveBookingId();
 
   useEffect(() => {
     if (!mounted) return;
@@ -146,7 +150,7 @@ export function ManageBookingZoomOverlay({
                 Your car
               </h2>
               <p className="mt-1 text-sm leading-5 text-[#4b4b4b]">
-                Reference ID: {DEMO_BOOKING_ID}
+                Reference ID: {liveBookingId ?? DEMO_BOOKING_ID}
               </p>
             </div>
 

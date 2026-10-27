@@ -1,6 +1,7 @@
 import Image from "next/image";
 
 import { SELF_FINANCE_HOW_IT_WORKS_STEPS } from "@/components/payment/self-finance-confirmed-content";
+import { useDealerReference } from "@/lib/dealer-visibility";
 
 type SelfFinanceHowItWorksCardProps = {
   /** When false, omit the inner heading (e.g. bottom sheet already has a title). */
@@ -14,6 +15,7 @@ export function SelfFinanceHowItWorksCard({
   variant = "card",
 }: SelfFinanceHowItWorksCardProps) {
   const isEmbedded = variant === "embedded";
+  const dealerRef = useDealerReference();
 
   return (
     <div
@@ -50,7 +52,7 @@ export function SelfFinanceHowItWorksCard({
                 isEmbedded ? "text-sm leading-5" : "text-xs leading-[18px]"
               }`}
             >
-              {step.description}
+              {step.description.replace("the dealer", dealerRef)}
             </p>
           </div>
         ))}

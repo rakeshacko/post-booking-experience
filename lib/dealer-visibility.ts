@@ -7,7 +7,12 @@
  * - `acko_only`  — the dealer is never named; the customer only ever deals with
  *   AckoDrive. The OTP still happens, but on-screen (heads-up → enter), and
  *   AckoDrive relays it to the dealer in the background — no call.
+ *
+ * Live mode (see `lib/live-booking.ts`) is always `acko_only`, whatever the tab
+ * stored: the customer on stage never sees a dealer's name.
  */
+import { isLiveMode, useLiveMode } from "@/lib/live-booking";
+
 export type DealerVisibility = "revealed" | "acko_only";
 
 export const DEALER_VISIBILITY_STORAGE_KEY = "post-booking-dealer-visibility";
@@ -49,6 +54,7 @@ export function isDealerVisibility(
 
 export function readDealerVisibility(): DealerVisibility {
   if (typeof window === "undefined") return DEFAULT_DEALER_VISIBILITY;
+  if (isLiveMode()) return "acko_only";
   try {
     const stored = sessionStorage.getItem(DEALER_VISIBILITY_STORAGE_KEY);
     return isDealerVisibility(stored) ? stored : DEFAULT_DEALER_VISIBILITY;
@@ -64,6 +70,23 @@ export function writeDealerVisibility(visibility: DealerVisibility): void {
   } catch {
     /* ignore quota / private mode */
   }
+}
+
+/**
+ * The visibility a screen renders: its own stored or toggled choice, except in
+ * live mode, which hides the dealer from the very first render.
+ */
+export function useEffectiveDealerVisibility(chosen: DealerVisibility): DealerVisibility {
+  return useLiveMode() ? "acko_only" : chosen;
+}
+
+/**
+ * How copy names the dealer as a party the customer deals with (who the bank
+ * pays, who preps delivery): "the dealer", or "AckoDrive" in live mode, where
+ * the customer only ever deals with AckoDrive.
+ */
+export function useDealerReference(): string {
+  return useLiveMode() ? ACKO_PARTNER_NAME : "the dealer";
 }
 
 export function isAckoOnly(visibility?: DealerVisibility): boolean {

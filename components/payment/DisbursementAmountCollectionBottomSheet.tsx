@@ -18,6 +18,7 @@ import {
   BOTTOM_SHEET_MAX_HEIGHT_CLASS,
 } from "@/components/ui/bottom-sheet-layout";
 import { bottomSheetTitleWidthWithIllustration } from "@/components/ui/bottom-sheet-title-layout";
+import { useDealerReference } from "@/lib/dealer-visibility";
 import { BottomSheetCloseIcon } from "@/components/ui/BottomSheetCloseIcon";
 
 /** Parity with `SelfFinanceConfirmBottomSheet` / `BankSelectionBottomSheet`. */
@@ -78,6 +79,7 @@ export function DisbursementAmountCollectionBottomSheet({
   primaryCtaLabel = DEFAULT_PRIMARY_CTA_LABEL,
   initialDisbursementInr = null,
 }: DisbursementAmountCollectionBottomSheetProps) {
+  const dealerRef = useDealerReference();
   const [mounted, setMounted] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
   /** Digit-only buffer (no grouping); display is always formatted when non-empty. */
@@ -230,7 +232,7 @@ export function DisbursementAmountCollectionBottomSheet({
               id="disbursement-collection-body"
               className="mt-3 w-full text-left text-sm font-normal leading-[22px] text-[#4b4b4b]"
             >
-              This is the loan amount your bank will transfer to the dealer. It&apos;s usually your
+              This is the loan amount your bank will transfer to {dealerRef}. It&apos;s usually your
               sanctioned amount minus any processing fees.
             </p>
 

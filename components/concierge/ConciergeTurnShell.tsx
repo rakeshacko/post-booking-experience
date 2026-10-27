@@ -22,6 +22,7 @@ import { consumeConciergeEcho } from "@/lib/concierge/echo";
 import { instantRevealEnabled } from "@/lib/concierge/instant";
 import { readExperienceFlow } from "@/lib/experience-flow";
 import { getDeliveryDateShort } from "@/lib/journey-stage";
+import { useLiveMode } from "@/lib/live-booking";
 import { cn } from "@/lib/utils";
 
 /** Pause after the echo chip lands before Shivi starts talking. */
@@ -247,8 +248,8 @@ export function ConciergeTurnShell({
   artifact,
   working,
   replies,
-  timeSkip,
-  altTimeSkip,
+  timeSkip: scriptedTimeSkip,
+  altTimeSkip: scriptedAltTimeSkip,
   footnote,
   footnoteInline = false,
   dateHolder,
@@ -260,6 +261,10 @@ export function ConciergeTurnShell({
   manageShowVehicleIdentification,
   children,
 }: ConciergeTurnShellProps) {
+  /** Live mode: the OMS moves the journey, so the demo time-skips never show. */
+  const liveMode = useLiveMode();
+  const timeSkip = liveMode ? undefined : scriptedTimeSkip;
+  const altTimeSkip = liveMode ? undefined : scriptedAltTimeSkip;
   const [echo, setEcho] = useState<string | null>(null);
   const manage = useManageLayer();
   const [callSheetOpen, setCallSheetOpen] = useState(false);

@@ -14,6 +14,7 @@ import {
 } from "@/lib/experience-flow";
 import { resetChangePolicy } from "@/lib/change-policy";
 import { resetKycVerificationFailureCount } from "@/lib/kyc-verification-attempts";
+import { useLiveMode } from "@/lib/live-booking";
 import { cn } from "@/lib/utils";
 import { QUOTE_ASSETS } from "./quote-assets";
 
@@ -42,6 +43,8 @@ export function QuoteScreen() {
   const [activeFlow, setActiveFlow] = useState<ExperienceFlow>(DEFAULT_EXPERIENCE_FLOW);
   const [breakupOpen, setBreakupOpen] = useState(false);
   const [policyOpen, setPolicyOpen] = useState(false);
+  /** The flow switcher is presenter chrome — never on the live customer's phone. */
+  const liveMode = useLiveMode();
 
   useEffect(() => {
     setActiveFlow(readExperienceFlow());
@@ -68,11 +71,13 @@ export function QuoteScreen() {
       />
 
       {/* Floating flow-switcher menu (demo affordance) */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-30 mx-auto max-w-[640px] px-5 pt-4">
-        <div className="pointer-events-auto">
-          <MenuIconButton onClick={() => setFlowMenuOpen(true)} />
+      {liveMode ? null : (
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-30 mx-auto max-w-[640px] px-5 pt-4">
+          <div className="pointer-events-auto">
+            <MenuIconButton onClick={() => setFlowMenuOpen(true)} />
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="relative z-10 mx-auto w-full max-w-[640px] px-5">
         {/* HERO — your exact car */}

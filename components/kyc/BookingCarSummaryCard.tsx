@@ -11,6 +11,7 @@ import {
   DEMO_VEHICLE_ENGINE_NO,
 } from "@/components/kyc/demo-vehicle-identification";
 import { BOOKING_CONFIRMED_ASSETS } from "@/components/kyc/kyc-booking-confirmed-assets";
+import { useLiveBooking } from "@/lib/live-booking";
 
 type CarCutoutSrc = string | StaticImageData;
 
@@ -101,11 +102,13 @@ export function BookingCarSummaryCard({
 }: BookingCarSummaryCardProps) {
   const panelClassName =
     "overflow-hidden rounded-xl border border-white/60 bg-white/90 p-3 shadow-sm backdrop-blur-[12px]";
+  /** Live mode: the numbers the dealer sent, as recorded in the OMS. */
+  const allocation = useLiveBooking()?.allocation;
 
   const details = (
     <BookingCarCardDetails
-      engineNo={showVehicleIdentification ? DEMO_VEHICLE_ENGINE_NO : undefined}
-      chassisNo={showVehicleIdentification ? DEMO_VEHICLE_CHASSIS_NO : undefined}
+      engineNo={showVehicleIdentification ? allocation?.engine || DEMO_VEHICLE_ENGINE_NO : undefined}
+      chassisNo={showVehicleIdentification ? allocation?.chassis || DEMO_VEHICLE_CHASSIS_NO : undefined}
       showCopyButtons={showVehicleIdentification}
       {...cardDetails}
     />

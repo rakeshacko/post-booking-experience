@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ConciergeTurnShell } from "@/components/concierge/ConciergeTurnShell";
 import { bankForQueryParam } from "@/components/payment/acko-drive-finance-bank";
 import { writeConciergeEcho } from "@/lib/concierge/echo";
+import { useDealerReference } from "@/lib/dealer-visibility";
 import { BankSelectionBottomSheet } from "@/components/payment/BankSelectionBottomSheet";
 import { FullPaymentConfirmBottomSheet } from "@/components/payment/FullPaymentConfirmBottomSheet";
 import { SelfFinanceConfirmBottomSheet } from "@/components/payment/SelfFinanceConfirmBottomSheet";
@@ -253,6 +254,7 @@ function OptionCard({
  */
 export function ChoosePaymentOptionsScreen() {
   const router = useRouter();
+  const dealerRef = useDealerReference();
   const [choice, setChoice] = useState<PaymentOptionId>("acko_drive");
   const [bankSheetOpen, setBankSheetOpen] = useState(false);
   const [selfFinanceConfirmOpen, setSelfFinanceConfirmOpen] = useState(false);
@@ -323,7 +325,7 @@ export function ChoosePaymentOptionsScreen() {
                   "Apply in minutes",
                   "Bank verifies & approves",
                   "Pay your down payment",
-                  "Bank pays the dealer",
+                  `Bank pays ${dealerRef}`,
                 ]}
                 flowBankLogosOnStep={0}
               />
@@ -349,7 +351,7 @@ export function ChoosePaymentOptionsScreen() {
                   "I hand you the invoice",
                   "Your bank approves the loan",
                   "Pay your down payment",
-                  "Your bank pays the dealer",
+                  `Your bank pays ${dealerRef}`,
                 ]}
               />
             </div>

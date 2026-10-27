@@ -20,6 +20,7 @@ import {
   readDealerVisibility,
   resolveDealerAttribution,
   type DealerVisibility,
+  useEffectiveDealerVisibility,
 } from "@/lib/dealer-visibility";
 import { BOOKING_LOCK_AMOUNT_INR, buildDownPaymentCheckoutHref } from "@/lib/paymentUrls";
 import { formatInrAmountDigits, parseInrAmountInput } from "@/lib/loan-emi";
@@ -64,9 +65,10 @@ export function EnterDisbursementAmountScreen() {
   const [loanAmountInput, setLoanAmountInput] = useState(() =>
     formatInrAmountDigits(clampDisbursementLoan(SELF_FINANCE_LOAN_DEFAULT_INR)),
   );
-  const [dealerVisibility, setDealerVisibility] = useState<DealerVisibility>(
+  const [storedDealerVisibility, setDealerVisibility] = useState<DealerVisibility>(
     DEFAULT_DEALER_VISIBILITY,
   );
+  const dealerVisibility = useEffectiveDealerVisibility(storedDealerVisibility);
 
   useEffect(() => {
     setDealerVisibility(readDealerVisibility());

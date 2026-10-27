@@ -35,8 +35,10 @@ export default function RootLayout({
           <div className="relative mx-auto flex min-h-dvh w-full max-w-[640px] flex-col">
             {children}
           </div>
-          <LiveBookingSync />
         </AnimationProvider>
+        {/* Outside the per-route AnimationProvider key, so it isn't remounted (and
+            doesn't re-route to the current stage) every time the customer navigates. */}
+        <LiveBookingSync />
       </body>
     </html>
   );

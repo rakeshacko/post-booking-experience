@@ -6,7 +6,12 @@ import { useRouter } from "next/navigation";
 import { ConciergeTurnShell } from "@/components/concierge/ConciergeTurnShell";
 import { writeChangeEntryStage } from "@/lib/change-policy";
 import { writeConciergeEcho } from "@/lib/concierge/echo";
-import { DEFAULT_DEALER_VISIBILITY, isAckoOnly, readDealerVisibility } from "@/lib/dealer-visibility";
+import {
+  DEFAULT_DEALER_VISIBILITY,
+  isAckoOnly,
+  readDealerVisibility,
+  useEffectiveDealerVisibility,
+} from "@/lib/dealer-visibility";
 import { writeExperienceFlow } from "@/lib/experience-flow";
 import { JOURNEY_PATHS } from "@/lib/journey-routes";
 import { BOOKING_LOCK_AMOUNT_INR } from "@/lib/paymentUrls";
@@ -23,7 +28,8 @@ const LOCK_AMOUNT = `₹${BOOKING_LOCK_AMOUNT_INR.toLocaleString("en-IN")}`;
  */
 export function ConciergeAllocationFailedScreen() {
   const router = useRouter();
-  const [dealerVisibility, setDealerVisibility] = useState(DEFAULT_DEALER_VISIBILITY);
+  const [storedDealerVisibility, setDealerVisibility] = useState(DEFAULT_DEALER_VISIBILITY);
+  const dealerVisibility = useEffectiveDealerVisibility(storedDealerVisibility);
 
   useEffect(() => {
     setDealerVisibility(readDealerVisibility());

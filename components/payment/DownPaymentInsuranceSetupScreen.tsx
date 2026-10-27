@@ -9,7 +9,8 @@ import { bankForQueryParam } from "@/components/payment/acko-drive-finance-bank"
 import { MoneyPlanCard, type MoneyPlanStep } from "@/components/payment/MoneyPlanCard";
 import { useFullPaymentJourney } from "@/components/payment/use-full-payment-journey";
 import { FULL_PAYMENT_INSURANCE_INR } from "@/components/payment/loan-amount-demo-constants";
-import { isAckoOnly, readDealerVisibility } from "@/lib/dealer-visibility";
+import { isAckoOnly, readDealerVisibility, useDealerReference } from "@/lib/dealer-visibility";
+import { useLiveMode } from "@/lib/live-booking";
 import { buildLoanDisbursementReceivedHref, buildPayInsurancePremiumHref } from "@/lib/paymentUrls";
 
 function formatInr(amount: number) {
@@ -50,7 +51,9 @@ export function DownPaymentInsuranceSetupScreen() {
   const isSelfFinance = bank === "self_finance" || bankTransferRef != null;
 
   // AckoDrive-only flow never names the dealer.
-  const [ackoOnly, setAckoOnly] = useState(false);
+  const [storedAckoOnly, setAckoOnly] = useState(false);
+  const ackoOnly = useLiveMode() || storedAckoOnly;
+  const dealerRef = useDealerReference();
   useEffect(() => {
     setAckoOnly(isAckoOnly(readDealerVisibility()));
   }, []);
@@ -83,7 +86,7 @@ export function DownPaymentInsuranceSetupScreen() {
               state: "done",
               title: "Car amount",
               amountLabel: paidLabel,
-              detail: "Paid in full — the dealer starts delivery prep.",
+              detail: `Paid in full — ${dealerRef} starts delivery prep.`,
             },
             INSURANCE_STEP,
           ]}
@@ -124,14 +127,14 @@ export function DownPaymentInsuranceSetupScreen() {
           },
           {
             state: "moving",
-            title: `${bankName} sends the loan to the dealer`,
+            title: `${bankName} sends the loan to ${dealerRef}`,
             detail: "24–48 hours · nothing needed from you — I'm chasing it.",
           },
           INSURANCE_STEP,
         ]}
       />
     );
-  }, [isFullPayment, bankTransferRef, bank, originalDownPayment]);
+  }, [isFullPayment, bankTransferRef, bank, originalDownPayment, dealerRef]);
 
   const nextHref = isFullPayment
     ? buildPayInsurancePremiumHref()

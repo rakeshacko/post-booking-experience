@@ -48,6 +48,7 @@ import {
   FULL_PAYMENT_BANK_ID,
   INSURANCE_PAYMENT_KIND,
 } from "@/lib/paymentUrls";
+import { useLiveBookingId } from "@/lib/live-booking";
 import { cn } from "@/lib/utils";
 
 /** Keeps parity with other bottom sheets in the app */
@@ -407,6 +408,7 @@ function ManageBookingBottomSheetInner({
 }: ManageBookingBottomSheetProps) {
   const [mounted, setMounted] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
+  const liveBookingId = useLiveBookingId();
   const exitTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -481,7 +483,7 @@ function ManageBookingBottomSheetInner({
               Your car
             </h2>
             <p className="mt-1 text-sm font-normal leading-5 text-[#4b4b4b]">
-              Reference ID: {DEMO_BOOKING_ID}
+              Reference ID: {liveBookingId ?? DEMO_BOOKING_ID}
             </p>
           </div>
           <button

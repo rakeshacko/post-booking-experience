@@ -12,6 +12,8 @@ import {
   DEMO_LOAN_DISBURSEMENT_TRANSACTION_ID,
 } from "@/components/payment/loan-amount-demo-constants";
 import { SUCCESS_SCREEN_HEADLINE_SUBTEXT_GAP_CLASS } from "@/components/ui/success-screen-layout";
+import { useDealerReference } from "@/lib/dealer-visibility";
+import { useLiveMode } from "@/lib/live-booking";
 import { buildPayInsurancePremiumHref } from "@/lib/paymentUrls";
 
 const HEADLINE = "Loan disbursed, Sharath!";
@@ -58,6 +60,9 @@ export function LoanDisbursementReceivedScreen({
   const [showHeader, setShowHeader] = useState(false);
   const [showAmountCard, setShowAmountCard] = useState(false);
   const [showFooter, setShowFooter] = useState(false);
+  /** The footer only holds the demo time-skip, so live mode drops it. */
+  const liveMode = useLiveMode();
+  const dealerRef = useDealerReference();
 
   const okayHref = useMemo(
     () =>
@@ -144,7 +149,7 @@ export function LoanDisbursementReceivedScreen({
                 {HEADLINE}
               </h1>
               <p className="w-full text-center text-sm font-normal leading-5 text-[#4b4b4b]">
-                {SUBLINE}
+                {SUBLINE.replace("the dealer", dealerRef)}
               </p>
             </motion.div>
           )}
@@ -179,7 +184,7 @@ export function LoanDisbursementReceivedScreen({
         </main>
       </div>
 
-      {showFooter && (
+      {showFooter && !liveMode && (
         <div className="fixed inset-x-0 bottom-0 z-20 bg-white pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[0_-4px_6px_0_rgba(54,53,76,0.08)]">
           <div className="mx-auto flex w-full max-w-[640px] items-start justify-center px-5 pt-3">
             {/* Insurance is due just before delivery — time passes before the next ask. */}

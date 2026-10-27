@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 
+import { useLiveMode } from "@/lib/live-booking";
 import { cn } from "@/lib/utils";
 
 export type TimeSkipChipProps = {
@@ -15,10 +16,13 @@ export type TimeSkipChipProps = {
 
 /**
  * Demo-only time travel — the journey plays out over days; this pill stands in
- * for time passing between turns. Prototype chrome, deliberately not product UI.
+ * for time passing between turns. Prototype chrome, deliberately not product UI,
+ * so it never renders in live mode (the OMS moves the journey there).
  */
 export function TimeSkipChip({ label, href, onBeforeNavigate, className }: TimeSkipChipProps) {
   const router = useRouter();
+  const liveMode = useLiveMode();
+  if (liveMode) return null;
   return (
     <div className={cn("flex w-full justify-center", className)}>
       <button

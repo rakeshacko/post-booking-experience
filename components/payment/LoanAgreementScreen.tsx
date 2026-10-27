@@ -11,6 +11,7 @@ import {
   BANK_DISBURSEMENT_INR,
 } from "@/components/payment/loan-amount-demo-constants";
 import { isAckoOnly, readDealerVisibility } from "@/lib/dealer-visibility";
+import { useLiveMode } from "@/lib/live-booking";
 import { buildDownPaymentCheckoutHref } from "@/lib/paymentUrls";
 import { cn } from "@/lib/utils";
 
@@ -45,7 +46,8 @@ export function LoanAgreementScreen() {
     return Number.isFinite(n) && n > 0 ? n : BANK_DISBURSEMENT_INR;
   }, [loanAmount]);
 
-  const [ackoOnly, setAckoOnly] = useState(false);
+  const [storedAckoOnly, setAckoOnly] = useState(false);
+  const ackoOnly = useLiveMode() || storedAckoOnly;
   const [agreed, setAgreed] = useState(false);
   useEffect(() => {
     setAckoOnly(isAckoOnly(readDealerVisibility()));

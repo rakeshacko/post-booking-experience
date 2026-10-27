@@ -7,6 +7,7 @@ import { KycBookingProcessingScreen } from "@/components/kyc/KycBookingProcessin
 import { BankTransferUtrConfirmBottomSheet } from "@/components/payment/BankTransferUtrConfirmBottomSheet";
 import { MarginMoneySlipCard } from "@/components/payment/MarginMoneySlipCard";
 import { PAYMENT_CHOOSE_ASSETS } from "@/components/payment/payment-choose-assets";
+import { useDealerReference } from "@/lib/dealer-visibility";
 
 const HEADLINE = "Your margin money slip is ready!";
 
@@ -18,6 +19,7 @@ const SUBLINE =
  */
 export function MarginMoneySlipActionScreen() {
   const router = useRouter();
+  const dealerRef = useDealerReference();
   const searchParams = useSearchParams();
   const bank = searchParams.get("bank");
   const loanAmount = searchParams.get("loan_amount");
@@ -56,7 +58,7 @@ export function MarginMoneySlipActionScreen() {
     <>
       <KycBookingProcessingScreen
         headline={HEADLINE}
-        subline={SUBLINE}
+        subline={SUBLINE.replace("the dealer", dealerRef)}
         heroIllustrationSrc={PAYMENT_CHOOSE_ASSETS.documentsReceived}
         heroSummaryCard={heroSummaryCard}
         nextHref={nextHref}

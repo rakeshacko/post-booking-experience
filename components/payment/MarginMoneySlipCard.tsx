@@ -4,19 +4,26 @@ import Image from "next/image";
 import { useCallback, type MouseEvent } from "react";
 
 import { PAYMENT_CHOOSE_ASSETS } from "@/components/payment/payment-choose-assets";
+import { readLiveBookingId } from "@/lib/live-booking";
 
 /**
- * Stub download — replace with a real PDF URL when available.
+ * Stub download — replace with a real PDF URL when available. Live mode drops
+ * the demo labelling (the customer on stage can open the file).
  */
 function triggerDemoMarginSlipDownload() {
+  const liveBookingId = readLiveBookingId();
   const blob = new Blob(
-    ["Margin money slip (demo document)\nShare this with your bank to release funds.\n"],
+    [
+      liveBookingId
+        ? `Margin money slip · ${liveBookingId}\nShare this with your bank to release funds.\n`
+        : "Margin money slip (demo document)\nShare this with your bank to release funds.\n",
+    ],
     { type: "text/plain;charset=utf-8" },
   );
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "margin-money-slip-demo.txt";
+  a.download = liveBookingId ? `margin-money-slip-${liveBookingId}.txt` : "margin-money-slip-demo.txt";
   document.body.appendChild(a);
   a.click();
   a.remove();

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 import { KycTopNavHeader } from "@/components/kyc/KycTopNavHeader";
 import { DefaultPageTransition } from "@/components/ui/page-transition";
+import { useLiveMode } from "@/lib/live-booking";
 
 import { FULL_PAYMENT_INSURANCE_INR } from "@/components/payment/loan-amount-demo-constants";
 import {
@@ -118,6 +119,8 @@ function MockRazorpayPaymentPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pendingSuccessHref = useRef<string | null>(null);
+  /** Live mode: plain card fields, no "mock"/"demo" labelling on the customer's phone. */
+  const liveMode = useLiveMode();
 
   const checkoutMeta = useMemo(() => {
     const raw = searchParams.get("down_payment");
@@ -458,15 +461,27 @@ function MockRazorpayPaymentPageContent() {
                 </span>
               ))}
             </div>
-            <div className="mt-4 rounded-lg border border-dashed border-[#e6e8eb] bg-[#fafbfc] px-3 py-8 text-center text-sm text-[#9ca3af]">
-              Card form (static mock)
-            </div>
+            {liveMode ? (
+              <div className="mt-4 flex flex-col gap-2 text-sm text-[#9ca3af]" aria-hidden>
+                <div className="rounded-lg border border-[#e6e8eb] bg-white px-3 py-2.5">Card number</div>
+                <div className="flex gap-2">
+                  <div className="flex-1 rounded-lg border border-[#e6e8eb] bg-white px-3 py-2.5">MM / YY</div>
+                  <div className="flex-1 rounded-lg border border-[#e6e8eb] bg-white px-3 py-2.5">CVV</div>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-4 rounded-lg border border-dashed border-[#e6e8eb] bg-[#fafbfc] px-3 py-8 text-center text-sm text-[#9ca3af]">
+                Card form (static mock)
+              </div>
+            )}
           </div>
         </div>
 
-        <p className="mt-6 text-center text-xs leading-relaxed text-[#9ca3af]">
-          This is a non-functional demo screen. No payment is processed.
-        </p>
+        {liveMode ? null : (
+          <p className="mt-6 text-center text-xs leading-relaxed text-[#9ca3af]">
+            This is a non-functional demo screen. No payment is processed.
+          </p>
+        )}
       </main>
 
       <div className="fixed bottom-0 left-0 right-0 border-t border-[#e6e8eb] bg-white px-4 py-4 shadow-[0_-4px_24px_rgba(0,0,0,0.06)]">

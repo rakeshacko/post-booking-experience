@@ -21,6 +21,7 @@ import { VerificationFailureReasonSwitcher } from "@/components/kyc/Verification
 import { WordByWordLine } from "@/components/payment/WordByWordLine";
 import { AuroraLightLayer } from "@/components/ui/aurora-light-layer";
 import { ShimmerInfoCard } from "@/components/ui/ShimmerInfoCard";
+import { useLiveMode } from "@/lib/live-booking";
 import {
   HERO_ACTION_HEADLINE_SUBLINE_GAP_CLASS,
   HERO_ILLUSTRATION_TO_COPY_MT,
@@ -59,6 +60,8 @@ export function KycVerificationFailedScreen() {
   const [showCta, setShowCta] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
   const [manageBookingOpen, setManageBookingOpen] = useState(false);
+  /** The failure-reason switcher is a demo/QA control — hidden in live mode. */
+  const liveMode = useLiveMode();
 
   const initialReason = useMemo(
     () => resolveKycVerificationFailureReason(searchParams.get("reason")),
@@ -132,9 +135,11 @@ export function KycVerificationFailedScreen() {
               </div>
             }
           />
-          <div className="relative z-20 w-full shrink-0 px-5 pb-3 pt-1">
-            <VerificationFailureReasonSwitcher value={reason} onChange={onReasonChange} />
-          </div>
+          {liveMode ? null : (
+            <div className="relative z-20 w-full shrink-0 px-5 pb-3 pt-1">
+              <VerificationFailureReasonSwitcher value={reason} onChange={onReasonChange} />
+            </div>
+          )}
           <AuroraLightLayer />
           <div className="relative z-10 flex min-h-0 w-full flex-1 flex-col items-center px-5 pb-10 pt-4">
             <div className="relative h-20 w-20 shrink-0">

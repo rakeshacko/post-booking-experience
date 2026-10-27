@@ -10,6 +10,7 @@ import {
   BOTTOM_SHEET_MAX_HEIGHT_CLASS,
 } from "@/components/ui/bottom-sheet-layout";
 import { bottomSheetTitleWidthWithIllustration } from "@/components/ui/bottom-sheet-title-layout";
+import { useDealerReference } from "@/lib/dealer-visibility";
 import { BottomSheetCloseIcon } from "@/components/ui/BottomSheetCloseIcon";
 
 const SHEET_TRANSITION_MS = 280;
@@ -31,6 +32,7 @@ export function BankTransferUtrConfirmBottomSheet({
   onClose,
   onConfirm,
 }: BankTransferUtrConfirmBottomSheetProps) {
+  const dealerRef = useDealerReference();
   const [mounted, setMounted] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
   const [utr, setUtr] = useState("");
@@ -144,7 +146,7 @@ export function BankTransferUtrConfirmBottomSheet({
               id="bank-transfer-confirm-body"
               className="mt-3 w-full text-left text-sm font-normal leading-[22px] text-[#4b4b4b]"
             >
-              Let us know once your bank has transferred the loan amount to the dealer. Adding your UTR
+              Let us know once your bank has transferred the loan amount to {dealerRef}. Adding your UTR
               number helps us verify the transfer faster.
             </p>
 

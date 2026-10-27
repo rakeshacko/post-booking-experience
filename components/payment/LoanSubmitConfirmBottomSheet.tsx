@@ -13,6 +13,7 @@ import { BottomSheetCloseIcon } from "@/components/ui/BottomSheetCloseIcon";
 import { BottomSheetConfirmBulletList } from "@/components/ui/BottomSheetConfirmBulletList";
 import { BottomSheetPortal } from "@/components/ui/BottomSheetPortal";
 import { FULL_PAYMENT_INSURANCE_INR } from "@/components/payment/loan-amount-demo-constants";
+import { useDealerReference } from "@/lib/dealer-visibility";
 import { publicAssetPath } from "@/lib/public-asset-path";
 
 /** Enter/exit slide duration — keep in sync with `BankSelectionBottomSheet` */
@@ -31,7 +32,7 @@ function formatInr(amount: number) {
   }).format(amount);
 }
 
-const BEFORE_YOU_CONTINUE_POINTS: readonly ReactNode[] = [
+const beforeYouContinuePoints = (dealerRef: string): readonly ReactNode[] => [
   <>
     Down payment must be completed{" "}
     <span className="font-semibold">before 31 March 2026</span>
@@ -46,7 +47,7 @@ const BEFORE_YOU_CONTINUE_POINTS: readonly ReactNode[] = [
     before delivery, for RTO registration
   </>,
   <>
-    The bank will disburse the loan amount to the dealer after down payment is completed
+    The bank will disburse the loan amount to {dealerRef} after down payment is completed
   </>,
 ];
 
@@ -66,6 +67,7 @@ export function LoanSubmitConfirmBottomSheet({
   onClose,
   onConfirm,
 }: LoanSubmitConfirmBottomSheetProps) {
+  const dealerRef = useDealerReference();
   const [mounted, setMounted] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
   const exitTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -166,7 +168,7 @@ export function LoanSubmitConfirmBottomSheet({
 
             <BottomSheetConfirmBulletList
               id="loan-before-proceed-list"
-              points={BEFORE_YOU_CONTINUE_POINTS}
+              points={beforeYouContinuePoints(dealerRef)}
             />
           </div>
 

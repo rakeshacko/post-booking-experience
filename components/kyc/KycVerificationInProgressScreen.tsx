@@ -20,6 +20,7 @@ import { ManageBookingBottomSheet } from "@/components/kyc/ManageBookingBottomSh
 import { recordKycVerificationFailure } from "@/lib/kyc-verification-attempts";
 import { DEMO_NAV_CTA_LABEL } from "@/lib/demo-nav-cta";
 import { KYC_VERIFICATION_FAILED_HREF } from "@/lib/kyc-verification-outcome";
+import { useLiveMode } from "@/lib/live-booking";
 import { cn } from "@/lib/utils";
 
 const HEADLINE = "Verification in progress";
@@ -62,9 +63,11 @@ type KycVerificationInProgressScreenProps = {
  */
 export function KycVerificationInProgressScreen({
   nextHref = "/kyc/processing",
-  hideDemoCta = false,
+  hideDemoCta: hideDemoCtaProp = false,
 }: KycVerificationInProgressScreenProps) {
   const router = useRouter();
+  /** The demo "Next" is presenter navigation — never shown in live mode. */
+  const hideDemoCta = useLiveMode() || hideDemoCtaProp;
   const [reduceMotion, setReduceMotion] = useState(false);
   /** Headline word animation starts only after the KYC hero art has loaded (order: header → illustration → action copy). */
   const [heroArtReady, setHeroArtReady] = useState(false);
