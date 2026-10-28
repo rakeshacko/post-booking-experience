@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 import { KycTopNavHeader } from "@/components/kyc/KycTopNavHeader";
 import { DefaultPageTransition } from "@/components/ui/page-transition";
-import { useLiveMode } from "@/lib/live-booking";
+import { postLiveBooking, useLiveMode, type LivePaymentMethod } from "@/lib/live-booking";
 
 import { FULL_PAYMENT_INSURANCE_INR } from "@/components/payment/loan-amount-demo-constants";
 import {
@@ -27,6 +27,15 @@ const PAYMENT_LEDGER_STORAGE_KEY = "pbe_down_payment_ledger_v1";
 
 /** Minimum amount (₹) user can pay in one instalment on the mock checkout. */
 const MIN_PAYMENT_INR = 1;
+
+const PAYMENT_METHODS: readonly { id: LivePaymentMethod; label: string }[] = [
+  { id: "card", label: "Card" },
+  { id: "upi", label: "UPI" },
+  { id: "netbanking", label: "Netbanking" },
+];
+
+/** Live mode: the price lock didn't reach the OMS — short, and the button stays to retry. */
+const LIVE_PAY_FAILED = "Your payment didn't go through. Please try again.";
 
 function formatInr(amount: number) {
   return new Intl.NumberFormat("en-IN", {
@@ -121,6 +130,10 @@ function MockRazorpayPaymentPageContent() {
   const pendingSuccessHref = useRef<string | null>(null);
   /** Live mode: plain card fields, no "mock"/"demo" labelling on the customer's phone. */
   const liveMode = useLiveMode();
+  /** Live mode: the method the customer picked — the booking is paid with it in the OMS. */
+  const [paymentMethod, setPaymentMethod] = useState<LivePaymentMethod>("card");
+  const [livePaying, setLivePaying] = useState(false);
+  const [livePayError, setLivePayError] = useState<string | null>(null);
 
   const checkoutMeta = useMemo(() => {
     const raw = searchParams.get("down_payment");
@@ -240,7 +253,32 @@ function MockRazorpayPaymentPageContent() {
     setAmountInput(String(Math.min(half, remainingDue)));
   }, [remainingDue]);
 
+  /**
+   * Live mode, first price lock: the payment turns the quote into a booking in
+   * the OMS (QUOTE → BOOKING_DONE) before the success screen. A retry after it
+   * went through changes nothing there.
+   */
+  const handleLiveBookingPay = useCallback(async () => {
+    if (livePaying) return;
+    setLivePaying(true);
+    setLivePayError(null);
+    try {
+      await postLiveBooking("book", { method: paymentMethod, amount: bookingLockDue });
+      router.push(buildBookingLockSuccessHref(bookingLockDue));
+    } catch (error) {
+      console.warn("[live] booking payment not recorded", error);
+      setLivePayError(LIVE_PAY_FAILED);
+      setLivePaying(false);
+    }
+  }, [bookingLockDue, livePaying, paymentMethod, router]);
+
+  const isLiveBookingPay = liveMode && isBookingLockCheckout && !returnSource;
+
   const handlePay = useCallback(() => {
+    if (isLiveBookingPay) {
+      void handleLiveBookingPay();
+      return;
+    }
     if (!isDownPaymentFromUrl) {
       setCheckoutError(null);
       pendingSuccessHref.current = buildBookingLockSuccessHref(bookingLockDue, {
@@ -300,7 +338,9 @@ function MockRazorpayPaymentPageContent() {
   }, [
     amountInput,
     bookingLockDue,
+    handleLiveBookingPay,
     isDownPaymentFromUrl,
+    isLiveBookingPay,
     isInsurancePayment,
     originalDownPayment,
     paymentBank,
@@ -447,28 +487,50 @@ function MockRazorpayPaymentPageContent() {
 
           <div className="border-t border-[#e6e8eb] px-4 py-4">
             <p className="text-xs font-medium text-[#6b7280]">Payment method</p>
-            <div className="mt-3 flex gap-2">
-              {(["Card", "UPI", "Netbanking"] as const).map((label, i) => (
-                <span
-                  key={label}
-                  className={`rounded-lg border px-3 py-2 text-xs font-medium ${
-                    i === 0
-                      ? "border-[#3395ff] bg-[#f0f7ff] text-[#0b6bcb]"
-                      : "border-[#e6e8eb] bg-[#fafbfc] text-[#9ca3af]"
-                  }`}
-                >
-                  {label}
-                </span>
-              ))}
-            </div>
             {liveMode ? (
-              <div className="mt-4 flex flex-col gap-2 text-sm text-[#9ca3af]" aria-hidden>
-                <div className="rounded-lg border border-[#e6e8eb] bg-white px-3 py-2.5">Card number</div>
-                <div className="flex gap-2">
-                  <div className="flex-1 rounded-lg border border-[#e6e8eb] bg-white px-3 py-2.5">MM / YY</div>
-                  <div className="flex-1 rounded-lg border border-[#e6e8eb] bg-white px-3 py-2.5">CVV</div>
-                </div>
+              <div className="mt-3 flex gap-2" role="radiogroup" aria-label="Payment method">
+                {PAYMENT_METHODS.map((method) => {
+                  const selected = method.id === paymentMethod;
+                  return (
+                    <button
+                      key={method.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={selected}
+                      disabled={livePaying}
+                      onClick={() => {
+                        setPaymentMethod(method.id);
+                        setLivePayError(null);
+                      }}
+                      className={`rounded-lg border px-3 py-2 text-xs font-medium transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#3395ff] focus-visible:ring-offset-2 ${
+                        selected
+                          ? "border-[#3395ff] bg-[#f0f7ff] text-[#0b6bcb]"
+                          : "border-[#e6e8eb] bg-[#fafbfc] text-[#6b7280] hover:border-[#c7d2e0]"
+                      }`}
+                    >
+                      {method.label}
+                    </button>
+                  );
+                })}
               </div>
+            ) : (
+              <div className="mt-3 flex gap-2">
+                {PAYMENT_METHODS.map((method, i) => (
+                  <span
+                    key={method.id}
+                    className={`rounded-lg border px-3 py-2 text-xs font-medium ${
+                      i === 0
+                        ? "border-[#3395ff] bg-[#f0f7ff] text-[#0b6bcb]"
+                        : "border-[#e6e8eb] bg-[#fafbfc] text-[#9ca3af]"
+                    }`}
+                  >
+                    {method.label}
+                  </span>
+                ))}
+              </div>
+            )}
+            {liveMode ? (
+              <LivePaymentMethodFields method={paymentMethod} />
             ) : (
               <div className="mt-4 rounded-lg border border-dashed border-[#e6e8eb] bg-[#fafbfc] px-3 py-8 text-center text-sm text-[#9ca3af]">
                 Card form (static mock)
@@ -486,13 +548,27 @@ function MockRazorpayPaymentPageContent() {
 
       <div className="fixed bottom-0 left-0 right-0 border-t border-[#e6e8eb] bg-white px-4 py-4 shadow-[0_-4px_24px_rgba(0,0,0,0.06)]">
         <div className="mx-auto w-full max-w-[640px]">
+          {livePayError ? (
+            <p role="alert" className="mb-3 text-center text-xs font-medium text-[#dc2626]">
+              {livePayError}
+            </p>
+          ) : null}
           <button
             type="button"
             onClick={handlePay}
-            disabled={!isPayAmountValid}
+            disabled={!isPayAmountValid || livePaying}
+            aria-busy={livePaying || undefined}
             className="primary-cta focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#3395ff] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isInsurancePayment
+            {livePaying ? (
+              <span className="inline-flex items-center justify-center gap-2">
+                <span
+                  className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
+                  aria-hidden
+                />
+                Processing payment…
+              </span>
+            ) : isInsurancePayment
               ? `Pay ${formatInr(FULL_PAYMENT_INSURANCE_INR)}`
               : isDownPaymentFromUrl &&
                   isPayAmountValid &&
@@ -506,6 +582,34 @@ function MockRazorpayPaymentPageContent() {
       </div>
       </div>
     </DefaultPageTransition>
+  );
+}
+
+/** Live mode: the fields for the chosen method, as a real checkout lays them out. */
+function LivePaymentMethodFields({ method }: { method: LivePaymentMethod }) {
+  const field = "rounded-lg border border-[#e6e8eb] bg-white px-3 py-2.5";
+  return (
+    <div className="mt-4 flex flex-col gap-2 text-sm text-[#9ca3af]" aria-hidden>
+      {method === "card" ? (
+        <>
+          <div className={field}>Card number</div>
+          <div className="flex gap-2">
+            <div className={`flex-1 ${field}`}>MM / YY</div>
+            <div className={`flex-1 ${field}`}>CVV</div>
+          </div>
+        </>
+      ) : method === "upi" ? (
+        <>
+          <div className={field}>UPI ID, like name@bank</div>
+          <p className="px-1 text-xs text-[#6b7280]">Or pay with any UPI app on this phone</p>
+        </>
+      ) : (
+        <>
+          <div className={field}>Choose your bank</div>
+          <p className="px-1 text-xs text-[#6b7280]">You&apos;ll sign in on your bank&apos;s page next</p>
+        </>
+      )}
+    </div>
   );
 }
 

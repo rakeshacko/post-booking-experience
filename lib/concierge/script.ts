@@ -73,6 +73,27 @@ export const VERIFY_IDENTITY_WORDS: TurnWords = {
   callLabel: "Need a hand? I can call you",
 };
 
+/**
+ * Live mode documents turn (`/kyc/documents-received`) — the documents went to
+ * the team and the turn waits, honestly, until they're approved in OMS; then
+ * the app moves on to the dealer search by itself. No reply, no time-skip.
+ */
+export const DOCUMENTS_RECEIVED_LIVE_WORDS: TurnWords = {
+  says: [
+    "Got your documents, Sharath. I'm checking them now.",
+    "There's nothing else you need to do. I'll take you to the next step as soon as they clear.",
+  ],
+  workingLines: [
+    "PAN and Aadhaar received",
+    "Checking your name and address",
+    "Opening your purchase in your name",
+  ],
+  workingMode: "ongoing",
+  workingDoneCount: 1,
+  workingEtaLabel: "This usually takes a few minutes",
+  callLabel: "Questions? I can call you",
+};
+
 /** Arrival lead once the payment settles — close in length so the headline doesn't reflow. */
 export const ARRIVAL_LEAD_PAID =
   "Hi Sharath, I'm Shivi. Your payment is in and your price is locked.";

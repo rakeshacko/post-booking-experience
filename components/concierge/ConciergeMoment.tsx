@@ -27,7 +27,12 @@ import {
 import { PaymentSummaryCard } from "@/components/payment/PaymentSummaryCard";
 import { ShimmerInfoCard } from "@/components/ui/ShimmerInfoCard";
 import { readActiveBookingSnapshot } from "@/lib/active-booking-snapshot";
-import { ARRIVAL_LEAD_PAID, getTurnWords, type ConciergeMomentId } from "@/lib/concierge/script";
+import {
+  ARRIVAL_LEAD_PAID,
+  DOCUMENTS_RECEIVED_LIVE_WORDS,
+  getTurnWords,
+  type ConciergeMomentId,
+} from "@/lib/concierge/script";
 import {
   DEFAULT_DEALER_VISIBILITY,
   isAckoOnly,
@@ -194,6 +199,22 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
       }
 
       case "documentsReceived": {
+        if (liveMode) {
+          // The documents are with the team in OMS: wait here until they approve
+          // the KYC, then the live sync moves on to the dealer search.
+          const liveWords = DOCUMENTS_RECEIVED_LIVE_WORDS;
+          return {
+            dayStamp: liveWords.dayStamp,
+            says: liveWords.says,
+            callLabel: liveWords.callLabel,
+            working: {
+              lines: liveWords.workingLines ?? [],
+              mode: liveWords.workingMode,
+              etaLabel: liveWords.workingEtaLabel,
+              doneCount: liveWords.workingDoneCount,
+            },
+          };
+        }
         // OCR verifies in-session — no queue screen. Failure surfaces right here;
         // the cancel-no-charges demo still parks on the holding turn.
         const failed = getKycVerificationNextHref() === KYC_VERIFICATION_FAILED_HREF;

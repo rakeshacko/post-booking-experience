@@ -1,5 +1,7 @@
 import { useSyncExternalStore } from "react";
 
+import { INSTANT_REVEAL_KEY } from "@/lib/concierge/instant";
+
 /**
  * Live mode — the journey follows a real booking in the demo OMS instead of
  * the scripted time-skips. Open any page with `?live=AD-4821` to start
@@ -90,8 +92,13 @@ export function useLiveMode(): boolean {
   return useLiveBookingId() !== null;
 }
 
-/** OMS stages in order — the journey only ever moves forward through these. */
+/**
+ * OMS stages in order — the journey only ever moves forward through these.
+ * `QUOTE` is the booking before the customer pays; paying in the app makes it
+ * `BOOKING_DONE`, and staff approving the KYC documents makes it `KYC_APPROVED`.
+ */
 const STAGE_ORDER = [
+  "QUOTE",
   "BOOKING_DONE",
   "KYC_APPROVED",
   "DEALER_ALLOCATED",
@@ -109,10 +116,14 @@ export function stageIndex(stage: string | undefined): number {
   return stage ? STAGE_ORDER.indexOf(stage as (typeof STAGE_ORDER)[number]) : -1;
 }
 
-/** The screen that tells the customer where this stage stands; null keeps the current one. */
+/**
+ * The screen that tells the customer where this stage stands; null keeps the
+ * current one. Before KYC is approved the customer drives (quote → pay → add
+ * documents), so nothing pulls them anywhere until staff approve.
+ */
 export function routeForStage(stage: string, bankId?: string): string | null {
   const i = stageIndex(stage);
-  if (i < 0) return null;
+  if (i < stageIndex("KYC_APPROVED")) return null;
   if (i <= stageIndex("BOOKING_CONFIRMED_ON_OEM")) return "/kyc/processing";
   if (stage === "CAR_ALLOCATED") return "/kyc/booking-accepted";
   if (stage === "LOAN_APPROVED") {
@@ -131,6 +142,83 @@ export function bankIdFor(bankName: string, ids: readonly string[]): string | un
 export function rupeesToNumber(value: string | undefined): number {
   const digits = (value ?? "").replace(/[^0-9]/g, "");
   return digits ? Number(digits) : 0;
+}
+
+/** The OMS customer status as the app keeps it: the dealer field goes no further. */
+export function toLiveBooking(json: unknown): LiveBooking {
+  const next = json as LiveBooking & { dealer?: unknown };
+  delete next.dealer;
+  return next;
+}
+
+/** A body the OMS can't parse into a status still says why, e.g. `{"error":"no quote"}`. */
+async function omsError(res: Response): Promise<Error> {
+  let detail = "";
+  try {
+    detail = ((await res.json()) as { error?: string }).error ?? "";
+  } catch {
+    /* not JSON */
+  }
+  return new Error(`OMS ${res.status}${detail ? `: ${detail}` : ""}`);
+}
+
+/**
+ * What the customer does before staff take over, sent to the followed booking:
+ * `book` pays the booking amount (QUOTE → BOOKING_DONE), `kyc` files the PAN
+ * and Aadhaar. Both are safe to repeat. Publishes the OMS's answer and returns
+ * it; throws when the OMS can't be reached or refuses.
+ */
+export async function postLiveBooking(
+  action: "book" | "kyc",
+  body: LiveBookBody | LiveKycBody,
+): Promise<LiveBooking> {
+  const bookingId = readLiveBookingId();
+  if (!bookingId) throw new Error("No live booking");
+  const res = await fetch(
+    `${LIVE_OMS_URL}/oms/v1/customer/bookings/${encodeURIComponent(bookingId)}/${action}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      cache: "no-store",
+    },
+  );
+  if (!res.ok) throw await omsError(res);
+  const next = toLiveBooking(await res.json());
+  setLiveBooking(next);
+  return next;
+}
+
+export type LivePaymentMethod = "upi" | "card" | "netbanking";
+export type LiveBookBody = { method: LivePaymentMethod; amount: number };
+export type LiveKycBody = {
+  source: "digilocker" | "upload";
+  documents: { type: "aadhaar" | "pan"; name: string }[];
+};
+
+/** Tab storage that survives a fresh run: which booking the tab follows, and the instant-reveal switch. */
+const KEPT_ON_RESET = new Set([STORAGE_KEY, INSTANT_REVEAL_KEY]);
+
+/**
+ * Forgets the journey this tab walked (paid, documents added, scenario, KYC
+ * failures, echoes…), for when the OMS says the booking is back at QUOTE: a
+ * fresh run must not inherit the last one. Journey keys all start `pbe` or
+ * `post-booking-`.
+ */
+export function clearJourneyState(): void {
+  if (typeof window === "undefined") return;
+  try {
+    const keys: string[] = [];
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const key = sessionStorage.key(i);
+      if (key && (key.startsWith("pbe") || key.startsWith("post-booking-")) && !KEPT_ON_RESET.has(key)) {
+        keys.push(key);
+      }
+    }
+    keys.forEach((key) => sessionStorage.removeItem(key));
+  } catch {
+    /* private mode — nothing was kept */
+  }
 }
 
 let current: LiveBooking | null = null;

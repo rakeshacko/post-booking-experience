@@ -51,6 +51,8 @@ export type ConciergeTurn = {
   };
   /** Your reply affordances (fixed footer). */
   replies?: readonly ConciergeReply[];
+  /** Why the last reply didn't go through (e.g. documents not sent) — shown right above the replies. */
+  replyError?: string | null;
   /** Demo time travel to the next turn (fixed footer, below replies). */
   timeSkip?: { label: string; href: string; onBeforeNavigate?: () => void };
   /** Alternate demo branch (e.g. the failure path) — second pill under the time skip. */
@@ -248,6 +250,7 @@ export function ConciergeTurnShell({
   artifact,
   working,
   replies,
+  replyError,
   timeSkip: scriptedTimeSkip,
   altTimeSkip: scriptedAltTimeSkip,
   footnote,
@@ -413,6 +416,14 @@ export function ConciergeTurnShell({
               <div className="mb-3">
                 <ShimmerInfoCard icon="clock">{footnote}</ShimmerInfoCard>
               </div>
+            ) : null}
+            {replyError && replies?.length ? (
+              <p
+                role="alert"
+                className="mx-auto mb-3 w-fit rounded-full bg-[#fdeeed] px-3 py-1.5 text-center text-[13px] font-medium leading-[18px] text-[#d83d37]"
+              >
+                {replyError}
+              </p>
             ) : null}
             {replies?.length ? <ConciergeReplies replies={replies} /> : null}
             {callLabel ? (

@@ -22,6 +22,14 @@ type ConciergeDocumentsCardProps = {
   onUploadsChange: (next: KycUploadsState) => void;
   /** Persists mock filename index with parent session state. */
   mockUploadCounterRef: React.MutableRefObject<number>;
+  /**
+   * Live mode: DigiLocker is one tap all the way — called with both documents
+   * fetched, to send them on. Tapping again (say, after a failed send) resends
+   * what's there rather than fetching duplicates.
+   */
+  onDigilockerFetched?: (uploads: KycUploadsState) => void;
+  /** While the documents are on their way — nothing in the card can be changed. */
+  locked?: boolean;
 };
 
 function CheckBadge() {
@@ -125,6 +133,8 @@ export function ConciergeDocumentsCard({
   uploads,
   onUploadsChange,
   mockUploadCounterRef,
+  onDigilockerFetched,
+  locked = false,
 }: ConciergeDocumentsCardProps) {
   const [sourceSheetOpen, setSourceSheetOpen] = useState(false);
   const [activeDocument, setActiveDocument] = useState<KycDocumentKind | null>(null);
@@ -135,8 +145,17 @@ export function ConciergeDocumentsCard({
   }, []);
 
   const handleDigilockerFetchAll = useCallback(() => {
+    if (onDigilockerFetched) {
+      const fetched =
+        uploads.aadhaar.length > 0 && uploads.pan.length > 0
+          ? uploads
+          : appendKycDigilockerPanAadhaarUploads(uploads, mockUploadCounterRef);
+      if (fetched !== uploads) onUploadsChange(fetched);
+      onDigilockerFetched(fetched);
+      return;
+    }
     onUploadsChange(appendKycDigilockerPanAadhaarUploads(uploads, mockUploadCounterRef));
-  }, [mockUploadCounterRef, onUploadsChange, uploads]);
+  }, [mockUploadCounterRef, onDigilockerFetched, onUploadsChange, uploads]);
 
   const handleMockUpload = useCallback(
     (source: KycUploadSource) => {
@@ -172,7 +191,11 @@ export function ConciergeDocumentsCard({
         where your car gets registered.
       </ShimmerInfoCard>
 
-      <div className="overflow-hidden rounded-2xl bg-white card-elevated">
+      <div
+        className="overflow-hidden rounded-2xl bg-white card-elevated"
+        inert={locked || undefined}
+        aria-busy={locked || undefined}
+      >
         <button
           type="button"
           onClick={handleDigilockerFetchAll}

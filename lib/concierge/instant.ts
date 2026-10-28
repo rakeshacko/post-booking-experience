@@ -6,7 +6,7 @@
  * Enable from the console: `sessionStorage.setItem("pbe-concierge-instant", "1")`
  */
 
-const INSTANT_REVEAL_KEY = "pbe-concierge-instant";
+export const INSTANT_REVEAL_KEY = "pbe-concierge-instant";
 
 export function instantRevealEnabled(): boolean {
   if (typeof window === "undefined") return false;

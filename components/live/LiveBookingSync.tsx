@@ -7,11 +7,12 @@ import { BANK_SHEET_OPTIONS } from "@/components/payment/payment-choose-assets";
 import { normalizeAppPathname } from "@/lib/journey-routes";
 import {
   bankIdFor,
+  clearJourneyState,
   LIVE_OMS_URL,
   readLiveBookingId,
   routeForStage,
   setLiveBooking,
-  type LiveBooking,
+  toLiveBooking,
 } from "@/lib/live-booking";
 
 const POLL_MS = 1500;
@@ -22,6 +23,9 @@ const BANK_IDS = BANK_SHEET_OPTIONS.map((b) => b.id);
  * the customer to the screen for that stage. Between stage changes the
  * customer can click around freely; nothing pulls them back. Renders nothing —
  * on stage this is the customer's phone.
+ *
+ * A booking at QUOTE is a fresh run (the OMS was reset): the tab forgets the
+ * journey it walked last time, so the quote → pay → KYC run starts clean.
  */
 export function LiveBookingSync() {
   const router = useRouter();
@@ -48,14 +52,14 @@ export function LiveBookingSync() {
           cache: "no-store",
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const next = (await res.json()) as LiveBooking & { dealer?: unknown };
         // The customer never sees who the dealer is, so the OMS dealer field goes no further.
-        delete next.dealer;
+        const next = toLiveBooking(await res.json());
         if (stopped) return;
         offline = false;
         setLiveBooking(next);
         if (next.stage !== lastStage.current) {
           lastStage.current = next.stage;
+          if (next.stage === "QUOTE") clearJourneyState();
           const target = routeForStage(next.stage, bankIdFor(next.loan?.bank ?? "", BANK_IDS));
           const targetPath = target ? normalizeAppPathname(target.split("?")[0]) : null;
           if (target && targetPath !== normalizeAppPathname(pathRef.current)) {
