@@ -15,6 +15,7 @@ import {
 } from "@/components/concierge/artifacts";
 import { ConciergeTurnShell, type ConciergeTurn } from "@/components/concierge/ConciergeTurnShell";
 import { DealerVisibilityToggle } from "@/components/concierge/DealerVisibilityToggle";
+import { LiveOtpCall } from "@/components/live/LiveOtpCall";
 import {
   BOOKING_CAR_COLOR,
   BOOKING_CAR_TITLE,
@@ -53,7 +54,7 @@ import {
   getBookingDeliveryTextClass,
 } from "@/lib/experience-flow-content";
 import { JOURNEY_PATHS } from "@/lib/journey-routes";
-import { stageIndex, useLiveBooking, useLiveMode } from "@/lib/live-booking";
+import { postLiveOtp, stageIndex, useLiveBooking, useLiveMode, withCustomerName } from "@/lib/live-booking";
 import { recordKycVerificationFailure } from "@/lib/kyc-verification-attempts";
 import {
   getKycVerificationNextHref,
@@ -269,10 +270,50 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
 
       case "dealerSearch":
         if (live) {
+          const model = live.car?.model || "car";
+          const make = live.car?.make || "Hyundai";
+          const otp = live.otp;
+          // Once a dealer has it, the OEM OTP call comes first: picked and taken right here,
+          // the headline saying what's needed at each step, "Are you free?" in the footer.
+          if (live.stage === "DEALER_ALLOCATED" && otp?.state !== "verified") {
+            const says: readonly string[] =
+              otp?.state === "booked"
+                ? [`Your OTP call is set, ${live.firstName}.`, "Keep your phone handy at that time. I'll check you're free just before we call."]
+                : otp?.state === "checking"
+                  ? [`It's time for your OTP call, ${live.firstName}.`, "Tap I'm here when you can talk. The OTP is sent only then."]
+                  : otp?.state === "ready"
+                    ? [`Calling you now, ${live.firstName}.`, `Pick up the call from ${otp.line} and read out the OTP when you're asked.`]
+                    : [
+                        `Pick a time for your ${make} OTP call, ${live.firstName}.`,
+                        `${make} sends an OTP to your phone to book the ${model} in your name. The call takes 2 minutes.`,
+                      ];
+            return {
+              ...base,
+              says,
+              callLabel: "Questions about the call? I can call you",
+              dateHolder: "you",
+              artifact: <LiveOtpCall otp={otp} carModel={live.car?.model ?? ""} carMake={make} />,
+              replies:
+                otp?.state === "checking"
+                  ? [
+                      { label: "I'm here", kind: "primary", echo: null, onClick: () => void postLiveOtp("here").catch(() => {}) },
+                      { label: "Not now", kind: "soft", echo: null, onClick: () => void postLiveOtp("not_now").catch(() => {}) },
+                    ]
+                  : undefined,
+            };
+          }
           // The OMS moves this, not a time-skip: each stage ticks off a line.
           const doneCount = Math.max(0, stageIndex(live.stage) - stageIndex("KYC_APPROVED"));
+          const otpDone = otp?.state === "verified";
           return {
             ...base,
+            callLabel: live.stage === "KYC_APPROVED" ? base.callLabel : "Questions? I can call you",
+            says:
+              live.stage === "BOOKING_CONFIRMED_ON_OEM"
+                ? [`Your ${model} is booked with ${make} in your name, ${live.firstName}.`, "Next: its engine and chassis numbers. I'll tell you as soon as they're in."]
+                : otpDone
+                  ? [`Your OTP is verified, ${live.firstName}.`, `${make} is now booking the ${model} in your name. Next: its engine and chassis numbers.`]
+                  : base.says,
             working: {
               lines: liveSearchLines(live.car?.make || "Hyundai"),
               mode: "ongoing",
@@ -299,10 +340,34 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
           .replace("Express delivery by", "")
           .replace("Standard delivery by", "")
           .trim();
+        // Live: the car is allotted, its OTP call done before it; the money comes next, when
+        // the bank approves the loan.
+        if (live) {
+          return {
+            ...base,
+            says: [
+              `Found it, ${live.firstName}. This is your exact car.`,
+              `Your ${live.car?.model || "car"} is booked in your name, with its engine and chassis numbers below. Next, your loan: I'll tell you the moment the bank approves it.`,
+            ],
+            artifact: (
+              <CarSummaryCardLite
+                title={car.title}
+                variant={car.variant}
+                colour={car.colour}
+                statusChip="Yours ✓"
+                deliveryLine={deliveryLine}
+                deliveryLineClassName={deliveryLineClass}
+                dealerName={dealer.name}
+                dealerDetail={dealer.detail}
+                engineNo={engineNo}
+                chassisNo={chassisNo}
+              />
+            ),
+          };
+        }
         return {
           ...base,
-          // Live: no time has been skipped, so lead with the news, not a greeting.
-          says: live ? [`Found it, ${live.firstName}. This is your exact car.`, ...base.says.slice(1)] : base.says,
+          says: base.says,
           // Revealed: the dealer's call is the action (demo time-skip). AckoDrive-only:
           // the on-screen OTP is the action, so it gets a reply button.
           dateHolder: "you",
@@ -328,7 +393,7 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
               />
               {ackoOnly ? (
                 <NextStepCard
-                  title="Confirm with a one-time code"
+                  title="Confirm with an OTP"
                   body="It's how Hyundai registers the car in your name. Enter it here within 10 minutes and the Creta is locked to you."
                   etaLabel="Usually within 30 minutes"
                 />
@@ -336,7 +401,7 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
                 <>
                   <NextStepCard
                     title={`Pick up ${dealer.name}'s call`}
-                    body="They'll read out a one-time code that registers the car to you on Hyundai's system — share it back and the Creta is locked in your name."
+                    body="They'll ask for the OTP that registers the car to you on Hyundai's system — share it and the Creta is locked in your name."
                     etaLabel="Expected today, before 6 PM"
                   />
                   <ShimmerInfoCard icon="alert">
@@ -372,6 +437,9 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
         // all. The car is fully settled here; next stop is the money.
         return {
           ...base,
+          says: live
+            ? [`Your OTP is verified, ${live.firstName}. This ${live.car?.model || "car"} is yours.`, ...base.says.slice(1)]
+            : base.says,
           artifact: (
             <CarSummaryCardLite
               title={car.title}
@@ -416,10 +484,24 @@ export function ConciergeMoment({ moment }: ConciergeMomentProps) {
   ]);
 
   const { hideBack, ...turnProps } = turn;
+  // Live: the script's lines are written for Sharath; they carry the live customer's name.
+  const firstName = live?.firstName || "Sharath";
+  const says = useMemo(() => turnProps.says.map((line) => withCustomerName(line, firstName)), [turnProps.says, firstName]);
+
+  // Live: each step of the search and the OTP call is a new message from her, so the turn
+  // starts over (and animates in) when the step changes, not when a field does.
+  const otpState = live?.otp?.state ?? "";
+  const step = !live || moment !== "dealerSearch"
+    ? moment
+    : live.stage === "DEALER_ALLOCATED" && otpState !== "verified"
+      ? `otp-${["", "offered", "missed"].includes(otpState) ? "pick" : otpState}`
+      : `${live.stage}-${otpState}`;
 
   return (
     <ConciergeTurnShell
+      key={step}
       {...turnProps}
+      says={says}
       hideBack={hideBack}
       onContentShown={moment === "arrival" ? () => setArrivalPaid(true) : undefined}
     />

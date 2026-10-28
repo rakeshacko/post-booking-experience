@@ -10,6 +10,7 @@ import {
   BANK_DISBURSEMENT_INR,
   BOOKING_AMOUNT_PAID_INR,
   FULL_PAYMENT_INSURANCE_INR,
+  LIVE_QUOTE_ON_ROAD_PRICE_INR,
   MIN_LOAN_INR,
   ON_ROAD_PRICE_INR,
   SLIDER_STEP,
@@ -53,13 +54,24 @@ export function LoanSanctionedScreen() {
 
   // Live mode: the amount the bank's email sanctioned, as recorded in the OMS.
   const live = useLiveBooking();
+  const liveMode = useLiveMode();
   const approvedLoan = rupeesToNumber(live?.loan?.amount) || BANK_DISBURSEMENT_INR;
+  /**
+   * Live mode prices the booking from the OMS: the on-road price on the quote and
+   * the booking amount paid at checkout. The scripted demo keeps its own figures.
+   */
+  const onRoad = liveMode
+    ? rupeesToNumber(live?.price?.onRoad) || LIVE_QUOTE_ON_ROAD_PRICE_INR
+    : ON_ROAD_PRICE_INR;
+  const bookingPaid = liveMode
+    ? rupeesToNumber(live?.bookingAmountPaid) || BOOKING_AMOUNT_PAID_INR
+    : null;
   const [loan, setLoan] = useState(approvedLoan);
   useEffect(() => setLoan(approvedLoan), [approvedLoan]);
   const [remaining, setRemaining] = useState(VALIDITY_SECONDS);
   const [storedAckoOnly, setAckoOnly] = useState(false);
   /** Live mode never mentions the dealer: the loan is paid to AckoDrive. */
-  const ackoOnly = useLiveMode() || storedAckoOnly;
+  const ackoOnly = liveMode || storedAckoOnly;
 
   useEffect(() => {
     setAckoOnly(isAckoOnly(readDealerVisibility()));
@@ -71,7 +83,14 @@ export function LoanSanctionedScreen() {
   }, []);
 
   const expired = remaining === 0;
-  const downPayment = cashDownPaymentDueInr(loan);
+  /**
+   * What the customer pays now. Live: on-road − loan is the down payment, and the
+   * booking amount already paid comes off it. Scripted: the demo's price identity.
+   */
+  const downPayment =
+    bookingPaid === null
+      ? cashDownPaymentDueInr(loan)
+      : Math.max(0, onRoad - Math.round(loan) - bookingPaid);
   const recipient = ackoOnly ? "AckoDrive" : "the dealer";
 
   const commit = useCallback(() => {
@@ -106,7 +125,8 @@ export function LoanSanctionedScreen() {
       artifact={
         <div className="flex flex-col gap-4">
           <LoanConfirmationCard
-            onRoad={ON_ROAD_PRICE_INR}
+            onRoad={onRoad}
+            bookingPaid={bookingPaid}
             approvedLoan={approvedLoan}
             loan={loan}
             downPayment={downPayment}
@@ -118,6 +138,7 @@ export function LoanSanctionedScreen() {
         </div>
       }
       footnote="Valid for 24 hours. Borrow less to lower your loan if you like — you can't go above what the bank approved. Your down payment rises as the loan drops."
+      footnoteInline
       replies={replies}
       callLabel="Questions on the split? I can call you"
       manageShowVehicleIdentification
@@ -129,6 +150,7 @@ export function LoanSanctionedScreen() {
 
 function LoanConfirmationCard({
   onRoad,
+  bookingPaid,
   approvedLoan,
   loan,
   downPayment,
@@ -137,6 +159,8 @@ function LoanConfirmationCard({
   onLoanChange,
 }: {
   onRoad: number;
+  /** Live mode: the booking amount already paid, shown as a line so the sum adds up; null in the scripted demo. */
+  bookingPaid: number | null;
   approvedLoan: number;
   loan: number;
   downPayment: number;
@@ -167,20 +191,26 @@ function LoanConfirmationCard({
         ) : null}
       </div>
 
-      {/* Reference rows */}
+      {/* Reference rows — live mode runs the sum: price − loan = down payment, less the booking amount */}
       <div className="flex flex-col px-4 pt-3">
         <Row label="Vehicle price" value={formatInr(onRoad)} muted />
         <Row
           label="Bank approves"
-          value={formatInr(loan)}
+          value={bookingPaid === null ? formatInr(loan) : `− ${formatInr(loan)}`}
           tag={lowered ? "Lowered" : "Max approved"}
         />
+        {bookingPaid === null ? null : (
+          <>
+            <Row label="Your down payment" value={formatInr(onRoad - loan)} />
+            <Row label="Booking amount already paid" value={`− ${formatInr(bookingPaid)}`} />
+          </>
+        )}
       </div>
 
       {/* Down payment — the dominant "pay now" figure */}
       <div className="mx-4 mt-3 rounded-xl bg-[#f6f3ff] px-4 py-4">
         <p className="text-xs font-medium uppercase tracking-wide text-[#5920c5]">
-          Your down payment — due now
+          {bookingPaid === null ? "Your down payment — due now" : "Due now"}
         </p>
         <p className="mt-1 text-[30px] font-semibold leading-none tracking-tight text-[#121212]">
           {formatInr(downPayment)}

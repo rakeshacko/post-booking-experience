@@ -17,6 +17,12 @@ export const FULL_PAYMENT_INSURANCE_INR = 37_000;
 export const BOOKING_AMOUNT_PAID_INR = 10_000;
 
 /**
+ * Live mode: the on-road price Sharath's quote shows (QuoteScreen, OMS `price.on_road`).
+ * Only a fallback for when the OMS feed doesn't carry the price.
+ */
+export const LIVE_QUOTE_ON_ROAD_PRICE_INR = 13_63_780;
+
+/**
  * THE PRICE IDENTITY (business rule):
  * price lock + bank disbursement + insurance + down payment = promised price.
  * The bank's disbursement is the bank's decision — never a slider; the down

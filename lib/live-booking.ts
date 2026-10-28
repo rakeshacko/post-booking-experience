@@ -22,9 +22,36 @@ export type LiveBooking = {
   car: { make: string; model: string; variant: string; fuel: string; colour: string };
   // The OMS also sends `dealer`; it is dropped on arrival so no screen can show it.
   loan: { bank: string; amount: string; rate: string; emi: string; tenureMonths: string };
+  /** The booked price, shaped like `loan` ("₹13,63,780"; "" when OMS has none). */
+  price?: { onRoad: string; exShowroom: string };
+  /** The booking amount paid in the app ("₹10,000"); "" while the booking is still a quote. */
+  bookingAmountPaid?: string;
   allocation?: { vin: string; engine: string; chassis: string };
+  /** The OEM OTP call that locks the car to the customer (see `LiveOtp`). */
+  otp?: LiveOtp;
   version: number;
 };
+
+/**
+ * The OEM OTP call. The orchestrator offers times inside the dealer's OTP hours;
+ * the customer picks one; when it opens they say "I'm here" and only then does
+ * the dealer send the code, read out on a call through ACKO Drive's line.
+ */
+export type LiveOtp = {
+  /** "" until times are offered · offered → booked → checking ("Are you free?") → ready → verified; missed → offered again. */
+  state: "" | "offered" | "booked" | "checking" | "ready" | "verified" | "missed";
+  slots: { start: string; day: string; time: string }[];
+  /** Offered again after a missed call. */
+  again: boolean;
+  /** "asked": none of the times worked and the dealer was asked for one · a time: the extra one · "sfm": a person will call. */
+  extra: string;
+  slot?: { start: string; end: string; label: string };
+  /** ACKO Drive's line, which calls the customer. */
+  line: string;
+  verifiedAt?: string;
+};
+
+export type LiveOtpAction = "pick" | "here" | "not_now" | "none";
 
 export const LIVE_OMS_URL = process.env.NEXT_PUBLIC_LIVE_OMS_URL ?? "http://127.0.0.1:8092";
 
@@ -124,6 +151,7 @@ export function stageIndex(stage: string | undefined): number {
 export function routeForStage(stage: string, bankId?: string): string | null {
   const i = stageIndex(stage);
   if (i < stageIndex("KYC_APPROVED")) return null;
+  // Finding the dealer, the OEM OTP call and the OEM booking all play out on one screen.
   if (i <= stageIndex("BOOKING_CONFIRMED_ON_OEM")) return "/kyc/processing";
   if (stage === "CAR_ALLOCATED") return "/kyc/booking-accepted";
   if (stage === "LOAN_APPROVED") {
@@ -189,6 +217,22 @@ export async function postLiveBooking(
   return next;
 }
 
+/** A tap on the OEM OTP call: a time, I'm here, Not now, none of these work. */
+export async function postLiveOtp(action: LiveOtpAction, slot = ""): Promise<LiveBooking> {
+  const bookingId = readLiveBookingId();
+  if (!bookingId) throw new Error("No live booking");
+  const res = await fetch(`${LIVE_OMS_URL}/oms/v1/customer/bookings/${encodeURIComponent(bookingId)}/otp`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action, slot }),
+    cache: "no-store",
+  });
+  if (!res.ok) throw await omsError(res);
+  const next = toLiveBooking(await res.json());
+  setLiveBooking(next);
+  return next;
+}
+
 export type LivePaymentMethod = "upi" | "card" | "netbanking";
 export type LiveBookBody = { method: LivePaymentMethod; amount: number };
 export type LiveKycBody = {
@@ -237,6 +281,18 @@ export function setLiveBooking(next: LiveBooking | null): void {
 function subscribe(listener: () => void) {
   listeners.add(listener);
   return () => listeners.delete(listener);
+}
+
+/**
+ * The customer's first name: the live booking's, else the scripted Sharath. The
+ * script is written for Sharath, so `withCustomerName` swaps his name in its lines.
+ */
+export function useCustomerFirstName(): string {
+  return useLiveBooking()?.firstName || "Sharath";
+}
+
+export function withCustomerName(text: string, firstName: string): string {
+  return firstName === "Sharath" ? text : text.replace(/\bSharath\b/g, firstName);
 }
 
 /** The followed booking's latest OMS view, or null outside live mode. */

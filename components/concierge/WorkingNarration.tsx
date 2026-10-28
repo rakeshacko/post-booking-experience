@@ -29,6 +29,16 @@ function SpinnerIcon() {
   );
 }
 
+/** A step that carries on in the background: a still ring, no spin, so it doesn't look stuck. */
+function InProgressIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden className="shrink-0">
+      <circle cx="12" cy="12" r="8.5" stroke="#6841e6" strokeOpacity="0.35" strokeWidth="2" />
+      <circle cx="12" cy="12" r="3.5" fill="#6841e6" />
+    </svg>
+  );
+}
+
 function DoneTickIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden className="shrink-0">
@@ -82,8 +92,8 @@ export type WorkingNarrationProps = {
   /**
    * `live` — quick system actions that genuinely finish while you watch
    * (lines tick off one by one, then `doneLabel`).
-   * `ongoing` — real-world work that takes hours or days: the first line keeps
-   * spinning, the rest queue up, and nothing pretends to finish. The payoff
+   * `ongoing` — real-world work that takes hours or days: the current line
+   * shimmers, the rest queue up, and nothing pretends to finish. The payoff
    * belongs to the next turn, after time has passed.
    */
   mode?: WorkingNarrationMode;
@@ -176,13 +186,14 @@ export function WorkingNarration({
           if (mode === "live" && idx > activeIndex) return null;
           const done = mode === "live" ? idx < activeIndex : idx < ongoingDoneCount;
           const queued = mode === "ongoing" && idx > ongoingDoneCount;
+          const background = mode === "ongoing" && !done && !queued;
           return (
             <div key={idx} className="kyc-stagger flex items-start gap-2.5">
-              {done ? <DoneTickIcon /> : queued ? <QueuedIcon /> : <SpinnerIcon />}
+              {done ? <DoneTickIcon /> : queued ? <QueuedIcon /> : background ? <InProgressIcon /> : <SpinnerIcon />}
               <span
                 className={cn(
                   "text-sm leading-5 transition-colors duration-300",
-                  done || queued ? "text-[#757575]" : "text-[#121212]"
+                  done || queued ? "text-[#757575]" : background ? "text-shimmer" : "text-[#121212]"
                 )}
               >
                 {line}

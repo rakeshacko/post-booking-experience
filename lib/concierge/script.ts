@@ -1,3 +1,8 @@
+import {
+  deliveryDateFromToday,
+  EXPRESS_DELIVERY_DAYS,
+  STANDARD_DELIVERY_DAYS,
+} from "@/components/kyc/booking-car-card-content";
 import type { ExperienceFlow } from "@/lib/experience-flow";
 
 /**
@@ -150,14 +155,12 @@ const EXPRESS_SCRIPT: Record<ConciergeMomentId, TurnWords> = {
     workingEtaLabel: "I'll have news by tomorrow morning",
     timeSkipLabel: "Next morning",
     callLabel: "Can't sleep on it? I can call you",
-    footnote:
-      "A quick heads-up: changes and cancellation are free until I lock in a dealer. After that, a change costs ₹5,000 and cancelling holds back half of what you've paid.",
   },
 
   dealerFound: {
     says: [
       "Morning, Sharath. I found your exact car.",
-      "Three dealers came back, and Advaith Hyundai can deliver soonest, so I've reserved a fresh Creta for you with them. Its engine and chassis numbers are below. They'll call you today, and a one-time code on your phone confirms it's yours.",
+      "Three dealers came back, and Advaith Hyundai can deliver soonest, so I've reserved a fresh Creta for you with them. Its engine and chassis numbers are below. They'll call you today, and an OTP on your phone confirms it's yours.",
     ],
     timeSkipLabel: "After the dealer's call",
     callLabel: "Questions? I can call you",
@@ -165,7 +168,7 @@ const EXPRESS_SCRIPT: Record<ConciergeMomentId, TurnWords> = {
 
   carReserved: {
     says: [
-      "Your code checked out, Sharath. This Creta is yours.",
+      "Your OTP is verified, Sharath. This Creta is yours.",
       "Its engine and chassis numbers are on the card below. Next, let's sort the payment — the last big thing between you and your delivery date.",
     ],
     replyLabel: "Start the payment",
@@ -179,7 +182,7 @@ const EXPRESS_SCRIPT: Record<ConciergeMomentId, TurnWords> = {
     ],
     replyLabel: "Show me my options",
     replyEcho: "Show me my options",
-    footnote: "Your 10 Jun delivery holds once payment is set up. Every day this waits moves it back.",
+    footnote: `Your ${deliveryDateFromToday(EXPRESS_DELIVERY_DAYS, false)} delivery holds once payment is set up. Every day this waits moves it back.`,
     callLabel: "Rather talk it through? I can call you",
   },
 };
@@ -206,7 +209,7 @@ const STANDARD_OVERRIDES: Partial<Record<ConciergeMomentId, Partial<TurnWords>>>
   dealerFound: {
     says: [
       "Welcome back, Sharath. I found your exact car.",
-      "It took a couple of days, but three dealers came back, and Advaith Hyundai can deliver soonest, so I've reserved a fresh Creta for you with them. Its engine and chassis numbers are below. They'll call you today, and a one-time code on your phone confirms it's yours.",
+      "It took a couple of days, but three dealers came back, and Advaith Hyundai can deliver soonest, so I've reserved a fresh Creta for you with them. Its engine and chassis numbers are below. They'll call you today, and an OTP on your phone confirms it's yours.",
     ],
   },
   moneyIntro: {
@@ -214,7 +217,7 @@ const STANDARD_OVERRIDES: Partial<Record<ConciergeMomentId, Partial<TurnWords>>>
       "Welcome back, Sharath. Let's sort out the payment.",
       "₹13,63,780 is left to pay on your Creta. You can finance it through me, at rates I've already negotiated with five banks, or arrange it yourself. Whichever you prefer.",
     ],
-    footnote: "Your 25 Oct delivery holds once payment is set up. Delays here push it back.",
+    footnote: `Your ${deliveryDateFromToday(STANDARD_DELIVERY_DAYS, false)} delivery holds once payment is set up. Delays here push it back.`,
   },
 };
 
@@ -227,12 +230,12 @@ const ACKO_ONLY_OVERRIDES: Partial<Record<ConciergeMomentId, Partial<TurnWords>>
   dealerFound: {
     says: [
       "Found it, Sharath. This is your exact car.",
-      "I've reserved a fresh Creta for you, with its engine and chassis numbers below. One quick code confirms it's yours. I'll notify you the moment it's ready to enter.",
+      "I've reserved a fresh Creta for you, with its engine and chassis numbers below. One quick OTP confirms it's yours. I'll notify you the moment it's ready to enter.",
     ],
   },
   carReserved: {
     says: [
-      "Your code checked out, Sharath. This Creta is yours.",
+      "Your OTP is verified, Sharath. This Creta is yours.",
       "Its engine and chassis numbers are on the card below. Next, let's sort the payment — the last big thing between you and your delivery date.",
     ],
   },
@@ -264,15 +267,15 @@ export function getTurnWords(
  */
 export const OTP_HEADSUP_WORDS: TurnWords = {
   says: [
-    "One last step to make this Creta officially yours, Sharath: a one-time code.",
-    "It's how I register the car to you on Hyundai's system — the code is how they confirm it's really you. I'll send it to your phone and you'll enter it on the next screen.",
+    "One last step to make this Creta officially yours, Sharath: an OTP.",
+    "It's how I register the car to you on Hyundai's system — the OTP is how they confirm it's really you. I'll send it to your phone and you'll enter it on the next screen.",
   ],
   callLabel: "Prefer a call instead? I can call you",
 };
 
 export const OTP_ENTER_WORDS: TurnWords = {
   says: [
-    "Here's your code, Sharath — enter the 6 digits.",
+    "Here's your OTP, Sharath — enter the 6 digits.",
     "It just landed on your phone ending 3210. This is what registers your Creta with Hyundai and locks it to your name.",
   ],
 };

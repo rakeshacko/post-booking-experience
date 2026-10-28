@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 
+import { deliveryDateFromToday, EXPRESS_DELIVERY_DAYS } from "@/components/kyc/booking-car-card-content";
 import { QuoteFlowMenuSheet } from "@/components/quote/QuoteFlowMenuSheet";
 import {
   DEFAULT_EXPERIENCE_FLOW,
@@ -27,7 +28,7 @@ const CAR_COLOUR_SWATCH = "#1b2640";
 const ON_ROAD_PRICE = "₹13,63,780";
 const SAVINGS = "₹76,043";
 const LOCK_AMOUNT = "₹10,000";
-const DELIVERY_LINE = "Express delivery by 10 Jun";
+const DELIVERY_LINE = `Express delivery by ${deliveryDateFromToday(EXPRESS_DELIVERY_DAYS, false)}`;
 
 const BREAKUP: readonly { label: string; value: string }[] = [
   { label: "Ex-showroom price", value: "₹9,54,900" },

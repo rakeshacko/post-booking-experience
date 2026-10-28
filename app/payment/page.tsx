@@ -491,6 +491,8 @@ function MockRazorpayPaymentPageContent() {
               <div className="mt-3 flex gap-2" role="radiogroup" aria-label="Payment method">
                 {PAYMENT_METHODS.map((method) => {
                   const selected = method.id === paymentMethod;
+                  // No colour transition: the highlight must paint in the same frame as the
+                  // method's fields, or a stalled transition leaves the old chip looking picked.
                   return (
                     <button
                       key={method.id}
@@ -502,7 +504,7 @@ function MockRazorpayPaymentPageContent() {
                         setPaymentMethod(method.id);
                         setLivePayError(null);
                       }}
-                      className={`rounded-lg border px-3 py-2 text-xs font-medium transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#3395ff] focus-visible:ring-offset-2 ${
+                      className={`rounded-lg border px-3 py-2 text-xs font-medium focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#3395ff] focus-visible:ring-offset-2 ${
                         selected
                           ? "border-[#3395ff] bg-[#f0f7ff] text-[#0b6bcb]"
                           : "border-[#e6e8eb] bg-[#fafbfc] text-[#6b7280] hover:border-[#c7d2e0]"

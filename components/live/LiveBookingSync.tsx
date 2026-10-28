@@ -17,6 +17,8 @@ import {
 
 const POLL_MS = 1500;
 const BANK_IDS = BANK_SHEET_OPTIONS.map((b) => b.id);
+/** The screens a customer can be on before paying (the quote and checkout); at QUOTE any other screen goes back to the quote. */
+const BEFORE_PAY = ["/quote", "/payment"];
 
 /**
  * Follows the live booking: polls the OMS and, whenever the stage moves, takes
@@ -59,7 +61,14 @@ export function LiveBookingSync() {
         setLiveBooking(next);
         if (next.stage !== lastStage.current) {
           lastStage.current = next.stage;
-          if (next.stage === "QUOTE") clearJourneyState();
+          if (next.stage === "QUOTE") {
+            clearJourneyState();
+            // A tab left on a later screen (say /kyc/processing from the last run) starts over at the quote.
+            if (!BEFORE_PAY.includes(normalizeAppPathname(pathRef.current))) {
+              router.replace("/quote");
+              return;
+            }
+          }
           const target = routeForStage(next.stage, bankIdFor(next.loan?.bank ?? "", BANK_IDS));
           const targetPath = target ? normalizeAppPathname(target.split("?")[0]) : null;
           if (target && targetPath !== normalizeAppPathname(pathRef.current)) {

@@ -19,9 +19,10 @@ import {
   HERO_ILLUSTRATION_TO_COPY_MT,
 } from "@/components/ui/success-screen-layout";
 import { isModifyNoChargesFlow } from "@/lib/experience-flow";
+import { useCustomerFirstName } from "@/lib/live-booking";
 import { cn } from "@/lib/utils";
 
-const KYC_HEADLINE = "Verify your identity, Sharath";
+const kycHeadline = (firstName: string) => `Verify your identity, ${firstName}`;
 
 const KYC_SUBLINE =
   "Your booking is waiting to be processed. Keep your PAN and Aadhaar ready. Once verified, we start processing right away.";
@@ -68,6 +69,7 @@ function MenuOptionsButton({ onClick }: { onClick: () => void }) {
  */
 export function KycPendingScreen() {
   const router = useRouter();
+  const KYC_HEADLINE = kycHeadline(useCustomerFirstName());
   const [reduceMotion, setReduceMotion] = useState(false);
   const [heroImageLoaded, setHeroImageLoaded] = useState(false);
   const [kycContentRevealed, setKycContentRevealed] = useState(false);

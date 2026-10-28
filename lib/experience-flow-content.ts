@@ -1,13 +1,17 @@
 import timeDeliveryIcon from "@/assets/Time.svg";
 import { BOOKING_CONFIRMED_ASSETS } from "@/components/kyc/kyc-booking-confirmed-assets";
-import { BOOKING_EXPRESS_DELIVERY_LINE } from "@/components/kyc/booking-car-card-content";
+import {
+  BOOKING_EXPRESS_DELIVERY_LINE,
+  deliveryDateFromToday,
+  STANDARD_DELIVERY_DAYS,
+} from "@/components/kyc/booking-car-card-content";
 import {
   readExperienceFlow,
   type ExperienceFlow,
 } from "@/lib/experience-flow";
 
 /** Standard delivery — update when product copy is final. */
-export const BOOKING_STANDARD_DELIVERY_LINE = "Standard delivery by 25 Oct '26";
+export const BOOKING_STANDARD_DELIVERY_LINE = `Standard delivery by ${deliveryDateFromToday(STANDARD_DELIVERY_DAYS)}`;
 
 /** Delivery line colour on car cards — standard vs express. */
 export const BOOKING_STANDARD_DELIVERY_TEXT_CLASS = "text-[#4B4B4B]";

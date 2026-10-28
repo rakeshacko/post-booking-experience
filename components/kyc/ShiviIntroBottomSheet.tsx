@@ -5,11 +5,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import shiviAvatar from "@/assets/Shivi small.png";
 import { ShiviIntroCoachmark } from "@/components/kyc/ShiviIntroCoachmark";
+import { useCustomerFirstName } from "@/lib/live-booking";
 
 /** Parity with `ManageBookingBottomSheet`. */
 const SHEET_TRANSITION_MS = 280;
 
-const USER_NAME = "Sharath";
 
 export type ShiviIntroBottomSheetProps = {
   open: boolean;
@@ -20,6 +20,7 @@ export type ShiviIntroBottomSheetProps = {
  * Shivi RM intro — [Figma 2479:7600](https://www.figma.com/design/nW5SWmJdxxsCEDlqBN7C0L/Post-booking-experience?node-id=2479-7600).
  */
 export function ShiviIntroBottomSheet({ open, onClose }: ShiviIntroBottomSheetProps) {
+  const USER_NAME = useCustomerFirstName();
   const [mounted, setMounted] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
   const exitTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
